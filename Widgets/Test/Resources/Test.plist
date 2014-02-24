@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>title</key>
+	<string>Test Widget</string>
+	<key>layout</key>
+	<!--<string>PWWidgetLayoutDefault</string>-->
+	<string>PWWidgetLayoutCustom</string>
+	<key>defaultItemViewControllerPlist</key>
+	<string>TestItems.plist</string>
+	<key>desiredTintColor</key>
+	<string>blue</string>
+	<key>desiredBarTextColor</key>
+	<string>white</string>
+</dict>
+</plist>

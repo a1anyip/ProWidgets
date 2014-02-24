@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>actionButtonText</key>
+	<string>Add</string>
+	<key>items</key>
+	<array>
+		<dict>
+			<key>key</key>
+			<string>title</string>
+			<key>type</key>
+			<string>textArea</string>
+			<key>overrideHeight</key>
+			<real>120.0</real>
+		</dict>
+		<dict>
+			<key>key</key>
+			<string>dayReminderSwitch</string>
+			<key>title</key>
+			<string>Remind me on a day</string>
+			<key>type</key>
+			<string>switch</string>
+			<key>default</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>key</key>
+			<string>alarm</string>
+			<key>title</key>
+			<string>Alarm</string>
+			<key>type</key>
+			<string>datevalue</string>
+			<key>dateMode</key>
+			<string>datetime</string>
+			<key>dateMinuteInterval</key>
+			<integer>5</integer>
+		</dict>
+		<dict>
+			<key>key</key>
+			<string>repeat</string>
+			<key>title</key>
+			<string>Repeat</string>
+			<key>type</key>
+			<string>listvalue</string>
+			<key>default</key>
+			<integer>0</integer>
+			<key>listItemTitles</key>
+			<array>
+				<string>Never</string>
+				<string>Every Day</string>
+				<string>Every Week</string>
+				<string>Every 2 Weeks</string>
+				<string>Every Month</string>
+				<string>Every Year</string>
+			</array>
+			<key>listItemValues</key>
+			<array>
+				<integer>0</integer>
+				<integer>1</integer>
+				<integer>2</integer>
+				<integer>3</integer>
+				<integer>4</integer>
+				<integer>5</integer>
+			</array>
+		</dict>
+		<dict>
+			<key>key</key>
+			<string>list</string>
+			<key>title</key>
+			<string>List</string>
+			<key>type</key>
+			<string>PWWidgetRemindersItemListValue</string>
+			<key>default</key>
+			<integer>0</integer>
+		</dict>
+	</array>
+</dict>
+</plist>

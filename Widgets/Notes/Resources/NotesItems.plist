@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>actionButtonText</key>
+	<string>Add</string>
+	<key>items</key>
+	<array>
+		<dict>
+			<key>key</key>
+			<string>content</string>
+			<key>title</key>
+			<string></string>
+			<key>type</key>
+			<string>textArea</string>
+			<key>overrideHeight</key>
+			<real>160.0</real>
+		</dict>
+		<dict>
+			<key>key</key>
+			<string>account</string>
+			<key>title</key>
+			<string>Account</string>
+			<key>type</key>
+			<string>listvalue</string>
+		</dict>
+	</array>
+</dict>
+</plist>

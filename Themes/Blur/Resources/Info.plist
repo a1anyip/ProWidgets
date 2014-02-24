@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleIdentifier</key>
+	<string>cc.tweak.prowidgets.theme.blur</string>
+	<key>PWInfoType</key>
+	<string>theme</string>
+	<key>PWInfoDisplayName</key>
+	<string>Blur</string>
+	<key>PWInfoAuthor</key>
+	<string>Alan Yip</string>
+	<key>PWInfoDescription</key>
+	<string>Default theme for ProWidgets</string>
+	<key>PWInfoIconFile</key>
+	<string>icon.png</string>
+</dict>
+</plist>

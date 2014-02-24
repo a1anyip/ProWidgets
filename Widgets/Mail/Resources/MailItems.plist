@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>actionButtonText</key>
+	<string>Send</string>
+	<key>items</key>
+	<array>
+		<dict>
+			<key>key</key>
+			<string>to</string>
+			<key>title</key>
+			<string>To:</string>
+			<key>type</key>
+			<string>recipient</string>
+		</dict>
+		<dict>
+			<key>key</key>
+			<string>cc</string>
+			<key>title</key>
+			<string>Cc:</string>
+			<key>type</key>
+			<string>recipient</string>
+		</dict>
+		<dict>
+			<key>key</key>
+			<string>bcc</string>
+			<key>title</key>
+			<string>Bcc:</string>
+			<key>type</key>
+			<string>recipient</string>
+		</dict>
+		<dict>
+			<key>key</key>
+			<string>content</string>
+			<key>title</key>
+			<string></string>
+			<key>type</key>
+			<string>textArea</string>
+			<key>overrideHeight</key>
+			<real>160.0</real>
+		</dict>
+	</array>
+</dict>
+</plist>

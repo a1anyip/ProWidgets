@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	
+	<key>title</key>
+	<string>Custom</string>
+	
+	<key>buttonText</key>
+	<string>Send</string>
+	
+	<key>layout</key>
+	<string>PWWidgetLayoutDefault</string>
+	
+	<key>theme</key>
+	<string>CustomTheme</string>
+	
+	<key>items</key>
+	<array>
+		
+		<dict>
+			<key>key</key>
+			<string>switch</string>
+			<key>title</key>
+			<string>Test Switch</string>
+			<key>type</key>
+			<string>switch</string>
+		</dict>
+		
+		<dict>
+			<key>key</key>
+			<string>button</string>
+			<key>title</key>
+			<string>Test Button</string>
+			<key>type</key>
+			<string>button</string>
+		</dict>
+		
+		<dict>
+			<key>key</key>
+			<string>inputField</string>
+			<key>title</key>
+			<string>Test Input Field</string>
+			<key>type</key>
+			<string>PWWidgetItemTextField</string>
+			
+		</dict>
+		
+		<dict>
+			<key>key</key>
+			<string>textArea</string>
+			<key>title</key>
+			<string>Test Input Field</string>
+			<key>type</key>
+			<string>textArea</string>
+			
+		</dict>
+		
+		<dict>
+			<key>key</key>
+			<string>testKey</string>
+			<key>title</key>
+			<string>Test Title</string>
+			<key>type</key>
+			<string>value</string>
+			<key>showChervon</key>
+			<true />
+						
+			<key>listItemTitles</key>
+			<array>
+				<string>Key 1</string>
+				<string>Key 2</string>
+			</array>
+			
+			<key>listItemValues</key>
+			<array>
+				<integer>1</integer>
+				<integer>2</integer>
+			</array>
+			
+		</dict>
+		
+		<dict>
+			<key>key</key>
+			<string>text</string>
+			<key>title</key>
+			<string>Test Text Test Text Test Text Test Text Test Text Test Text Test Text Test Text Test Text Test Text Test Text Test Text Test Text Test Text Test Text Test Text</string>
+			<key>type</key>
+			<string>text</string>
+		</dict>
+		
+	</array>
+</dict>
+</plist>

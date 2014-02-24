@@ -1,0 +1,11 @@
+{
+    entry = {
+		id = "cc.tweak.prowidgets";
+		bundle = ProWidgets;
+		cell = PSLinkCell;
+		detail = PWPrefController;
+		icon = icon.png;
+		isController = 1;
+		label = "ProWidgets";
+    };
+}

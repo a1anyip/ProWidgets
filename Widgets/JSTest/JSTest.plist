@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	
+	<key>title</key>
+	<string>Reminder</string>
+	
+	<key>buttonText</key>
+	<string>Add</string>
+	
+	<key>layout</key>
+	<string>PWWidgetLayoutTextAndOptions</string>
+	
+	<key>options</key>
+	<array>
+		<dict>
+			<key>optionClass</key>
+			<string>keyValueOption</string>
+			<key>key</key>
+			<string>option</string>
+			<key>label</key>
+			<string>Sample Option</string>
+			<key>valueType</key>
+			<string>int</string>
+			<key>options</key>
+			<dict>
+				<key>Option 1</key>
+				<integer>1</integer>
+				<key>Option 2</key>
+				<integer>2</integer>
+				<key>Option 3</key>
+				<integer>3</integer>
+			</dict>
+		</dict>
+	</array>
+</dict>
+</plist>

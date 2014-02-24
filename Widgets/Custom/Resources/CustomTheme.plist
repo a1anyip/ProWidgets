@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	
+	<!--
+
+	This file is the theme definition for ProWidgets.
+
+	Leave the value blank or remove the item to use its default value.
+
+	Documentation and Tutorial at http://prowidgets.net.
+
+	-->
+
+	<!-- Image name values
+	     Specify the file name with extension in values (@2x can be omitted)
+	-->
+
+	<key>sheetBackgroundImage</key>
+	<dict>
+		<key>portrait</key>
+		<string></string>
+		<key>landscape</key>
+		<string></string>
+	</dict>
+
+	<key>navigationBarBackgroundImage</key>
+	<dict>
+		<key>portrait</key>
+		<string></string>
+		<key>landscape</key>
+		<string></string>
+	</dict>
+
+	<key>cellBackgroundImage</key>
+	<dict>
+		<key>portrait</key>
+		<string></string>
+		<key>landscape</key>
+		<string></string>
+	</dict>
+
+	<key>cellSelectedBackgroundImage</key>
+	<dict>
+		<key>portrait</key>
+		<string></string>
+		<key>landscape</key>
+		<string></string>
+	</dict>
+	
+	<!-- Color values
+	
+	     Support the following formats in color values (case insensitive):
+	
+	     #RGB              (e.g. #FFF)
+	     #RRGGBB           (e.g. #FF0000, #F0F0F0)
+	
+	     rgb(0,0,0)        (e.g. rgb(255,0,0), rgb(100%,0,0))
+	     rgba(0,0,0,0.5)   (e.g. rgba(255,0,0,1.0), rgba(100%,0,0,0.5))
+	
+	     hsl(0,0%,0%)      (e.g. hsl(120,50%,50%), hsl(-120,50%,50%))
+	     hsla(0,0%,0%,0.5) (e.g. hsla(120,50%,50%,1.0), hsla(-120,50%,50%,0.5))
+	
+	     And all color names listed in the page, https://developer.apple.com/library/ios/documentation/uikit/reference/UIColor_Class/Reference/Reference.html
+	     (e.g. black, clear, lightText)
+	-->
+
+	<key>sheetBackgroundColor</key>
+	<string>rgb(255,0,0)</string>
+	
+	<key>navigationBarBackgroundColor</key>
+	<string>#999</string>
+	
+	<key>navigationTitleTextColor</key>
+	<string>blue</string>
+	
+	<key>navigationButtonTextColor</key>
+	<string>green</string>
+
+	<key>cellBackgroundColor</key>
+	<string>rgb(255,255,0)</string>
+
+	<key>cellTitleTextColor</key>
+	<string>#CCC</string>
+
+	<key>cellValueTextColor</key>
+	<string>#FF0000</string>
+
+	<key>cellButtonTextColor</key>
+	<string>#666</string>
+
+	<key>cellPlainTextColor</key>
+	<string>#CCC</string>
+
+	<key>cellSelectedBackgroundColor</key>
+	<string>rgb(255,0,255)</string>
+
+	<key>cellSelectedTitleTextColor</key>
+	<string></string>
+
+	<key>cellSelectedValueTextColor</key>
+	<string></string>
+
+	<key>cellSelectedButtonTextColor</key>
+	<string>purple</string>
+
+	<key>cellSwitchOnColor</key>
+	<string>#666</string>
+
+	<key>cellSwitchOffColor</key>
+	<string>#666</string>
+
+	<!-- Numerical values -->
+
+	<key>cornerRadius</key>
+	<real>20.0</real>
+
+	<key>cellHeight</key>
+	<dict>
+		<key>portrait</key>
+		<dict>
+			<key>normal</key>
+			<real>30.0</real>
+			<key>textarea</key>
+			<real>90.0</real>
+		</dict>
+	</dict>
+	
+	<key>overrideSize</key>
+	<dict>
+		<key>portrait</key>
+		<dict>
+			<key>width</key>
+			<real>300</real>
+			<key>height</key>
+			<real>200</real>
+		</dict>
+	</dict>
+
+</dict>
+</plist>

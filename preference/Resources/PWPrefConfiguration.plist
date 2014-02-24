@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>title</key>
+	<string>Configuration</string>
+	<key>items</key>
+	<array>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>defaults</key>
+			<string>cc.tweak.prowidgets</string>
+			<key>PostNotification</key>
+			<string>cc.tweak.prowidgets.preferencechanged</string>
+			<key>key</key>
+			<string>enabledParallax</string>
+			<key>label</key>
+			<string>Parallax Effect</string>
+			<key>default</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>footerText</key>
+			<string>Select your preferred source when creating calendars
+
+Local source might not work for some users.</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>defaults</key>
+			<string>cc.tweak.prowidgets</string>
+			<key>PostNotification</key>
+			<string>cc.tweak.prowidgets.preferencechanged</string>
+			<key>key</key>
+			<string>preferredSource</string>
+			<key>label</key>
+			<string>Preferred Source</string>
+			<key>default</key>
+			<integer>0</integer>
+			<key>detail</key>
+			<string>PSListItemsController</string>
+			<key>validTitles</key>
+			<array>
+				<string>iCloud</string>
+				<string>Local</string>
+			</array>
+			<key>validValues</key>
+			<array>
+				<integer>0</integer>
+				<integer>1</integer>
+			</array>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>footerText</key>
+			<string>Developers and themers may find some useful configurations and documentations inside.</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>label</key>
+			<string>Developer Section</string>
+			<key>detail</key>
+			<string>PWPrefDeveloperSection</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>label</key>
+			<string>Themer Section</string>
+			<key>detail</key>
+			<string>PWPrefThemerSection</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>footerText</key>
+			<string>In Test Mode, an extra bar will be shown for testing widgets or themes while a widget is presented.</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>defaults</key>
+			<string>cc.tweak.prowidgets</string>
+			<key>PostNotification</key>
+			<string>cc.tweak.prowidgets.preferencechanged</string>
+			<key>key</key>
+			<string>testMode</string>
+			<key>label</key>
+			<string>Test Mode</string>
+			<key>default</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>footerText</key>
+			<string>Unless specified, respring is not required after changing configurations.</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSButtonCell</string>
+			<key>label</key>
+			<string>Respring</string>
+			<key>action</key>
+			<string>respring</string>
+		</dict>
+	</array>
+</dict>
+</plist>

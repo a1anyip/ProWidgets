@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleIdentifier</key>
+	<string>cc.tweak.prowidgets.widget.dictionary</string>
+	<key>NSPrincipalClass</key>
+	<string>PWWidgetDictionary</string>
+	<key>PWInfoType</key>
+	<string>widget</string>
+	<key>PWInfoDisplayName</key>
+	<string>Dictionary</string>
+	<key>PWInfoAuthor</key>
+	<string>Alan Yip</string>
+	<key>PWInfoDescription</key>
+	<string>Look up the definition of a word</string>
+	<key>PWInfoIconFile</key>
+	<string>icon.png</string>
+	<key>PWInfoPreferenceFile</key>
+	<string></string>
+</dict>
+</plist>

@@ -1,0 +1,164 @@
+//
+//  ProWidgets
+//
+//  1.0.0
+//
+//  Created by Alan Yip on 18 Jan 2014
+//  Copyright 2014 Alan Yip. All rights reserved.
+//
+
+#import "PWWidgetItemTextField.h"
+
+@implementation PWWidgetItemTextField
+
++ (Class)valueClass {
+	return [NSString class];
+}
+
++ (id)defaultValue {
+	return @"";
+}
+
++ (Class)cellClass {
+	return [PWWidgetItemTextFieldCell class];
+}
+
+- (void)textFieldDidBeginEditing:(UITextField *)textField {
+	LOG(@"@@@@@@@@ textFieldDidBeginEditing: %@ <%@>", textField, self);
+	[self.itemViewController updateLastFirstResponder:self];
+}
+
+- (void)textFieldDidEndEditing:(UITextField *)textField {
+	
+	NSString *oldValue = [[self.value copy] autorelease];
+	NSString *value = textField.text;
+	
+	if (oldValue == nil) oldValue = @"";
+	if (value == nil) value = @"";
+	
+	if (![value isEqualToString:oldValue]) {
+		[self setItemValue:value];
+		[self.itemViewController itemValueChanged:self oldValue:oldValue];
+	}
+}
+
+- (BOOL)textFieldShouldReturn:(UITextField *)textField {
+	[self.itemViewController setNextResponder:self.activeCell];
+	return NO;
+}
+
+@end
+
+@implementation PWWidgetItemTextFieldCell
+
+//////////////////////////////////////////////////////////////////////
+
++ (PWWidgetItemCellStyle)cellStyle {
+	return PWWidgetItemCellStyleNone;
+}
+
+//////////////////////////////////////////////////////////////////////
+
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
+	if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier])) {
+		
+		_textField = [UITextField new];
+		_textField.textColor = [UIColor blackColor];
+		_textField.borderStyle = UITextBorderStyleNone;
+		_textField.clearButtonMode = UITextFieldViewModeAlways;
+		_textField.keyboardAppearance = [PWController activeTheme].wantsDarkKeyboard ? UIKeyboardAppearanceDark : UIKeyboardAppearanceDefault;
+		
+		_iconView = [UIImageView new];
+		_iconView.backgroundColor = [UIColor clearColor];
+		
+		[self.contentView addSubview:_textField];
+		[self.contentView addSubview:_iconView];
+	}
+	return self;
+}
+
+- (void)layoutSubviews {
+	
+	[super layoutSubviews];
+	
+	BOOL hasIcon = _iconView.image != nil;
+	CGFloat cellWidth = self.contentView.bounds.size.width;
+	CGFloat cellHeight = self.contentView.bounds.size.height;
+	CGRect iconViewRect = CGRectZero;
+	CGRect textFieldRect = CGRectZero;
+	
+	if (hasIcon) {
+		CGFloat iconSize = MIN(cellHeight - 2.0 * 2 /* padding */, 20.0);
+		CGFloat iconMargin = PWDefaultItemCellPadding;
+		iconViewRect = CGRectMake(PWDefaultItemCellPadding, (cellHeight - iconSize) / 2, iconSize, iconSize);
+		textFieldRect = CGRectMake(iconViewRect.origin.x + iconSize + iconMargin, 0, 0, cellHeight);
+		textFieldRect.size.width = cellWidth - textFieldRect.origin.x - PWDefaultItemCellPadding;
+	} else {
+		textFieldRect = CGRectInset(self.contentView.bounds, PWDefaultItemCellPadding, 0);
+	}
+	
+	_iconView.frame = iconViewRect;
+	_textField.frame = textFieldRect;
+}
+
+//////////////////////////////////////////////////////////////////////
+
+- (void)updateItem:(PWWidgetItem *)item {
+	
+	if (_textField.delegate != (PWWidgetItemTextField *)item && [_textField isFirstResponder]) {
+		[_textField resignFirstResponder];
+	}
+	_textField.delegate = (PWWidgetItemTextField *)item;
+}
+
+//////////////////////////////////////////////////////////////////////
+
+- (void)setTitle:(NSString *)title {
+	_textField.placeholder = title;
+}
+
+- (void)setIcon:(UIImage *)icon {
+	_iconView.image = icon;
+	[self setNeedsLayout];
+}
+
+// change text content in text field
+- (void)setValue:(NSString *)value {
+	_textField.text = value;
+}
+
+//////////////////////////////////////////////////////////////////////
+
+- (void)setInputTextColor:(UIColor *)color {
+	_textField.textColor = color;
+	_textField.tintColor = [color colorWithAlphaComponent:.3];
+}
+
+- (void)setInputPlaceholderTextColor:(UIColor *)color {
+	[_textField setValue:color forKeyPath:@"_placeholderLabel.textColor"];
+}
+
+- (BOOL)contentCanBecomeFirstResponder {
+	return YES;
+}
+
+- (void)contentSetFirstResponder {
+	if (_textField.superview != nil)
+		[_textField becomeFirstResponder];
+}
+
+- (void)contentResignFirstResponder {
+	if (_textField.superview != nil)
+		[_textField resignFirstResponder];
+}
+
+//////////////////////////////////////////////////////////////////////
+
+- (void)dealloc {
+	_textField.delegate = nil;
+	RELEASE_VIEW(_textField)
+	RELEASE_VIEW(_iconView)
+	[super dealloc];
+}
+
+@end
