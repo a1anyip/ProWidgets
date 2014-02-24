@@ -108,7 +108,7 @@ static NSNumberFormatter *numberFormatter = nil;
 }
 
 - (void)configureFirstResponder {
-	/*
+	
 	UIApplication *app = [UIApplication sharedApplication];
 	UIWindow *keyWindow = app.keyWindow;
 	id firstResponder = [keyWindow firstResponder];
@@ -133,11 +133,11 @@ static NSNumberFormatter *numberFormatter = nil;
 			[cell contentSetFirstResponder];
 			break;
 		}
-	}*/
+	}
 }
 
 - (void)requestFirstResponder:(PWWidgetItem *)item {
-	/*
+	
 	LOG(@"PWContentItemViewController: requestFirstResponder: %@ <active cell: %@>", item, item.activeCell);
 	
 	if (item.activeCell != nil) {
@@ -157,15 +157,18 @@ static NSNumberFormatter *numberFormatter = nil;
 			NSIndexPath *indexPath = [NSIndexPath indexPathForRow:index inSection:0];
 			[self.tableView scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionMiddle animated:YES];
 		}
-	}*/
+	}
 }
 
 - (void)updateLastFirstResponder:(PWWidgetItem *)item {
-	//_lastFirstResponder = item;
+	LOG(@"updateLastFirstResponder =====> (%@) %@ / top vc: %@", _shouldUpdateLastFirstResponder ? @"YES" : @"NO", item, [self.navigationController topViewController]);
+	if (_lastFirstResponder == nil || _shouldUpdateLastFirstResponder) {
+		_lastFirstResponder = item;
+	}
 }
 
 - (void)setNextResponder:(PWWidgetItemCell *)currentFirstResponder {
-	/*
+	
 	UITableView *tableView = self.tableView;
 	NSIndexPath *currentIndexPath = [tableView indexPathForCell:currentFirstResponder];
 	
@@ -198,7 +201,7 @@ static NSNumberFormatter *numberFormatter = nil;
 	}
 	
 	// resign the previous first responder
-	[currentFirstResponder contentResignFirstResponder];*/
+	[currentFirstResponder contentResignFirstResponder];
 }
 
 - (void)itemValueChanged:(PWWidgetItem *)item oldValue:(id)oldValue {
@@ -471,11 +474,11 @@ static NSNumberFormatter *numberFormatter = nil;
 	
 	PWWidgetItemCheckBoundsReturn;
 	
-	// first responder lost
-	if ([self itemAtIndex:index] == _lastFirstResponder) {
-		_lastFirstResponder = nil;
-		[self configureFirstResponder];
-	}
+	PWWidgetItem *item = [self itemAtIndex:index];
+	BOOL isFirstResponder = item == _lastFirstResponder;
+	
+	// resign first responder
+	[item resignFirstResponder];
 	
 	// remove the item at given index from _items array
 	[_items removeObjectAtIndex:index];
@@ -491,6 +494,12 @@ static NSNumberFormatter *numberFormatter = nil;
 		[tableView deleteRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:index inSection:0]] withRowAnimation:UITableViewRowAnimationTop];
 	} else {
 		[self reload];
+	}
+	
+	// first responder lost
+	if (isFirstResponder) {
+		_lastFirstResponder = nil;
+		[self configureFirstResponder];
 	}
 }
 
@@ -513,13 +522,17 @@ static NSNumberFormatter *numberFormatter = nil;
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
 	
-	LOG(@"====== heightForRowAtIndexPath <_fillHeight: %f>", _fillHeight);
+	//LOG(@"====== heightForRowAtIndexPath <_fillHeight: %f>", _fillHeight);
 	
 	unsigned int row = [indexPath row];
 	PWWidgetItem *item = [self itemAtIndex:row];
 	
 	if (item.shouldFillHeight && _fillHeight > 0.0) {
-		return _fillHeight;
+		if (item.minimumFillHeight > 0.0 && _fillHeight < item.minimumFillHeight) {
+			return item.minimumFillHeight;
+		} else {
+			return _fillHeight;
+		}
 	} else {
 		return [item cellHeightForOrientation:[PWController currentOrientation]];
 	}
@@ -603,24 +616,18 @@ static NSNumberFormatter *numberFormatter = nil;
 
 - (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath {
 	
-	//unsigned int row = [indexPath row];
-	//PWWidgetItem *item = [self itemAtIndex:row];
+	unsigned int row = [indexPath row];
+	PWWidgetItem *item = [self itemAtIndex:row];
 	PWWidgetItemCell *itemCell = (PWWidgetItemCell *)cell;
 	
 	[itemCell willAppear];
-	/*
+	
 	if (_pendingFirstResponder != nil && item == _pendingFirstResponder) {
 		_pendingFirstResponder = nil;
 		if ([itemCell contentCanBecomeFirstResponder]) {
 			[itemCell contentSetFirstResponder];
 		}
-	}*/
-}
-
-- (void)tableView:(UITableView *)tableView didEndDisplayingCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath {
-	unsigned int row = [indexPath row];
-	PWWidgetItem *item = [self itemAtIndex:row];
-	LOG(@"@@@@@ didEndDisplayingCell: %@", item);
+	}
 }
 
 - (CGFloat)contentHeightForOrientation:(PWWidgetOrientation)orientation {
@@ -799,12 +806,18 @@ static NSNumberFormatter *numberFormatter = nil;
 }
 
 - (void)_willBePresentedInNavigationController:(UINavigationController *)navigationController {
+	
+	LOG(@"_willBePresentedInNavigationController");
 	[super _willBePresentedInNavigationController:navigationController];
 	//[self.tableView reloadData];
+	_shouldUpdateLastFirstResponder = NO;
 }
 
 - (void)_presentedInNavigationController:(UINavigationController *)navigationController {
+	LOG(@"_presentedInNavigationController");
+	_shouldUpdateLastFirstResponder = YES;
 	//[self.tableView reloadData];
+	//[[[PWController sharedInstance].window firstResponder] resignFirstResponder];
 }
 
 - (void)dealloc {
@@ -817,6 +830,7 @@ static NSNumberFormatter *numberFormatter = nil;
 	RELEASE(_items)
 	RELEASE(_wrappedItemValueChangedEventBlockHandler)
 	
+	_lastFirstResponder = nil;
 	_pendingFirstResponder = nil;
 	
 	[super dealloc];

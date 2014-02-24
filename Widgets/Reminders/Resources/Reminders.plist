@@ -5,12 +5,10 @@
 	<key>title</key>
 	<string>Reminders</string>
 	<key>layout</key>
-	<string>PWWidgetLayoutDefault</string>
+	<string>PWWidgetLayoutCustom</string>
 	<key>preferredTintColor</key>
 	<string>#FF5200</string>
 	<key>preferredBarTextColor</key>
 	<string>white</string>
-	<key>defaultItemViewControllerPlist</key>
-	<string>RemindersItems</string>
 </dict>
 </plist>

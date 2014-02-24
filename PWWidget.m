@@ -300,8 +300,6 @@
 
 - (void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated {
 	
-	//[[PWController sharedInstance].window endEditing:YES];
-	
 	// fix weird bug in iOS 7
 	UINavigationBar *navigationBar = navigationController.navigationBar;
 	CGRect rect = navigationBar.frame;
@@ -328,14 +326,10 @@
 			[contentViewController willBePresentedInNavigationController:navigationController];
 	}
 	
-	//[[PWController sharedInstance].window endEditing:YES];
-	
 	// auto set first responder
 	// only set in this method when the widget is opening up
 	if ([PWController sharedInstance].isAnimating && [viewController respondsToSelector:@selector(configureFirstResponder)]) {
-		//[viewController performSelector:@selector(configureFirstResponder)];
-	} else {
-		
+		[viewController performSelector:@selector(configureFirstResponder)];
 	}
 }
 
@@ -345,6 +339,12 @@
 	UINavigationBar *navigationBar = navigationController.navigationBar;
 	UIView *titleView = *(UIView **)instanceVar(navigationBar, "_titleView");
 	titleView.userInteractionEnabled = YES;
+	
+	// call internal method
+	if ([viewController isKindOfClass:[PWContentViewController class]]) {
+		PWContentViewController *contentViewController = (PWContentViewController *)viewController;
+		[contentViewController _presentedInNavigationController:navigationController];
+	}
 	
 	if (titleView != nil && [titleView.gestureRecognizers count] == 0) {
 		
@@ -360,10 +360,8 @@
 	
 	// auto set first responder
 	if ([viewController respondsToSelector:@selector(configureFirstResponder)]) {
-		//[viewController performSelector:@selector(configureFirstResponder)];
+		[viewController performSelector:@selector(configureFirstResponder)];
 	}
-	
-	//[[PWController sharedInstance].window endEditing:YES];
 }
 
 //////////////////////////////////////////////////////////////////////

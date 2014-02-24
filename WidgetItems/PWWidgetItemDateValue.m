@@ -44,10 +44,6 @@
 	return item;
 }
 
-- (BOOL)shouldAutoDeselect {
-	return NO;
-}
-
 - (BOOL)isSelectable {
 	return YES;
 }

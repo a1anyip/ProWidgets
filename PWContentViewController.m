@@ -24,6 +24,7 @@
 
 - (instancetype)init {
 	if ((self = [super init])) {
+		self.automaticallyAdjustsScrollViewInsets = NO;
 		[self load];
 	}
 	return self;
@@ -201,6 +202,8 @@
 	if (self.navigationItem.backBarButtonItem == nil)
 		self.navigationItem.backBarButtonItem = [[[UIBarButtonItem alloc] initWithTitle:@"Back" style:UIBarButtonItemStylePlain target:nil action:nil] autorelease];
 }
+
+- (void)_presentedInNavigationController:(UINavigationController *)navigationController {}
 
 - (void)_dealloc {
 	LOG(@"PWContentViewController: _dealloc");

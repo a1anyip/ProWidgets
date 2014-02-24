@@ -32,6 +32,7 @@
 	UIImage *_icon;
 	
 	BOOL _shouldFillHeight;
+	CGFloat _minimumFillHeight;
 	CGFloat _overrideHeight;
 }
 
@@ -47,6 +48,7 @@
 @property(nonatomic) BOOL hideChevron;
 @property(nonatomic, retain) UIImage *icon;
 @property(nonatomic) BOOL shouldFillHeight;
+@property(nonatomic) CGFloat minimumFillHeight;
 @property(nonatomic) CGFloat overrideHeight;
 
 // value
@@ -98,11 +100,11 @@
  * Override these methods to configure the item
  **/
 
-- (BOOL)shouldAutoDeselect;
 - (BOOL)isSelectable;
 - (void)select;
 
 - (void)becomeFirstResponder;
+- (void)resignFirstResponder;
 - (void)setExtraAttributes:(NSDictionary *)attributes;
 - (CGFloat)cellHeightForOrientation:(PWWidgetOrientation)orientation;
 

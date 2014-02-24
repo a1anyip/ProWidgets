@@ -21,8 +21,10 @@
 			<string></string>
 			<key>type</key>
 			<string>textArea</string>
-			<key>overrideHeight</key>
-			<real>160.0</real>
+			<key>shouldFillHeight</key>
+			<false/>
+			<key>minimumFillHeight</key>
+			<real>150.0</real>
 		</dict>
 	</array>
 </dict>

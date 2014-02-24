@@ -1,5 +1,5 @@
 BUNDLE_NAME = Reminders
-Reminders_FILES = Reminders.m
+Reminders_FILES = Reminders.m ListValue.m Add.m Overview.m Cell.m
 Reminders_INSTALL_PATH = /Library/ProWidgets/Widgets/
 Reminders_FRAMEWORKS = UIKit CoreGraphics QuartzCore EventKit
 Reminders_PRIVATE_FRAMEWORKS = 

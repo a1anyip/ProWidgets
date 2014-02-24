@@ -116,6 +116,7 @@
 	item.hideChevron = self.hideChevron;
 	item.icon = self.icon;
 	item.shouldFillHeight = self.shouldFillHeight;
+	item.minimumFillHeight = self.minimumFillHeight;
 	item.overrideHeight = self.overrideHeight;
 	item.value = self.value;
 	item.itemValueChangedEventBlockHandler = self.itemValueChangedEventBlockHandler;
@@ -176,14 +177,16 @@
  * Override these methods to configure the item
  **/
 
-- (BOOL)shouldAutoDeselect { return YES; }
-
 - (BOOL)isSelectable { return NO; }
 
 - (void)select {}
 
 - (void)becomeFirstResponder {
-	//[self.itemViewController requestFirstResponder:self];
+	[self.itemViewController requestFirstResponder:self];
+}
+
+- (void)resignFirstResponder {
+	[self.activeCell contentResignFirstResponder];
 }
 
 - (void)setExtraAttributes:(NSDictionary *)attributes {}
@@ -245,8 +248,7 @@
 	RELEASE(_title)
 	RELEASE(_actionEventName)
 	RELEASE(_icon)
-	id value = (id)_value;
-	RELEASE(value)
+	RELEASE(_value)
 	RELEASE(_itemValueChangedEventBlockHandler)
 	
 	[super dealloc];

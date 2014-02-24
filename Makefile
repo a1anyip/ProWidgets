@@ -45,11 +45,13 @@ LIB += WidgetItems/PWWidgetItemTextField.m
 LIB += WidgetItems/PWWidgetItemListValue.m
 LIB += WidgetItems/PWWidgetItemDateValue.m
 LIB += WidgetItems/PWWidgetItemToneValue.m
+LIB += WidgetItems/ToneValue/PWWidgetItemTonePickerController.m
 LIB += WidgetItems/PWWidgetItemSwitch.m
 LIB += WidgetItems/PWWidgetItemText.m
 LIB += WidgetItems/PWWidgetItemButton.m
 LIB += WidgetItems/PWWidgetItemWebView.m
 LIB += WidgetItems/PWWidgetItemRecipient.m
+LIB += WidgetItems/Recipient/PWWidgetItemRecipientController.m
 #LIB += WidgetItems/PWWidgetItemPhoto.m
 
 ### Script ###

@@ -17,8 +17,11 @@
 	NSString *_overrideContentHeightExpressionForPortrait;
 	NSString *_overrideContentHeightExpressionForLandscape;
 	NSMutableArray *_items;
+	
+	BOOL _shouldUpdateLastFirstResponder;
 	PWWidgetItem *_lastFirstResponder;
 	PWWidgetItem *_pendingFirstResponder;
+	
 	void(^_wrappedItemValueChangedEventBlockHandler)(PWWidgetItem *, id);
 }
 

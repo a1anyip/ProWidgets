@@ -8,23 +8,19 @@
 //
 
 #import "item.h"
+#import "Recipient/PWWidgetItemRecipientController.h"
 
-@interface PWWidgetItemRecipient : PWWidgetItem<UITableViewDelegate, UITableViewDataSource> {
+@interface PWWidgetItemRecipient : PWWidgetItem {
 	
-	CGFloat _viewHeight;
+	PWWidgetItemRecipientController *_recipientController;
 	
-	//CKRecipientSearchListController
-	UITableView *_searchResultView;
-	NSArray *_searchResult;
+	NSString *_titleWithoutColon;
 }
 
 @end
 
 @interface PWWidgetItemRecipientCell : PWWidgetItemCell {
 	
-	MFComposeRecipientView *_recipientView;
 }
-
-@property(nonatomic, readonly) MFComposeRecipientView *recipientView;
 
 @end

@@ -255,6 +255,9 @@ NSString *expression = [NSString stringWithFormat:@"%f", [expressionNumber doubl
 			// should fill height
 			BOOL shouldFillHeight = [item[@"shouldFillHeight"] boolValue];
 			
+			// minimum fill height
+			CGFloat minimumFillHeight = (CGFloat)[item[@"minimumFillHeight"] doubleValue];
+			
 			// override height
 			CGFloat overrideHeight = (CGFloat)[item[@"overrideHeight"] doubleValue];
 			
@@ -265,6 +268,7 @@ NSString *expression = [NSString stringWithFormat:@"%f", [expressionNumber doubl
 			widgetItem.hideChevron = hideChevron;
 			widgetItem.icon = iconImage;
 			widgetItem.shouldFillHeight = shouldFillHeight;
+			widgetItem.minimumFillHeight = minimumFillHeight;
 			widgetItem.overrideHeight = overrideHeight;
 			
 			// set extra attributes (like list item titles and values)

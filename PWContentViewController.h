@@ -65,6 +65,7 @@
 
 // this will be called internally
 - (void)_willBePresentedInNavigationController:(UINavigationController *)navigationController;
+- (void)_presentedInNavigationController:(UINavigationController *)navigationController;
 - (void)_dealloc;
 
 @end

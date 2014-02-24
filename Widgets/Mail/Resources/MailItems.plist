@@ -4,6 +4,8 @@
 <dict>
 	<key>actionButtonText</key>
 	<string>Send</string>
+	<key>shouldMaximizeContentHeight</key>
+	<true/>
 	<key>items</key>
 	<array>
 		<dict>
@@ -14,7 +16,7 @@
 			<key>type</key>
 			<string>recipient</string>
 		</dict>
-		<dict>
+		<!--<dict>
 			<key>key</key>
 			<string>cc</string>
 			<key>title</key>
@@ -29,7 +31,7 @@
 			<string>Bcc:</string>
 			<key>type</key>
 			<string>recipient</string>
-		</dict>
+		</dict>-->
 		<dict>
 			<key>key</key>
 			<string>content</string>
@@ -37,8 +39,8 @@
 			<string></string>
 			<key>type</key>
 			<string>textArea</string>
-			<key>overrideHeight</key>
-			<real>160.0</real>
+			<key>shouldFillHeight</key>
+			<true/>
 		</dict>
 	</array>
 </dict>
