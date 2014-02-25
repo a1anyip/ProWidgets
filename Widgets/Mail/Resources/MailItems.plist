@@ -4,8 +4,6 @@
 <dict>
 	<key>actionButtonText</key>
 	<string>Send</string>
-	<key>shouldMaximizeContentHeight</key>
-	<true/>
 	<key>items</key>
 	<array>
 		<dict>
@@ -39,8 +37,8 @@
 			<string></string>
 			<key>type</key>
 			<string>textArea</string>
-			<key>shouldFillHeight</key>
-			<true/>
+			<key>overrideHeight</key>
+			<real>160.0</real>
 		</dict>
 	</array>
 </dict>

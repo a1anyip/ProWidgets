@@ -85,7 +85,7 @@
 	PWWidgetRemindersTableViewCell *cell = (PWWidgetRemindersTableViewCell *)[tableView dequeueReusableCellWithIdentifier:identifier];
 	
 	if (!cell) {
-		cell = [[PWWidgetRemindersTableViewCell new] autorelease];
+		cell = [[[PWWidgetRemindersTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier] autorelease];
 	}
 	
 	

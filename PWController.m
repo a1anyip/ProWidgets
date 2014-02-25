@@ -692,6 +692,9 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	// set user info
 	widget.userInfo = userInfo;
 	
+	// load widget theme, if any
+	
+	
 	// load the widget
 	[widget load];
 	[widget preparePresentation]; // configure for default layout & block further changes
@@ -731,8 +734,6 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 		return NO;
 	}
 	
-	[widget willPresent];
-	
 	// configure active theme
 	PWTheme *theme = [PWController activeTheme];
 	[theme _setPreferredTintColor:[widget preferredTintColor]];
@@ -741,6 +742,8 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	[theme setupTheme];
 	
 	_configuredTheme = YES;
+	
+	[widget willPresent];
 	
 	// update the mask in background view
 	[self.backgroundView show];

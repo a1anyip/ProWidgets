@@ -52,6 +52,8 @@ LIB += WidgetItems/PWWidgetItemButton.m
 LIB += WidgetItems/PWWidgetItemWebView.m
 LIB += WidgetItems/PWWidgetItemRecipient.m
 LIB += WidgetItems/Recipient/PWWidgetItemRecipientController.m
+LIB += WidgetItems/Recipient/PWWidgetItemRecipientView.m
+LIB += WidgetItems/Recipient/PWWidgetItemRecipientTableViewCell.m
 #LIB += WidgetItems/PWWidgetItemPhoto.m
 
 ### Script ###

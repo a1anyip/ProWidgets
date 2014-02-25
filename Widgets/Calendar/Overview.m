@@ -129,7 +129,7 @@
 	PWWidgetCalendarTableViewCell *cell = (PWWidgetCalendarTableViewCell *)[tableView dequeueReusableCellWithIdentifier:identifier];
 	
 	if (!cell) {
-		cell = [[PWWidgetCalendarTableViewCell new] autorelease];
+		cell = [[[PWWidgetCalendarTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier] autorelease];
 	}
 	
 	EKEvent *event = _events[section][@"events"][row];

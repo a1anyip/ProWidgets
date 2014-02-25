@@ -10,7 +10,7 @@
 #import "item.h"
 #import "Recipient/PWWidgetItemRecipientController.h"
 
-@interface PWWidgetItemRecipient : PWWidgetItem {
+@interface PWWidgetItemRecipient : PWWidgetItem<PWWidgetItemRecipientControllerDelegate> {
 	
 	PWWidgetItemRecipientController *_recipientController;
 	

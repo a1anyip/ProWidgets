@@ -88,7 +88,7 @@
 	PWWidgetAlarmTableViewCell *cell = (PWWidgetAlarmTableViewCell *)[tableView dequeueReusableCellWithIdentifier:identifier];
 	
 	if (!cell) {
-		cell = [[PWWidgetAlarmTableViewCell new] autorelease];
+		cell = [[[PWWidgetAlarmTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier] autorelease];
 	}
 	
 	[cell setActive:alarm.active];
