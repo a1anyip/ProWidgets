@@ -127,6 +127,14 @@ extern int CalculatePerformExpression(const char* expr,
 									  int flags,
 									  char* answer);
 
+static inline void applyFadeTransition(UIView *view, CGFloat duration) {
+	CATransition *transition = [CATransition animation];
+	transition.duration = duration;
+	transition.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+	transition.type = kCATransitionFade;
+	[view.layer addAnimation:transition forKey:@"fade"];
+}
+
 static inline void *instanceVar(id object, const char *name) {
 	Ivar ivar = object_getInstanceVariable(object, name, NULL);
 	if (ivar) {

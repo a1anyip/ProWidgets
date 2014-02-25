@@ -131,10 +131,6 @@
 - (void)setInputTextColor:(UIColor *)color {
 }
 
-- (BOOL)contentCanBecomeFirstResponder {
-	return NO;
-}
-
 //////////////////////////////////////////////////////////////////////
 
 - (void)dealloc {

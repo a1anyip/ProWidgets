@@ -102,7 +102,7 @@
 	_textView.tintColor = [color colorWithAlphaComponent:.3];
 }
 
-- (BOOL)contentCanBecomeFirstResponder {
++ (BOOL)contentCanBecomeFirstResponder {
 	return YES;
 }
 

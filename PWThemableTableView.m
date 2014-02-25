@@ -69,6 +69,16 @@ static char PWThemableTableViewHeaderFooterViewConfiguredKey;
 	return view;
 }
 
+- (void)scrollToNearestSelectedRowAtScrollPosition:(UITableViewScrollPosition)arg1 animated:(BOOL)arg2 {
+	[super scrollToNearestSelectedRowAtScrollPosition:arg1 animated:arg2];
+	LOG(@"scrollToNearestSelectedRowAtScrollPosition:%d", (int)arg1);
+}
+
+- (void)scrollToRowAtIndexPath:(NSIndexPath *)indexPath atScrollPosition:(UITableViewScrollPosition)scrollPosition animated:(BOOL)animated {
+	[super scrollToRowAtIndexPath:indexPath atScrollPosition:scrollPosition animated:animated];
+	LOG(@"scrollToRowAtIndexPath:%@ atScrollPosition:%d", indexPath, (int)scrollPosition);
+}
+
 - (void)setHideSeparatorInEmptyCells:(BOOL)hidden {
 	if (hidden) {
 		// remove separator lines for empty cells

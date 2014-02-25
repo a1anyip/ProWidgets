@@ -22,10 +22,34 @@
 + (Class)cellClass {
 	return [PWWidgetItemTextFieldCell class];
 }
+/*
+- (BOOL)textFieldShouldBeginEditing:(UITextField *)textField {
+	LOG(@"textFieldShouldBeginEditing: <item: %@>", self);
+	PWContentItemViewController *controller = self.itemViewController;
+	PWWidgetItem *lastFirstResponder = controller.lastFirstResponder;
+	BOOL shouldUpdateLastFirstResponder = controller.shouldUpdateLastFirstResponder;
+	if (!shouldUpdateLastFirstResponder && lastFirstResponder != nil && lastFirstResponder != self) {
+		return NO;
+	} else {
+		return YES;
+	}
+}*/
 
 - (void)textFieldDidBeginEditing:(UITextField *)textField {
-	LOG(@"@@@@@@@@ textFieldDidBeginEditing: %@ <%@>", textField, self);
-	[self.itemViewController updateLastFirstResponder:self];
+	LOG(@"textFieldDidBeginEditing: %@ <%@>", textField, self);
+	/*
+	PWContentItemViewController *controller = self.itemViewController;
+	PWWidgetItem *lastFirstResponder = controller.lastFirstResponder;
+	BOOL shouldUpdateLastFirstResponder = controller.shouldUpdateLastFirstResponder;
+	if (!shouldUpdateLastFirstResponder && lastFirstResponder != nil && lastFirstResponder != self) {
+		[textField resignFirstResponder];
+		return;
+	}*/
+	
+	BOOL success = [self.itemViewController updateLastFirstResponder:self];
+	if (!success) {
+		[textField resignFirstResponder];
+	}
 }
 
 - (void)textFieldDidEndEditing:(UITextField *)textField {
@@ -43,7 +67,7 @@
 }
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField {
-	[self.itemViewController setNextResponder:self.activeCell];
+	[self.itemViewController setNextResponder:self];
 	return NO;
 }
 
@@ -138,7 +162,7 @@
 	[_textField setValue:color forKeyPath:@"_placeholderLabel.textColor"];
 }
 
-- (BOOL)contentCanBecomeFirstResponder {
++ (BOOL)contentCanBecomeFirstResponder {
 	return YES;
 }
 

@@ -32,14 +32,28 @@
 	
 	if ([PWController activeWidget] == nil) return;
 	
+	LOG(@"PWView layoutSubviews");
+	
 	// container's rect
 	CGRect containerRect = [self containerRect];
+	
+	if (CGRectEqualToRect(containerRect, CGRectZero)) {
+		LOG(@"PWView retrieved container rect (CGRectZero)");
+		return;
+	}
+	
+	LOG(@"PWView retrieved container rect (%@)", NSStringFromCGRect(containerRect));
+	LOG(@"PWView _containerView = %@", _containerView);
 	
 	// update the frame of container view
 	_containerView.frame = containerRect;
 	[_containerView layoutIfNeeded];
 	
+	LOG(@"PWView set layout for container view");
+	
 	[self _updateBackgroundViewRect:containerRect animated:NO];
+	
+	LOG(@"PWView updated background view rect");
 }
 
 - (void)createContainerView {
@@ -183,7 +197,7 @@
 	
 	LOG(@"_updateBackgroundViewRect: %@", animated ? @"YES" : @"NO");
 	
-	CGFloat extraSize = PWSheetMotionEffectDistance;//MAX(self.bounds.size.width, self.bounds.size.height);
+	CGFloat extraSize = PWSheetMotionEffectDistance;
 	CGFloat cornerRadius = [[PWController activeTheme] cornerRadius];
 	_backgroundView.frame = CGRectInset(self.bounds, -extraSize, -extraSize);
 	[_backgroundView setMaskRect:rect cornerRadius:cornerRadius animated:animated];
@@ -212,7 +226,9 @@
 		
 		[UIView animateWithDuration:PWAnimationDuration delay:0.0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionTransitionNone animations:^{
 			_containerView.frame = rect;
-			[_containerView layoutIfNeeded];
+			[_containerView setNeedsLayout];
+			// not the the line below is necessary
+			//[_containerView layoutIfNeeded];
 		} completion:nil];
 		
 		[self _updateBackgroundViewRect:rect animated:YES];

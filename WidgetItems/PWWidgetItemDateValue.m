@@ -238,7 +238,7 @@ static NSDateFormatter *dateFormatter = nil;
 	self.detailTextLabel.text = [dateFormatter stringForObjectValue:value];
 }
 
-- (BOOL)contentCanBecomeFirstResponder {
++ (BOOL)contentCanBecomeFirstResponder {
 	return YES;
 }
 

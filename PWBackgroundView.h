@@ -12,6 +12,7 @@
 @interface PWBackgroundView : UIView {
 	
 	BOOL _shouldAnimateTransform;
+	CAShapeLayer *_mask;
 }
 
 @property(nonatomic) BOOL shouldAnimateTransform;

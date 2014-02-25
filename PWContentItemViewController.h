@@ -28,6 +28,9 @@
 @property(nonatomic, readonly) UITableView *tableView;
 @property(nonatomic, copy) NSArray *items;
 
+@property(nonatomic, readonly) BOOL shouldUpdateLastFirstResponder;
+@property(nonatomic, readonly) PWWidgetItem *lastFirstResponder;
+
 + (NSString *)itemValueChangedEventName;
 + (NSString *)submitEventName;
 
@@ -42,8 +45,8 @@
 - (void)reload;
 - (void)configureFirstResponder;
 - (void)requestFirstResponder:(PWWidgetItem *)item;
-- (void)updateLastFirstResponder:(PWWidgetItem *)item;
-- (void)setNextResponder:(PWWidgetItemCell *)currentFirstResponder;
+- (BOOL)updateLastFirstResponder:(PWWidgetItem *)item;
+- (void)setNextResponder:(PWWidgetItem *)currentFirstResponder;
 - (void)itemValueChanged:(PWWidgetItem *)item oldValue:(id)oldValue;
 - (void)reloadCellOfItem:(PWWidgetItem *)item;
 

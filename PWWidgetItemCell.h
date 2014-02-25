@@ -50,7 +50,7 @@
 
 - (void)willAppear;
 
-- (BOOL)contentCanBecomeFirstResponder;
++ (BOOL)contentCanBecomeFirstResponder;
 - (void)contentSetFirstResponder;
 - (void)contentResignFirstResponder;
 

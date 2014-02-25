@@ -77,7 +77,7 @@
 
 - (void)willAppear {}
 
-- (BOOL)contentCanBecomeFirstResponder { return NO; }
++ (BOOL)contentCanBecomeFirstResponder { return NO; }
 - (void)contentSetFirstResponder {}
 - (void)contentResignFirstResponder {}
 

@@ -36,13 +36,15 @@
 - (void)layoutSubviews {
 	
 	_containerBackgroundView.frame = self.bounds;
-	_navigationControllerView.frame = self.bounds;
-	
 	[_containerBackgroundView layoutIfNeeded];
+	
+	_navigationControllerView.frame = self.bounds;
 	[_navigationControllerView layoutIfNeeded];
 	
+	[[PWController activeTheme] adjustLayout];
+	
 	// tell active theme to adjust layout
-	[[PWController activeTheme] performSelectorOnMainThread:@selector(adjustLayout) withObject:nil waitUntilDone:NO];
+	//[[PWController activeTheme] performSelectorOnMainThread:@selector(adjustLayout) withObject:nil waitUntilDone:NO];
 }
 
 - (void)dealloc {

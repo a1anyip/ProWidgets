@@ -129,7 +129,7 @@ static NSNumberFormatter *numberFormatter = nil;
 	NSArray *cells = [self.tableView visibleCells];
 	for (PWWidgetItemCell *cell in cells) {
 		if (![cell isKindOfClass:[PWWidgetItemCell class]]) continue;
-		if ([cell contentCanBecomeFirstResponder]) {
+		if ([cell.class contentCanBecomeFirstResponder]) {
 			[cell contentSetFirstResponder];
 			break;
 		}
@@ -140,68 +140,68 @@ static NSNumberFormatter *numberFormatter = nil;
 	
 	LOG(@"PWContentItemViewController: requestFirstResponder: %@ <active cell: %@>", item, item.activeCell);
 	
-	if (item.activeCell != nil) {
+	//[self.tableView visibleCells]
+	
+	NSUInteger index = [self indexOfItem:item];
+	if (index == NSNotFound) return;
+
+	NSIndexPath *indexPath = [NSIndexPath indexPathForRow:index inSection:0];
+	PWWidgetItemCell *cell = (PWWidgetItemCell *)[self.tableView cellForRowAtIndexPath:indexPath];
+	if (cell != nil) {
+		// the cell is visible
 		_pendingFirstResponder = nil;
-		if ([item.activeCell contentCanBecomeFirstResponder]) {
+		if ([cell.class contentCanBecomeFirstResponder]) {
 			_lastFirstResponder = item;
-			[item.activeCell contentSetFirstResponder];
+			[cell contentSetFirstResponder];
 		}
 	} else {
 		// as the cell is not available yet, ask table view
 		// to scroll to the cell and then immediately make it
 		// become the first responder
-		NSUInteger index = [self indexOfItem:item];
+		//NSUInteger index = [self indexOfItem:item];
 		LOG(@"PWContentItemViewController: requestFirstResponder: index of item: %d", (int)index);
-		if (index != NSNotFound) {
-			_pendingFirstResponder = item;
-			NSIndexPath *indexPath = [NSIndexPath indexPathForRow:index inSection:0];
-			[self.tableView scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionMiddle animated:YES];
-		}
+		_pendingFirstResponder = item;
 	}
+	
+	[self.tableView scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionMiddle animated:YES];
 }
 
-- (void)updateLastFirstResponder:(PWWidgetItem *)item {
+- (BOOL)updateLastFirstResponder:(PWWidgetItem *)item {
 	LOG(@"updateLastFirstResponder =====> (%@) %@ / top vc: %@", _shouldUpdateLastFirstResponder ? @"YES" : @"NO", item, [self.navigationController topViewController]);
 	if (_lastFirstResponder == nil || _shouldUpdateLastFirstResponder) {
 		_lastFirstResponder = item;
+		return YES;
+	} else {
+		return NO;
 	}
 }
 
-- (void)setNextResponder:(PWWidgetItemCell *)currentFirstResponder {
+- (void)setNextResponder:(PWWidgetItem *)currentFirstResponder {
 	
-	UITableView *tableView = self.tableView;
-	NSIndexPath *currentIndexPath = [tableView indexPathForCell:currentFirstResponder];
+	NSUInteger index = [self indexOfItem:currentFirstResponder];
 	
-	if (currentIndexPath != nil) {
-		
-		NSUInteger index = currentIndexPath.row;
+	if (index != NSNotFound) {
 		
 		if (index < [_items count] - 1) {
 			// try to set the next responder
 			for (unsigned int i = index + 1; i < [_items count]; i++) {
 				
-				NSIndexPath *indexPath = [NSIndexPath indexPathForRow:i inSection:0];
-				PWWidgetItemCell *cell = (PWWidgetItemCell *)[tableView cellForRowAtIndexPath:indexPath];
+				PWWidgetItem *item = _items[i];
+				Class cellClass = [item.class cellClass];
 				
-				if ([cell contentCanBecomeFirstResponder]) {
-					// update reference
-					_lastFirstResponder = _items[i];
-					// set first responder
-					[cell contentSetFirstResponder];
-					// scroll to the row
-					[tableView scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionMiddle animated:YES];
+				if ([cellClass contentCanBecomeFirstResponder]) {
+					[self requestFirstResponder:item];
 					return;
 				}
 			}
 		} else if (index == [_items count] - 1) {
 			// last item, trigger send selector
 			[self triggerAction];
-			return;
 		}
 	}
 	
 	// resign the previous first responder
-	[currentFirstResponder contentResignFirstResponder];
+	[currentFirstResponder.activeCell contentResignFirstResponder];
 }
 
 - (void)itemValueChanged:(PWWidgetItem *)item oldValue:(id)oldValue {
@@ -376,16 +376,17 @@ static NSNumberFormatter *numberFormatter = nil;
 	
 	[self _updateItemsShouldFillHeight];
 	
+	// inert a row in sheet table view
+	UITableView *tableView = self.tableView;
+	if (animated) {
+		applyFadeTransition(tableView, 0.3);
+	}
+	[tableView reloadData];
+	
 	// resize widget
 	[[PWController activeWidget] resizeWidgetAnimated:animated forContentViewController:self];
 	
-	// inert a row in sheet table view
-	UITableView *tableView = self.tableView;
-	if (!animated) {
-		[self reload];
-	} else {
-		[tableView insertRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:index inSection:0]] withRowAnimation:UITableViewRowAnimationTop];
-	}
+	[self configureFirstResponder];
 }
 
 - (void)addItems:(NSArray *)items {
@@ -418,15 +419,16 @@ static NSNumberFormatter *numberFormatter = nil;
 	
 	[self _updateItemsShouldFillHeight];
 	
+	UITableView *tableView = self.tableView;
+	if (animated) {
+		applyFadeTransition(tableView, 0.3);
+	}
+	[tableView reloadData];
+	
 	// resize widget
 	[[PWController activeWidget] resizeWidgetAnimated:animated forContentViewController:self];
 	
-	UITableView *tableView = self.tableView;
-	if (!animated) {
-		[self reload];
-	} else {
-		[tableView insertRowsAtIndexPaths:indexPaths withRowAnimation:UITableViewRowAnimationTop];
-	}
+	[self configureFirstResponder];
 }
 
 - (PWWidgetItem *)addItemNamed:(NSString *)name {
@@ -485,22 +487,22 @@ static NSNumberFormatter *numberFormatter = nil;
 	
 	[self _updateItemsShouldFillHeight];
 	
-	// resize widget
-	[[PWController activeWidget] resizeWidgetAnimated:animated forContentViewController:self];
-	
 	// inert a row in sheet table view
 	UITableView *tableView = self.tableView;
 	if (animated) {
-		[tableView deleteRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:index inSection:0]] withRowAnimation:UITableViewRowAnimationTop];
-	} else {
-		[self reload];
+		applyFadeTransition(tableView, 0.3);
 	}
+	[tableView reloadData];
+	
+	// resize widget
+	[[PWController activeWidget] resizeWidgetAnimated:animated forContentViewController:self];
 	
 	// first responder lost
 	if (isFirstResponder) {
 		_lastFirstResponder = nil;
-		[self configureFirstResponder];
 	}
+	
+	[self configureFirstResponder];
 }
 
 // private method: check bounds
@@ -624,7 +626,7 @@ static NSNumberFormatter *numberFormatter = nil;
 	
 	if (_pendingFirstResponder != nil && item == _pendingFirstResponder) {
 		_pendingFirstResponder = nil;
-		if ([itemCell contentCanBecomeFirstResponder]) {
+		if ([itemCell.class contentCanBecomeFirstResponder]) {
 			[itemCell contentSetFirstResponder];
 		}
 	}

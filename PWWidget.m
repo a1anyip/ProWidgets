@@ -215,8 +215,14 @@
 }
 
 - (void)setViewControllers:(NSArray *)viewControllers animated:(BOOL)animated {
+	
 	if (self.topViewController == nil) animated = NO;
-	[_navigationController setViewControllers:viewControllers animated:animated];
+	
+	if (animated) {
+		applyFadeTransition(_navigationController.view, .3);
+	}
+	
+	[_navigationController setViewControllers:viewControllers animated:NO];
 }
 
 - (void)pushViewController:(UIViewController *)viewController {
@@ -302,10 +308,10 @@
 	
 	// fix weird bug in iOS 7
 	UINavigationBar *navigationBar = navigationController.navigationBar;
+	[navigationBar.layer removeAllAnimations];
 	CGRect rect = navigationBar.frame;
 	rect.origin.y = 0.0;
 	navigationBar.frame = rect;
-	[navigationBar.layer removeAllAnimations];
 	
 	// call internal method
 	if ([viewController isKindOfClass:[PWContentViewController class]]) {

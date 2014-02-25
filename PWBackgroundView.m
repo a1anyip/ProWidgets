@@ -43,16 +43,17 @@
 
 - (void)createMask {
 	
+	if (_mask == nil) {
+		_mask = [[CAShapeLayer layer] retain];
+		_mask.fillRule = kCAFillRuleEvenOdd;
+		_mask.fillColor = [UIColor blackColor].CGColor;
+	}
+	
+	// update frame
+	_mask.frame = self.bounds;
+	
 	if (self.layer.mask == nil) {
-		
-		// set path
-		CAShapeLayer *mask = [CAShapeLayer layer];
-		mask.frame = self.bounds;
-		mask.fillRule = kCAFillRuleEvenOdd;
-		mask.fillColor = [UIColor blackColor].CGColor;
-		
-		// update mask
-		self.layer.mask = mask;
+		self.layer.mask = _mask;
 	}
 }
 
@@ -67,7 +68,7 @@
 	// to ensure the mask is created
 	[self createMask];
 	
-	CAShapeLayer *mask = (CAShapeLayer *)self.layer.mask;
+	CAShapeLayer *mask = _mask;
 	
 	// to rect
 	CGRect toRect = rect;
@@ -121,8 +122,16 @@
 		[CATransaction begin];
 		[CATransaction setAnimationDuration:PWAnimationDuration];
 		[CATransaction setAnimationTimingFunction:function];
+		
+		// to make sure no
+		__block CAShapeLayer *blockMask = [_mask retain];
+		__block CGPathRef blockToCGPath = CGPathRetain(toCGPath);
 		[CATransaction setCompletionBlock:^{
-			mask.path = toCGPath;
+			if (blockMask != nil && blockToCGPath != NULL) {
+				blockMask.path = blockToCGPath;
+			}
+			CGPathRelease(blockToCGPath), blockToCGPath = NULL;
+			[blockMask release], blockMask = nil;
 		}];
 		
 		CABasicAnimation *pathAnimation = [CABasicAnimation animationWithKeyPath:@"path"];
@@ -138,9 +147,15 @@
 		_shouldAnimateTransform = NO;
 		
 	} else {
-		
 		mask.path = toCGPath;
 	}
+}
+
+- (void)dealloc {
+	DEALLOCLOG;
+	self.layer.mask = nil;
+	RELEASE(_mask)
+	[super dealloc];
 }
 
 @end
