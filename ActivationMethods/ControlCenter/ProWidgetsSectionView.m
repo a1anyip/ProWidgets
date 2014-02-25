@@ -86,7 +86,7 @@ static char SBControlCenterButtonWidgetBundleKey;
 	
 	iconPerPage = MAX(1, iconPerPage);
 	
-	// load all available widgets
+	// load all visible widgets
 	PWController *controller = [PWController sharedInstance];
 	NSArray *widgets = [controller visibleWidgets];
 	NSUInteger count = [widgets count];
@@ -133,15 +133,15 @@ static char SBControlCenterButtonWidgetBundleKey;
 		// create a button
 		SBControlCenterButton *button = [objc_getClass("SBControlCenterButton") roundRectButtonWithGlyphImage:image];
 		button.delegate = self;
-		button.sortKey = @(currentIcon);
+		button.sortKey = @(++currentIcon);
 		[currentPage addButton:button];
 		
 		objc_setAssociatedObject(button, &SBControlCenterButtonWidgetBundleKey, bundle, OBJC_ASSOCIATION_RETAIN);
 		
-		if (++currentIcon == iconPerPage) {
+		if (currentIcon == iconPerPage) {
 			
 			// reset
-			currentIcon = 1;
+			currentIcon = 0;
 			currentPageIndex++;
 			
 			if (currentPageIndex <= pageCount) {

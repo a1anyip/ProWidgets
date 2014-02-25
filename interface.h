@@ -13,6 +13,7 @@
 @interface MFComposeRecipient : NSObject
 
 @property(nonatomic, readonly) NSString *address;
+@property(nonatomic, readonly) NSString *rawAddress;
 @property(nonatomic, readonly) NSString *compositeName;
 @property(nonatomic, readonly) NSString *shortName;
 

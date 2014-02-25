@@ -23,13 +23,6 @@
 	return [PWWidgetItemRecipientCell class];
 }
 
-- (instancetype)init {
-	if ((self = [super init])) {
-		
-	}
-	return self;
-}
-
 - (BOOL)isSelectable {
 	return YES;
 }
@@ -40,10 +33,10 @@
 		_recipientController = [PWWidgetItemRecipientController new];
 		_recipientController.title = _titleWithoutColon;
 		_recipientController.delegate = self;
+		_recipientController.recipients = self.recipients;
 		RELEASE(_titleWithoutColon)
 	}
 	
-	[_recipientController setRecipients:self.value];
 	[[PWController activeWidget] pushViewController:_recipientController animated:YES];
 }
 
@@ -68,38 +61,123 @@
 	
 	if (![value isKindOfClass:[NSArray class]]) return;
 	
-	[_value release];
-	_value = [value copy];
+	[super setValue:value];
 	
 	if (_recipientController != nil) {
-		[_recipientController setRecipients:_value];
+		NSMutableArray *recipients = [NSMutableArray array];
+		for (NSDictionary *value in self.value) {
+			MFComposeRecipient *recipient = value[@"recipient"];
+			if (recipient != nil && ![recipients containsObject:recipient]) {
+				[recipients addObject:recipient];
+			}
+		}
+		[_recipientController setRecipients:recipients];
 	}
+}
+
+- (NSArray *)addresses {
+	NSMutableArray *addresses = [NSMutableArray array];
+	for (NSDictionary *value in self.value) {
+		NSString *address = value[@"address"];
+		if (address != nil) {
+			[addresses addObject:address];
+		}
+	}
+	return addresses;
+}
+
+- (void)setAddresses:(NSArray *)addresses {
+	CKRecipientGenerator *generator = [CKRecipientGenerator sharedRecipientGenerator];
+	NSMutableArray *recipients = [NSMutableArray array];
+	for (NSString *address in addresses) {
+		id recipient = [generator recipientWithAddress:address];
+		if (recipient != nil && ![recipients containsObject:recipient]) {
+			[recipients addObject:recipient];
+		}
+	}
+	[self setRecipients:recipients];
+}
+
+- (void)addAddress:(NSString *)address {
 	
-	[super setValue:value];
+	if (address == nil) return;
+	
+	NSMutableArray *addresses = (NSMutableArray *)self.addresses;
+	if (![addresses containsObject:address]) {
+		[addresses addObject:address];
+		[self setAddresses:addresses];
+	}
+}
+
+- (void)removeAddress:(NSString *)address {
+	
+	if (address == nil) return;
+	
+	NSMutableArray *addresses = (NSMutableArray *)self.addresses;
+	if ([addresses containsObject:address]) {
+		[addresses removeObject:address];
+		[self setAddresses:addresses];
+	}
 }
 
 - (NSArray *)recipients {
-	return (NSArray *)self.value;
+	NSMutableArray *recipients = nil;
+	if (_recipientController == nil) {
+		recipients = [NSMutableArray array];
+		for (NSDictionary *value in self.value) {
+			MFComposeRecipient *recipient = value[@"recipient"];
+			if (recipient != nil && ![recipients containsObject:recipient]) {
+				[recipients addObject:recipient];
+			}
+		}
+	} else {
+		recipients = [[_recipientController.recipients mutableCopy] autorelease];
+	}
+	return recipients == nil ? [NSMutableArray array] : recipients;
 }
 
 - (void)setRecipients:(NSArray *)recipients {
-	[self setValue:recipients];
+	
+	if (![recipients isKindOfClass:[NSArray class]]) return;
+	
+	NSMutableArray *itemValue = [NSMutableArray array];
+	for (MFComposeRecipient *recipient in recipients) {
+		if (![recipient isKindOfClass:[MFComposeRecipient class]]) continue;
+		NSString *name = recipient.compositeName;
+		NSString *address = recipient.rawAddress; // no space
+		NSString *formattedAddress = recipient.address; // formatted
+		if (name == nil) name = @"";
+		if (address == nil) address = @"";
+		if (formattedAddress == nil) formattedAddress = @"";
+		[itemValue addObject:@{ @"name": name, @"address": address, @"formattedAddress": formattedAddress, @"recipient": recipient }];
+	}
+	
+	if (_recipientController != nil) {
+		[_recipientController setRecipients:recipients];
+	}
+	
+	[super setValue:itemValue];
 }
 
 - (void)addRecipient:(MFComposeRecipient *)recipient {
-	if (_recipientController == nil) {
-		if (![self.value containsObject:recipient])
-			[self.value addObject:recipient];
-	} else {
-		[_recipientController addRecipient:recipient]; // this will also trigger the value change in this instance
+	
+	if (recipient == nil) return;
+	
+	NSMutableArray *recipients = (NSMutableArray *)self.recipients;
+	if (![recipients containsObject:recipient]) {
+		[recipients addObject:recipient];
+		[self setRecipients:recipients];
 	}
 }
 
 - (void)removeRecipient:(MFComposeRecipient *)recipient {
-	if (_recipientController == nil) {
-		[self.value removeObject:recipient];
-	} else {
-		[_recipientController removeRecipient:recipient]; // this will also trigger the value change in this instance
+	
+	if (recipient == nil) return;
+	
+	NSMutableArray *recipients = (NSMutableArray *)self.recipients;
+	if ([recipients containsObject:recipient]) {
+		[recipients removeObject:recipient];
+		[self setRecipients:recipients];
 	}
 }
 
@@ -107,7 +185,7 @@
 	
 	// update value
 	NSDictionary *oldValue = [[self.value copy] autorelease];
-	[super setValue:recipients];
+	[self setRecipients:recipients];
 	
 	LOG(@"PWWidgetItemRecipient: recipientsChanged: (new: %@, old: %@)", self.value, oldValue);
 	
@@ -163,7 +241,8 @@
 - (void)setValue:(NSArray *)value {
 	CGFloat maxWidth = self.detailTextLabel.bounds.size.width;
 	UIFont *font = self.detailTextLabel.font;
-	NSString *text = [PWWidgetItemRecipientController displayTextForRecipients:value maxWidth:maxWidth font:font];
+	NSArray *recipients = [(PWWidgetItemRecipient *)self.item recipients];
+	NSString *text = [PWWidgetItemRecipientController displayTextForRecipients:recipients maxWidth:maxWidth font:font];
 	self.detailTextLabel.text = text;
 	[self setNeedsLayout]; // this line is important to instantly reflect the new value
 }

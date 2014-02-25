@@ -96,8 +96,11 @@ extern char PWWidgetItemRecipientTableViewCellRecipientKey;
 
 - (void)resetState {
 	
+	UITextField *textField = self.recipientView.textField;
 	UITableView *recipientTableView = self.recipientView.recipientTableView;
 	UITableView *searchResultTableView = self.recipientView.searchResultTableView;
+	
+	textField.text = @""; // clear text
 	
 	recipientTableView.alpha = 1.0;
 	searchResultTableView.alpha = 0.0;
@@ -105,6 +108,15 @@ extern char PWWidgetItemRecipientTableViewCellRecipientKey;
 	[_searchResults release], _searchResults = nil;
 	[recipientTableView reloadData];
 	[searchResultTableView reloadData];
+	
+	// scroll to bottom
+	if ([_recipients count] > 0) {
+		NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[_recipients count] - 1 inSection:0];
+		[recipientTableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionBottom animated:NO];
+	}
+	
+	// scroll to top
+	[searchResultTableView setContentOffset:CGPointZero animated:NO];
 }
 
 - (BOOL)recipientExists:(MFComposeRecipient *)recipient {
@@ -116,6 +128,9 @@ extern char PWWidgetItemRecipientTableViewCellRecipientKey;
 }
 
 - (void)setRecipients:(NSArray *)recipients {
+	if (_recipients != nil && [_recipients isEqual:recipients]) {
+		return;
+	}
 	[_recipients release];
 	_recipients = [recipients mutableCopy];
 	[self updateRecipients];
@@ -140,6 +155,13 @@ extern char PWWidgetItemRecipientTableViewCellRecipientKey;
 	UITableView *recipientTableView = self.recipientView.recipientTableView;
 	[self updateSearchResults:nil];
 	[recipientTableView reloadData];
+	applyFadeTransition(recipientTableView, .1);
+	
+	// scroll to bottom
+	if ([_recipients count] > 0) {
+		NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[_recipients count] - 1 inSection:0];
+		[recipientTableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionBottom animated:NO];
+	}
 	
 	// notify delegate
 	if (_delegate != nil) {
@@ -170,6 +192,9 @@ extern char PWWidgetItemRecipientTableViewCellRecipientKey;
 		
 		[searchResultTableView reloadData];
 	}
+	
+	// scroll to top
+	[searchResultTableView setContentOffset:CGPointZero animated:NO];
 }
 
 - (void)willBePresentedInNavigationController:(UINavigationController *)navigationController {

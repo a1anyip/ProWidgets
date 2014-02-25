@@ -172,7 +172,7 @@
 			requiresUpdate = YES;
 			[self showWarningAtRow:i];
 			
-		} else if (period > warningPeriod && time == (period - warningPeriod)) {
+		} else if (period > warningPeriod && time >= (period - warningPeriod)) {
 			
 			// set text color
 			[self showWarningAtRow:i];
