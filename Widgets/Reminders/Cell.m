@@ -109,12 +109,17 @@ char PWWidgetRemindersTableViewCellReminderKey;
 	if (_listColor == nil || ![_listColor isEqual:color]) {
 		[_listColor release];
 		_listColor = [color retain];
+		
+		UIColor *darkerColor = [PWTheme darkenColor:color];
+		
 		// retrieve the images
 		UIImage *normal = [[PWController activeWidget] imageNamed:@"buttonNormal"];
 		UIImage *pressed = [[PWController activeWidget] imageNamed:@"buttonPressed"];
+		
 		// tint the images
-		normal = [PWTheme tintImage:normal withColor:color];
-		pressed = [PWTheme tintImage:pressed withColor:color];
+		normal = [PWTheme tintImage:normal withColor:darkerColor];
+		pressed = [PWTheme tintImage:pressed withColor:darkerColor];
+		
 		// configure the button
 		[_button setImage:normal forState:UIControlStateNormal];
 		[_button setImage:pressed forState:UIControlStateHighlighted];

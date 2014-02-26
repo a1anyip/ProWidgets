@@ -33,9 +33,21 @@
 - (void)willBePresentedInNavigationController:(UINavigationController *)navigationController {
 	
 	PWWidgetItemWebView *item = (PWWidgetItemWebView *)[self itemWithKey:@"webView"];
-	[item loadHTMLString:self.content baseURL:nil];
+	NSString *content = nil;
 	
-	[_content release], _content = nil; // don't change the title
+	// adjust the text and separator color
+	UIColor *textColor = [[PWController activeTheme] cellTitleTextColor];
+	UIColor *separatorColor = [[PWController activeTheme] cellSeparatorColor];
+	NSString *textRGBA = [PWTheme RGBAFromColor:textColor];
+	NSString *separatorRGBA = [PWTheme RGBAFromColor:separatorColor];
+	if (textRGBA != nil && separatorRGBA != nil) {
+		content = [NSString stringWithFormat:@"%@<style>* { color:%@ !important; background:none !important; border-color:%@ !important;  }</style>", _content, textRGBA, separatorRGBA];
+	} else {
+		content = _content;
+	}
+	
+	[item loadHTMLString:content baseURL:nil];
+	[_content release], _content = nil;
 }
 
 - (void)dealloc {

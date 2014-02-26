@@ -47,6 +47,8 @@
 - (UIImage *)imageNamed:(NSString *)name withCapInsets:(UIEdgeInsets)insets;
 
 + (UIColor *)parseColorString:(NSString *)string;
++ (NSString *)hexCodeFromColor:(UIColor *)color;
++ (NSString *)RGBAFromColor:(UIColor *)color;
 + (UIImage *)imageFromColor:(UIColor *)color;
 + (UIImage *)tintImage:(UIImage *)image withColor:(UIColor *)color;
 + (UIColor *)adjustColorBrightness:(UIColor *)color colorAdjustment:(CGFloat)adjustment alphaMultiplier:(CGFloat)alphaMultiplier;

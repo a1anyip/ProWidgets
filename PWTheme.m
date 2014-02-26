@@ -224,6 +224,44 @@ static NSDictionary *supportedColorString = nil;
 	return nil;
 }
 
++ (NSString *)hexCodeFromColor:(UIColor *)color {
+	
+	CGFloat r, g, b;
+	if ([color getRed:&r green:&g blue:&b alpha:NULL]) {
+		unsigned int rint = (unsigned int)(r * 255);
+		unsigned int gint = (unsigned int)(g * 255);
+		unsigned int bint = (unsigned int)(b * 255);
+		return [NSString stringWithFormat:@"%02x%02x%02x", rint, gint, bint];
+	}
+	
+	CGFloat w;
+	if ([color getWhite:&w alpha:NULL]) {
+		unsigned int wint = (unsigned int)(w * 255);
+		return [NSString stringWithFormat:@"%02x%02x%02x", wint, wint, wint];
+	}
+	
+	return nil;
+}
+
++ (NSString *)RGBAFromColor:(UIColor *)color {
+	
+	CGFloat r, g, b, a;
+	if ([color getRed:&r green:&g blue:&b alpha:&a]) {
+		unsigned int rint = (unsigned int)(r * 255);
+		unsigned int gint = (unsigned int)(g * 255);
+		unsigned int bint = (unsigned int)(b * 255);
+		return [NSString stringWithFormat:@"rgba(%u, %u, %u, %f)", rint, gint, bint, a];
+	}
+	
+	CGFloat w;
+	if ([color getWhite:&w alpha:&a]) {
+		unsigned int wint = (unsigned int)(w * 255);
+		return [NSString stringWithFormat:@"rgba(%u, %u, %u, %f)", wint, wint, wint, a];
+	}
+	
+	return nil;
+}
+
 + (UIImage *)imageFromColor:(UIColor *)color {
 	
 	CGRect rect = CGRectMake(0.0f, 0.0f, 1.0f, 1.0f);
