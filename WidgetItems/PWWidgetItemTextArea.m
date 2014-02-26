@@ -111,6 +111,11 @@
 		[_textView becomeFirstResponder];
 }
 
+- (void)contentResignFirstResponder {
+	if (_textView.superview != nil)
+		[_textView resignFirstResponder];
+}
+
 //////////////////////////////////////////////////////////////////////
 
 - (void)dealloc {

@@ -1,5 +1,5 @@
 BUNDLE_NAME = Notes
-Notes_FILES = Notes.m
+Notes_FILES = Notes.m Add.m List.m
 Notes_INSTALL_PATH = /Library/ProWidgets/Widgets/
 Notes_FRAMEWORKS = UIKit CoreGraphics QuartzCore
 Notes_PRIVATE_FRAMEWORKS = Notes

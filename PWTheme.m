@@ -279,11 +279,11 @@ static NSDictionary *supportedColorString = nil;
 }
 
 + (UIColor *)darkenColor:(UIColor *)color {
-	return [self adjustColorBrightness:color colorAdjustment:10/255.0 alphaMultiplier:1.0];
+	return [self adjustColorBrightness:color colorAdjustment:-30/255.0 alphaMultiplier:1.0];
 }
 
 + (UIColor *)lightenColor:(UIColor *)color {
-	return [self adjustColorBrightness:color colorAdjustment:10/255.0 alphaMultiplier:1.0];
+	return [self adjustColorBrightness:color colorAdjustment:30/255.0 alphaMultiplier:1.0];
 }
 
 + (UIColor *)translucentColor:(UIColor *)color {
