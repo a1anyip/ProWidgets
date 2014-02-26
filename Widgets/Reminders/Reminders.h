@@ -19,8 +19,8 @@
 	NSArray *_overviewViewControllers;
 }
 
-+ (NSString *)parseDate:(NSDate *)date allDay:(BOOL)allDay shortForm:(BOOL)shortForm;
-+ (NSUInteger)calculateDayDifference:(NSDate *)fromDate toDate:(NSDate *)toDate;
+- (NSString *)parseDate:(NSDate *)date allDay:(BOOL)allDay shortForm:(BOOL)shortForm;
+- (NSUInteger)calculateDayDifference:(NSDate *)fromDate toDate:(NSDate *)toDate;
 
 - (EKEventStore *)eventStore;
 - (NSDateFormatter *)dateFormatter;

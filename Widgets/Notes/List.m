@@ -9,15 +9,16 @@
 
 #import "List.h"
 #import "Notes.h"
+#import "Cell.h"
+#import "Content.h"
 #import "PWContentViewController.h"
 #import "PWThemableTableView.h"
-#import "PWThemableTableViewCell.h"
 
 @implementation PWWidgetNotesListViewController
 
 - (void)load {
 	
-	self.shouldAutoConfigureStandardButtons = YES;
+	self.shouldAutoConfigureStandardButtons = NO;
 	self.shouldMaximizeContentHeight = YES;
 	
 	self.tableView.delegate = self;
@@ -32,11 +33,17 @@
 	self.view = [[[PWThemableTableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain] autorelease];
 }
 
+- (NoteContext *)noteContext {
+	PWWidgetNotes *widget = (PWWidgetNotes *)[PWController activeWidget];
+	return widget.noteContext;
+}
+
 - (UITableView *)tableView {
 	return (UITableView *)self.view;
 }
 
 - (void)willBePresentedInNavigationController:(UINavigationController *)navigationController {
+	[self configureCloseButton];
 	[self loadNotes];
 	[self setHandlerForEvent:[PWContentViewController titleTappedEventName] target:self selector:@selector(titleTapped)];
 }
@@ -54,6 +61,19 @@
 	return 50.0;
 }
 
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+	
+	unsigned int row = [indexPath row];
+	NoteObject *note = _notes[row];
+	
+	PWWidgetNotesContentViewController *controller = [[[PWWidgetNotesContentViewController alloc] initWithNote:note] autorelease];
+	controller.listViewController = self;
+	[[PWController activeWidget] pushViewController:controller animated:YES];
+	
+	// deselect the cell
+	[tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
+
 - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
 	return YES;
 }
@@ -69,13 +89,11 @@
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
 	
 	unsigned int row = [indexPath row];
-	
 	if (row >= [_notes count]) return;
 	
-	id note = _notes[row];
-	LOG(@"note: %@", note);
+	NoteObject *note = _notes[row];
+	[self removeNote:note];
 }
-
 
 //////////////////////////////////////////////////////////////////////
 
@@ -93,15 +111,21 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
 	
-	//unsigned int row = [indexPath row];
+	unsigned int row = [indexPath row];
 	
 	NSString *identifier = @"PWWidgetNotesTableViewCell";
-	PWThemableTableViewCell *cell = (PWThemableTableViewCell *)[tableView dequeueReusableCellWithIdentifier:identifier];
+	PWWidgetNotesTableViewCell *cell = (PWWidgetNotesTableViewCell *)[tableView dequeueReusableCellWithIdentifier:identifier];
 	
 	if (!cell) {
-		cell = [[[PWThemableTableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:identifier] autorelease];
+		cell = [[[PWWidgetNotesTableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:identifier] autorelease];
 	}
 	
+	NoteObject *note = _notes[row];
+	NSString *title = note.title;
+	NSDate *modificationDate = note.modificationDate;
+	
+	[cell setTitle:title];
+	[cell setDate:modificationDate];
 	
 	return cell;
 }
@@ -109,9 +133,22 @@
 - (void)loadNotes {
 	
 	dispatch_async(dispatch_get_global_queue(0, 0), ^{
-		
-		
+		NoteContext *context = self.noteContext;
+		NSArray *allNotes = [context allVisibleNotes]; // an array of NoteObject
+		[_notes release];
+		_notes = [allNotes copy];
+		dispatch_async(dispatch_get_main_queue(), ^{
+			[self.tableView reloadData];
+			applyFadeTransition(self.tableView, .2);
+		});
 	});
+}
+
+- (void)removeNote:(NoteObject *)note {
+	NoteContext *context = self.noteContext;
+	[context deleteNote:note];
+	[context saveOutsideApp:NULL];
+	[self loadNotes];
 }
 
 - (void)dealloc {

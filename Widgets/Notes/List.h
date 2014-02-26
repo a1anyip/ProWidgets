@@ -14,8 +14,10 @@
 	NSMutableArray *_notes;
 }
 
+- (NoteContext *)noteContext;
 - (UITableView *)tableView;
 
 - (void)loadNotes;
+- (void)removeNote:(NoteObject *)note;
 
 @end

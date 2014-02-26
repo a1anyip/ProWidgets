@@ -11,6 +11,7 @@
 
 @interface PWWidgetNotes : PWWidget {
 	
+	NoteContext *_noteContext;
 	NSDateFormatter *_dateFormatter;
 	
 	PWWidgetNotesInterface _currentInterface;
@@ -18,6 +19,10 @@
 	NSArray *_listViewControllers;
 }
 
+- (NSString *)parseDate:(NSDate *)date;
+- (NSUInteger)calculateDayDifference:(NSDate *)fromDate toDate:(NSDate *)toDate;
+
+- (NoteContext *)noteContext;
 - (NSDateFormatter *)dateFormatter;
 
 - (void)switchToAddInterface;

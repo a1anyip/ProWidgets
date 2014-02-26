@@ -7,11 +7,14 @@
 // Notes.framework
 @interface NoteContext : NSObject
 
+- (NSArray *)allVisibleNotes;
+
 - (id)managedObjectContext;
 - (id)defaultStoreForNewNote;
 - (id)allStores;
 - (id)nextIndex;
-- (void)enableChangeLogging:(BOOL)arg1;
+- (void)enableChangeLogging:(BOOL)enabled;
+- (void)deleteNote:(id)note;
 - (BOOL)save:(NSError **)error;
 - (BOOL)saveOutsideApp:(NSError **)error;
 
@@ -34,11 +37,15 @@
 
 @property(retain, nonatomic) id store;
 @property(retain, nonatomic) id integerId;
-@property(retain, nonatomic) id title;
-@property(retain, nonatomic) id summary;
+@property(retain, nonatomic) NSString *title;
+@property(retain, nonatomic) NSString *summary;
 @property(retain, nonatomic) id body;
-@property(retain, nonatomic) id creationDate;
-@property(retain, nonatomic) id modificationDate;
+@property(retain, nonatomic) NSDate *creationDate;
+@property(retain, nonatomic) NSDate *modificationDate;
+@property(retain, nonatomic) NSString *content;
+
+- (NSString *)contentAsPlainText;
+- (NSString *)contentAsPlainTextPreservingNewlines;
 
 @end
 

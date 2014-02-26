@@ -224,18 +224,18 @@ static NSDateFormatter *dateFormatter = nil;
 		[dateFormatter setTimeStyle:NSDateFormatterShortStyle];
 	} else if (mode == UIDatePickerModeDate) {
 		// only date
-		[dateFormatter setDateStyle:NSDateFormatterLongStyle];
+		[dateFormatter setDateStyle:NSDateFormatterMediumStyle]; // changed from long to medium
 		[dateFormatter setTimeStyle:NSDateFormatterNoStyle];
 	} else if (mode == UIDatePickerModeDateAndTime) {
 		// date and time
-		[dateFormatter setDateStyle:NSDateFormatterLongStyle];
+		[dateFormatter setDateStyle:NSDateFormatterMediumStyle]; // changed from long to medium
 		[dateFormatter setTimeStyle:NSDateFormatterShortStyle];
 	}
 	
 	if (hideDateText) [dateFormatter setDateStyle:NSDateFormatterNoStyle];
 	if (hideTimeText) [dateFormatter setTimeStyle:NSDateFormatterNoStyle];
 	
-	self.detailTextLabel.text = [dateFormatter stringForObjectValue:value];
+	self.detailTextLabel.text = [dateFormatter stringFromDate:value];
 }
 
 + (BOOL)contentCanBecomeFirstResponder {

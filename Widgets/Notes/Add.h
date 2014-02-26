@@ -14,6 +14,7 @@
 	NSArray *_stores;
 }
 
+- (NoteContext *)noteContext;
 - (void)fetchStores;
 
 @end

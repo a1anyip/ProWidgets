@@ -16,7 +16,7 @@
 @implementation PWWidgetReminders
 
 // Short form: don't include date if there is day of week available
-+ (NSString *)parseDate:(NSDate *)date allDay:(BOOL)allDay shortForm:(BOOL)shortForm {
+- (NSString *)parseDate:(NSDate *)date allDay:(BOOL)allDay shortForm:(BOOL)shortForm {
 	
 	NSInteger dayDifference = [self calculateDayDifference:[NSDate date] toDate:date];
 	
@@ -24,11 +24,10 @@
 	NSString *result = nil;
 	
 	// parse the date
-	NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
+	NSDateFormatter *dateFormat = self.dateFormatter;
 	[dateFormat setLocale:[NSLocale currentLocale]];
 	dateFormat.dateFormat = [NSString stringWithFormat:@"%@|%@|%@", localizedDateFormat(@"HH:mm"), localizedDateFormat(@"MMM d"), localizedDateFormat(@"ccc")];
 	NSString *formattedDate = [dateFormat stringFromDate:date];
-	[dateFormat release];
 	
 	// split the text into three different parts
 	NSArray *formatttedDateParts = [formattedDate componentsSeparatedByString:@"|"];
@@ -77,7 +76,7 @@
 	return result == nil ? @"" : result;
 }
 
-+ (NSUInteger)calculateDayDifference:(NSDate *)fromDate toDate:(NSDate *)toDate {
+- (NSUInteger)calculateDayDifference:(NSDate *)fromDate toDate:(NSDate *)toDate {
 	
 	NSCalendar* calendar = [NSCalendar currentCalendar];
 	NSCalendarUnit units = NSYearCalendarUnit | NSMonthCalendarUnit | NSDayCalendarUnit;

@@ -24,6 +24,11 @@
 	[self setHandlerForEvent:[PWContentViewController titleTappedEventName] target:self selector:@selector(titleTapped)];
 }
 
+- (NoteContext *)noteContext {
+	PWWidgetNotes *widget = (PWWidgetNotes *)[PWController activeWidget];
+	return widget.noteContext;
+}
+
 - (void)titleTapped {
 	PWWidgetNotes *widget = (PWWidgetNotes *)[PWController activeWidget];
 	[widget switchToListInterface];
@@ -32,11 +37,10 @@
 - (void)fetchStores {
 	
 	// fetch all calendars
-	NoteContext *noteContext = [objc_getClass("NoteContext") new];
+	NoteContext *noteContext = self.noteContext;
 	NSArray *stores = [noteContext allStores];
 	
 	if ([stores count] == 0) {
-		[noteContext release];
 		[[PWController activeWidget] showMessage:@"You need at least one store to save notes." title:nil handler:^{
 			[[PWController activeWidget] dismiss];
 		}];
@@ -66,8 +70,9 @@
 	[item setValue:@[@(0)]];
 	
 	_stores = [stores retain];
-	[noteContext release];
 }
+
+#define REPLACE(a,b,c) a = [a stringByReplacingOccurrencesOfString:b withString:c];
 
 - (void)submitEventHandler:(NSDictionary *)values {
 	
@@ -104,8 +109,7 @@
 	summary = [summary stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
 	
 	// initialize note objects
-	NoteContext *noteContext = [[objc_getClass("NoteContext") alloc] init];
-	[noteContext enableChangeLogging:YES]; // enable iCloud syncronization support
+	NoteContext *noteContext = self.noteContext;
 	NSManagedObjectContext *context = [noteContext managedObjectContext];
 	
 	// store
@@ -116,7 +120,14 @@
 	NoteBodyObject *body = [objc_getClass("NSEntityDescription") insertNewObjectForEntityForName:@"NoteBody" inManagedObjectContext:context];
 	
 	// set body parameters
-	body.content = [[content stringByReplacingOccurrencesOfString:@"\n" withString:@"<br/>"] stringByReplacingOccurrencesOfString:@" " withString:@"&nbsp;"]; // Notes app requires HTML code to show wrapped lines
+	NSString *bodyContent = content;
+	
+	REPLACE(bodyContent, @"<", @"&lt;")
+	REPLACE(bodyContent, @">", @"&gt;")
+	REPLACE(bodyContent, @" ", @"&nbsp;")
+	REPLACE(bodyContent, @"\n", @"<br>")
+	
+	body.content = bodyContent;
 	body.owner = note; // reference to NoteObject
 	
 	// set note parameters
@@ -130,10 +141,12 @@
 	
 	// save it
 	[noteContext saveOutsideApp:NULL];
-	[noteContext release];
 	
+	// dismiss the widget
 	[[PWController activeWidget] dismiss];
 }
+
+#undef REPLACE
 
 - (void)dealloc {
 	RELEASE(_stores)

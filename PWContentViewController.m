@@ -16,6 +16,10 @@
 
 @implementation PWContentViewController
 
++ (NSString *)actionEventName {
+	return @"PWContentViewControllerActionEvent";
+}
+
 + (NSString *)titleTappedEventName {
 	return @"PWContentViewControllerTitleTappedEvent";
 }
@@ -129,8 +133,9 @@
 	[[PWController sharedInstance] _dismissWidget];
 }
 
-// a sub class of PWContentViewController may override this method to do its own action
-- (void)triggerAction {}
+- (void)triggerAction {
+	[self triggerEvent:[self.class actionEventName] withObject:nil];
+}
 
 - (void)triggerEvent:(NSString *)event withObject:(id)object {
 	
@@ -181,6 +186,14 @@
 - (void)setShouldMaximizeContentHeight:(BOOL)shouldMaximizeContentHeight {
 	if (_shouldMaximizeContentHeight != shouldMaximizeContentHeight) {
 		_shouldMaximizeContentHeight = shouldMaximizeContentHeight;
+		PWWidget *widget = [PWController activeWidget];
+		[widget resizeWidgetAnimated:YES forContentViewController:self];
+	}
+}
+
+- (void)setRequiresKeyboard:(BOOL)requiresKeyboard {
+	if (_requiresKeyboard != requiresKeyboard) {
+		_requiresKeyboard = requiresKeyboard;
 		PWWidget *widget = [PWController activeWidget];
 		[widget resizeWidgetAnimated:YES forContentViewController:self];
 	}

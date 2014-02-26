@@ -71,7 +71,7 @@ char PWWidgetRemindersTableViewCellReminderKey;
 	NSString *repeatText = nil;
 	
 	// convert date to readable string
-	dateText = [PWWidgetReminders parseDate:alarmDate allDay:NO shortForm:YES];
+	dateText = [(PWWidgetReminders *)[PWController activeWidget] parseDate:alarmDate allDay:NO shortForm:YES];
 	
 	// convert recurrence rule to string
 	EKRecurrenceFrequency frequency = recurrenceRule.frequency;

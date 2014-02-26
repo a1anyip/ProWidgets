@@ -35,6 +35,7 @@
 @property(nonatomic, copy) NSString *closeButtonText;
 @property(nonatomic, copy) NSString *actionButtonText;
 
++ (NSString *)actionEventName;
 + (NSString *)titleTappedEventName;
 
 // for subclass
