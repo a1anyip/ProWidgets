@@ -239,23 +239,55 @@ static NSDictionary *supportedColorString = nil;
 	return image;
 }
 
-+ (UIColor *)adjustColorBrightness:(UIColor *)color adjustment:(CGFloat)adjustment {
-	CGFloat h, s, b, a;
-	if ([color getHue:&h saturation:&s brightness:&b alpha:&a]) {
-		return [UIColor colorWithHue:h
-						  saturation:s
-						  brightness:MIN(MAX(0.0, b * adjustment), 1.0)
-							   alpha:a];
++ (UIImage *)tintImage:(UIImage *)image withColor:(UIColor *)color {
+	
+	CGRect rect = CGRectMake(0, 0, image.size.width, image.size.height);
+	
+	UIGraphicsBeginImageContextWithOptions(rect.size, NO, image.scale);
+	CGContextRef context = UIGraphicsGetCurrentContext();
+	
+	CGAffineTransform transform = CGAffineTransformIdentity;
+	transform = CGAffineTransformScale(transform, 1.0, -1.0);
+	transform = CGAffineTransformTranslate(transform, 0.0, -image.size.height);
+	CGContextConcatCTM(context, transform);
+	
+	CGRect flippedRect = CGRectApplyAffineTransform(rect, transform);
+	
+	CGContextSetBlendMode(context, kCGBlendModeNormal);
+	[color setFill];
+	CGContextFillRect(context, flippedRect);
+	CGContextSetBlendMode(context, kCGBlendModeDestinationIn);
+	CGContextDrawImage(context, flippedRect, image.CGImage);
+	
+	UIImage *result = UIGraphicsGetImageFromCurrentImageContext();
+	UIGraphicsEndImageContext();
+	
+	return result;
+}
+
++ (UIColor *)adjustColorBrightness:(UIColor *)color colorAdjustment:(CGFloat)adjustment alphaMultiplier:(CGFloat)alphaMultiplier {
+#define ADJUST(x) (MAX(0.0, MIN((x) + adjustment, 1.0)))
+	CGFloat r, g, b, a;
+	if ([color getRed:&r green:&g blue:&b alpha:&a]) {
+		return [UIColor colorWithRed:ADJUST(r)
+							   green:ADJUST(g)
+								blue:ADJUST(b)
+							   alpha:MAX(0.0, MIN(a * alphaMultiplier, 1.0))];
 	}
+#undef ADJUST
 	return color;
 }
 
 + (UIColor *)darkenColor:(UIColor *)color {
-	return [self adjustColorBrightness:color adjustment:0.8];
+	return [self adjustColorBrightness:color colorAdjustment:10/255.0 alphaMultiplier:1.0];
 }
 
 + (UIColor *)lightenColor:(UIColor *)color {
-	return [self adjustColorBrightness:color adjustment:1.25];
+	return [self adjustColorBrightness:color colorAdjustment:10/255.0 alphaMultiplier:1.0];
+}
+
++ (UIColor *)translucentColor:(UIColor *)color {
+	return [self adjustColorBrightness:color colorAdjustment:0.0 alphaMultiplier:.5];
 }
 
 //////////////////////////////////////////////////////////////////////

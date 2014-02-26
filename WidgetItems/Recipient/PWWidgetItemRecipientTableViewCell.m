@@ -21,36 +21,6 @@ char PWWidgetItemRecipientTableViewCellRecipientKey;
 		
 		_showingRemoveButton = NO;
 		[self _configureAddButton];
-		/*
-		// separator
-		_separator = [UIView new];
-		[self.contentView addSubview:_separator];
-		
-		// title label
-		_titleLabel = [UILabel new];
-		_titleLabel.backgroundColor = [UIColor clearColor];
-		_titleLabel.font = [UIFont boldSystemFontOfSize:16.0];
-		[self.contentView addSubview:_titleLabel];
-		
-		// location label
-		_locationLabel = [UILabel new];
-		_locationLabel.backgroundColor = [UIColor clearColor];
-		_locationLabel.font = [UIFont systemFontOfSize:14.0];
-		[self.contentView addSubview:_locationLabel];
-		
-		// start time label
-		_startTimeLabel = [UILabel new];
-		_startTimeLabel.textAlignment = NSTextAlignmentRight;
-		_startTimeLabel.backgroundColor = [UIColor clearColor];
-		_startTimeLabel.font = [UIFont systemFontOfSize:13.0];
-		[self.contentView addSubview:_startTimeLabel];
-		
-		// end time label
-		_endTimeLabel = [UILabel new];
-		_endTimeLabel.textAlignment = NSTextAlignmentRight;
-		_endTimeLabel.backgroundColor = [UIColor clearColor];
-		_endTimeLabel.font = [UIFont systemFontOfSize:13.0];
-		[self.contentView addSubview:_endTimeLabel];*/
 	}
 	return self;
 }

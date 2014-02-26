@@ -7,26 +7,20 @@
 //
 
 #import "Cell.h"
+#import "Reminders.h"
 #import "PWTheme.h"
+
+char PWWidgetRemindersTableViewCellReminderKey;
 
 @implementation PWWidgetRemindersTableViewCell
 
 - (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
 	if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier])) {
-		
-		// time label
-		_timeLabel = [UILabel new];
-		_timeLabel.backgroundColor = [UIColor clearColor];
-		_timeLabel.font = [UIFont systemFontOfSize:48.0];
-		_timeLabel.textColor = [UIColor blackColor];
-		[self.contentView addSubview:_timeLabel];
-		
-		// text label
-		_titleLabel = [UILabel new];
-		_titleLabel.backgroundColor = [UIColor clearColor];
-		_titleLabel.textColor = [UIColor colorWithWhite:.5 alpha:1.0];
-		_titleLabel.font = [UIFont systemFontOfSize:16.0];
-		[self.contentView addSubview:_titleLabel];
+		// button
+		_button = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+		_button.adjustsImageWhenHighlighted = NO;
+		_button.showsTouchWhenHighlighted = NO;
+		[self.contentView addSubview:_button];
 	}
 	return self;
 }
@@ -37,46 +31,99 @@
 	CGSize size = self.bounds.size;
 	CGFloat width = size.width;
 	CGFloat height = size.height;
-	CGFloat horizontalPadding = 15.0;
-	CGFloat timeHeight = 45.0;
-	CGFloat titleHeight = 20.0;
-	CGFloat contentHeight = timeHeight + titleHeight;
+	CGFloat buttonWidth = 30.0;
+	CGFloat buttonHeight = 50.0;
+	CGFloat padding = 10.0;
 	
-	CGRect timeRect = CGRectMake(horizontalPadding, (height - contentHeight) / 2, width - horizontalPadding * 2, timeHeight);
-	CGRect titleRect = CGRectMake(horizontalPadding, timeRect.origin.y + timeRect.size.height, width - horizontalPadding * 2, titleHeight);
+	CGRect textLabelRect = self.textLabel.frame;
+	CGRect detailTextLabelRect = self.detailTextLabel.frame;
 	
-	_timeLabel.frame = timeRect;
-	_titleLabel.frame = titleRect;
+	_button.frame = CGRectMake(padding, (height - buttonHeight) / 2, buttonWidth, buttonHeight);
+	
+	textLabelRect.origin.x = buttonWidth + padding * 2;
+	textLabelRect.size.width = width - (buttonWidth + padding * 3);
+	
+	detailTextLabelRect.origin.x = buttonWidth + padding * 2;
+	detailTextLabelRect.size.width = width - (buttonWidth + padding * 3);
+	
+	self.textLabel.frame = textLabelRect;
+	self.detailTextLabel.frame = detailTextLabelRect;
 }
 
-- (void)setActive:(BOOL)active {
-	self.contentView.alpha = active ? 1.0 : 0.3;
-}
-
-- (void)setHour:(NSUInteger)hour minute:(NSUInteger)minute {
-	NSString *timeText = [NSString stringWithFormat:@"%02d:%02d", (int)hour, (int)minute];
-	_timeLabel.text = timeText;
-}
-
-- (void)setTitle:(NSString *)title daySetting:(NSUInteger)daySetting {
-	NSString *daySettingText = nil;
-	NSString *titleText = nil;
-	if (daySettingText == nil) {
-		titleText = title;
-	} else {
-		titleText = [NSString stringWithFormat:@"%@, %@", title, daySettingText];
+- (void)setButtonReminder:(EKReminder *)reminder {
+	if (_button != nil) {
+		objc_setAssociatedObject(_button, &PWWidgetRemindersTableViewCellReminderKey, reminder, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 	}
-	_titleLabel.text = titleText;
 }
 
-- (void)setTitleTextColor:(UIColor *)color {
-	_timeLabel.textColor = color;
-	_titleLabel.textColor = color;
+- (void)setButtonTarget:(id)target action:(SEL)action {
+	[_button removeTarget:nil action:NULL forControlEvents:UIControlEventTouchUpInside];
+	[_button addTarget:target action:action forControlEvents:UIControlEventTouchUpInside];
+}
+
+- (void)setTitle:(NSString *)title {
+	self.textLabel.text = title;
+}
+
+- (void)setAlarmDate:(NSDate *)alarmDate recurrenceRule:(EKRecurrenceRule *)recurrenceRule {
+	
+	NSString *dateText = nil;
+	NSString *repeatText = nil;
+	
+	// convert date to readable string
+	dateText = [PWWidgetReminders parseDate:alarmDate allDay:NO shortForm:YES];
+	
+	// convert recurrence rule to string
+	EKRecurrenceFrequency frequency = recurrenceRule.frequency;
+	NSInteger interval = recurrenceRule.interval;
+	if (interval == 1) {
+		switch (frequency) {
+			case EKRecurrenceFrequencyDaily:
+				repeatText = @"Daily";
+				break;
+			case EKRecurrenceFrequencyWeekly:
+				repeatText = @"Weekly";
+				break;
+			case EKRecurrenceFrequencyMonthly:
+				repeatText = @"Monthly";
+				break;
+			case EKRecurrenceFrequencyYearly:
+				repeatText = @"Yearly";
+				break;
+		}
+	} else if (interval == 2) {
+		switch (frequency) {
+			case EKRecurrenceFrequencyWeekly:
+				repeatText = @"Biweekly";
+				break;
+			default:
+				break;
+		}
+	}
+	
+	NSString *resultText = [NSString stringWithFormat:@"%@%@%@", dateText, (repeatText != nil ? @", " : @""), (repeatText != nil ? repeatText : @"")];
+	self.detailTextLabel.text = resultText;
+}
+
+- (void)setListColor:(UIColor *)color {
+	if (_listColor == nil || ![_listColor isEqual:color]) {
+		[_listColor release];
+		_listColor = [color retain];
+		// retrieve the images
+		UIImage *normal = [[PWController activeWidget] imageNamed:@"buttonNormal"];
+		UIImage *pressed = [[PWController activeWidget] imageNamed:@"buttonPressed"];
+		// tint the images
+		normal = [PWTheme tintImage:normal withColor:color];
+		pressed = [PWTheme tintImage:pressed withColor:color];
+		// configure the button
+		[_button setImage:normal forState:UIControlStateNormal];
+		[_button setImage:pressed forState:UIControlStateHighlighted];
+	}
 }
 
 - (void)dealloc {
-	RELEASE_VIEW(_timeLabel)
-	RELEASE_VIEW(_titleLabel)
+	RELEASE(_listColor)
+	RELEASE_VIEW(_button)
 	[super dealloc];
 }
 

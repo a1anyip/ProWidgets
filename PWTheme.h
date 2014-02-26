@@ -48,9 +48,11 @@
 
 + (UIColor *)parseColorString:(NSString *)string;
 + (UIImage *)imageFromColor:(UIColor *)color;
-+ (UIColor *)adjustColorBrightness:(UIColor *)color adjustment:(CGFloat)adjustment;
++ (UIImage *)tintImage:(UIImage *)image withColor:(UIColor *)color;
++ (UIColor *)adjustColorBrightness:(UIColor *)color colorAdjustment:(CGFloat)adjustment alphaMultiplier:(CGFloat)alphaMultiplier;
 + (UIColor *)darkenColor:(UIColor *)color;
 + (UIColor *)lightenColor:(UIColor *)color;
++ (UIColor *)translucentColor:(UIColor *)color;
 
 //////////////////////////////////////////////////////////////////////
 

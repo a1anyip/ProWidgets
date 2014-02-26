@@ -13,12 +13,6 @@
 #import "PWContentViewController.h"
 #import "PWThemableTableView.h"
 
-@interface SpringBoard (Private)
-
-- (BOOL)applicationOpenURL:(NSURL *)url;
-
-@end
-
 @implementation PWWidgetCalendarOverviewViewController
 
 - (void)load {
@@ -103,6 +97,7 @@
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
+	
 	NSDictionary *row = _events[section];
 	NSDate *date = row[@"date"];
 	if (date == nil) return nil;
@@ -200,17 +195,9 @@
 		LOG(@"Event list: %@", events);
 		
 		dispatch_sync(dispatch_get_main_queue(), ^{
-			
 			// reload table view
 			[self.tableView reloadData];
-			
-			// from http://stackoverflow.com/questions/7547934/animated-reloaddata-on-uitableview
-			CATransition *animation = [CATransition animation];
-			[animation setType:kCATransitionFade];
-			[animation setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut]];
-			[animation setFillMode:kCAFillModeBoth];
-			[animation setDuration:.2];
-			[[self.tableView layer] addAnimation:animation forKey:@"fade"];
+			applyFadeTransition(self.tableView, .2);
 		});
 	});
 }

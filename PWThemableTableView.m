@@ -42,10 +42,10 @@ static char PWThemableTableViewHeaderFooterViewConfiguredKey;
 	
 	// set table view
 	self.separatorStyle = UITableViewCellSeparatorStyleNone;
-	self.alwaysBounceVertical = NO;
+	self.alwaysBounceVertical = YES;
 	
-	// hide separator in empty cells
-	[self setHideSeparatorInEmptyCells:YES];
+	// you may set this again to hide separator in empty cells
+	[self setHideSeparatorInEmptyCells:NO];
 }
 
 - (UITableViewHeaderFooterView *)_sectionHeaderView:(BOOL)arg1 withFrame:(CGRect)frame forSection:(int)section floating:(BOOL)floating reuseViewIfPossible:(BOOL)reuse {
@@ -67,16 +67,6 @@ static char PWThemableTableViewHeaderFooterViewConfiguredKey;
 	}
 	
 	return view;
-}
-
-- (void)scrollToNearestSelectedRowAtScrollPosition:(UITableViewScrollPosition)arg1 animated:(BOOL)arg2 {
-	[super scrollToNearestSelectedRowAtScrollPosition:arg1 animated:arg2];
-	LOG(@"scrollToNearestSelectedRowAtScrollPosition:%d", (int)arg1);
-}
-
-- (void)scrollToRowAtIndexPath:(NSIndexPath *)indexPath atScrollPosition:(UITableViewScrollPosition)scrollPosition animated:(BOOL)animated {
-	[super scrollToRowAtIndexPath:indexPath atScrollPosition:scrollPosition animated:animated];
-	LOG(@"scrollToRowAtIndexPath:%@ atScrollPosition:%d", indexPath, (int)scrollPosition);
 }
 
 - (void)setHideSeparatorInEmptyCells:(BOOL)hidden {

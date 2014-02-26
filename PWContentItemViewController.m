@@ -38,6 +38,9 @@ static NSNumberFormatter *numberFormatter = nil;
 		
 		self.automaticallyAdjustsScrollViewInsets = NO;
 		
+		// configure table view
+		self.tableView.alwaysBounceVertical = NO;
+		
 		// set delegate
 		self.tableView.delegate = self;
 		self.tableView.dataSource = self;

@@ -12,12 +12,15 @@
 
 @interface PWWidgetRemindersTableViewCell : PWThemableTableViewCell {
 	
-	UILabel *_timeLabel;
-	UILabel *_titleLabel;
+	UIColor *_listColor;
+	UIButton *_button;
 }
 
-- (void)setActive:(BOOL)active;
-- (void)setHour:(NSUInteger)hour minute:(NSUInteger)minute;
-- (void)setTitle:(NSString *)title daySetting:(NSUInteger)daySetting;
+- (void)setButtonReminder:(EKReminder *)reminder;
+- (void)setButtonTarget:(id)target action:(SEL)action;
+
+- (void)setTitle:(NSString *)title;
+- (void)setAlarmDate:(NSDate *)alarmDate recurrenceRule:(EKRecurrenceRule *)recurrenceRule;
+- (void)setListColor:(UIColor *)color;
 
 @end
