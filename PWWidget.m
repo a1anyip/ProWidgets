@@ -20,6 +20,8 @@
 #import "PWContentItemViewController.h"
 #import "PWContentViewControllerDelegate.h"
 
+#define CHECK_CONFIGURED(x) if (![self _checkConfigured:_cmd]) return x;
+
 @implementation PWWidget
 
 //////////////////////////////////////////////////////////////////////
@@ -30,34 +32,23 @@
 
 - (instancetype)init {
 	if ((self = [super init])) {
-		
-		_navigationController = [UINavigationController new];
-		_navigationController.edgesForExtendedLayout = UIRectEdgeNone;
-		_navigationController.automaticallyAdjustsScrollViewInsets = NO;
-		_navigationController.delegate = self;
-		_navigationController.builtinTransitionStyle = 1; // set this to non-zero to avoid "layers" in transition
-		_navigationController.builtinTransitionGap = 0.0;
-		_navigationController.interactiveTransition = NO;
-		_navigationController.interactivePopGestureRecognizer.enabled = NO; // just disable the 'pan' gesture to pop view controller
-		
-		// retrieve navigation bar
-		UINavigationBar *navigationBar = _navigationController.navigationBar;
-		navigationBar.translucent = NO;
-		
 		// default settings
-		_layout = PWWidgetLayoutCustom;
+		_layout = PWWidgetLayoutDefault;
 	}
 	return self;
 }
 
+- (void)configure {
+	LOG(@"PWWidget: Configure widget (%@)", self);
+	[self loadWidgetPlist:[self name]];
+}
+
 - (void)load {
 	LOG(@"PWWidget: Load widget (%@)", self);
-	[self loadWidgetPlist:[self name]];
 }
 
 - (void)preparePresentation {
 	
-	// block any further changes of some configurations
 	_isPresenting = YES;
 	
 	// if default layout is set, then auto create a content item view controller
@@ -86,6 +77,35 @@
 	return _navigationController.topViewController;
 }
 
+- (void)_setConfigured {
+	
+	// update flag value
+	_configured = YES;
+	
+	// set up navigation controller
+	_navigationController = [UINavigationController new];
+	_navigationController.edgesForExtendedLayout = UIRectEdgeNone;
+	_navigationController.automaticallyAdjustsScrollViewInsets = NO;
+	_navigationController.delegate = self;
+	_navigationController.builtinTransitionStyle = 1; // set this to non-zero to avoid "layers" in transition
+	_navigationController.builtinTransitionGap = 0.0;
+	_navigationController.interactiveTransition = NO;
+	_navigationController.interactivePopGestureRecognizer.enabled = NO; // just disable the 'pan' gesture to pop view controller
+	
+	// retrieve navigation bar
+	UINavigationBar *navigationBar = _navigationController.navigationBar;
+	navigationBar.translucent = NO;
+}
+
+- (BOOL)_checkConfigured:(SEL)selector {
+	if (_configured) {
+		LOG(@"PWWidget: You must call \"%@\" in \"configure\" method.", NSStringFromSelector(selector));
+		return NO;
+	} else {
+		return YES;
+	}
+}
+
 //////////////////////////////////////////////////////////////////////
 
 /**
@@ -93,6 +113,8 @@
  **/
 
 - (BOOL)loadWidgetPlist:(NSString *)filename {
+	
+	CHECK_CONFIGURED(NO);
 	
 	LOG(@"PWWidget: Load widget plist named (%@)", filename);
 	
@@ -106,6 +128,8 @@
 
 - (BOOL)loadThemeNamed:(NSString *)name {
 	
+	CHECK_CONFIGURED(NO);
+	
 	// load theme
 	PWTheme *theme = [[PWController sharedInstance] loadThemeNamed:name];
 	
@@ -117,6 +141,8 @@
 }
 
 - (BOOL)loadThemePlist:(NSString *)filename {
+	
+	CHECK_CONFIGURED(NO);
 	
 	LOG(@"PWWidget: loadThemePlist (%@)", filename);
 	
@@ -166,20 +192,26 @@
  **/
 
 - (void)setLayout:(PWWidgetLayout)layout {
-	if (_isPresenting) return [self _throwSetterError:@"layout"];
+	CHECK_CONFIGURED();
 	_layout = layout;
 }
 
 - (void)setPreferredTintColor:(UIColor *)tintColor {
-	if (_isPresenting) return [self _throwSetterError:@"preferred tint color"];
+	CHECK_CONFIGURED();
 	[_preferredTintColor release];
 	_preferredTintColor = [tintColor copy];
 }
 
 - (void)setPreferredBarTextColor:(UIColor *)tintColor {
-	if (_isPresenting) return [self _throwSetterError:@"preferred bar text color"];
+	CHECK_CONFIGURED();
 	[_preferredBarTextColor release];
 	_preferredBarTextColor = [tintColor copy];
+}
+
+- (void)setDefaultItemViewControllerPlist:(NSString *)plist {
+	CHECK_CONFIGURED();
+	[_defaultItemViewControllerPlist release];
+	_defaultItemViewControllerPlist = [plist copy];
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -384,7 +416,7 @@
 	[[PWController sharedInstance] _minimizeWidget];
 }
 
-- (NSString*) description {
+- (NSString *)description {
 	return [NSString stringWithFormat:@"<%@ %p> Name: %@ / Bundle: %@", [self class], self, _name, _bundle];
 }
 

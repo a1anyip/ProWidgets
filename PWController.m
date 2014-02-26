@@ -666,73 +666,37 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 		return NO;
 	}
 	
-	// simple check before loading the widget
-	BOOL requiresProtectedDataAccessBeforeLoading = widget.requiresProtectedDataAccess;
-	BOOL failInProtectedDataAccessBeforeLoading = requiresProtectedDataAccessBeforeLoading && ![self.class protectedDataAvailable];
-	if (failInProtectedDataAccessBeforeLoading) {
-		[self _showProtectedDataUnavailable:widget presented:NO];
-		return NO;
-	}
-	
 	// block orientation change on non-iPad devices
 	if (![self.class isIPad])
 		[[objc_getClass("SBUIController") sharedInstance] _lockOrientationForTransition];
 	
-	_configuredTheme = NO;
 	_pendingDismissalRequest = NO;
 	
 	_isPresentingWidget = YES;
 	_isAnimating = YES;
 	_presentedWidget = [widget retain];
 	
-	// create PWContainerView
-	// this will also add navigation controller view as its subview
-	[self.mainView createContainerView];
-	
 	// set user info
 	widget.userInfo = userInfo;
 	
-	// load widget theme, if any
+	// configure widget
+	// configure title, widget theme, tint/bar text colors, default item view controller plist
+	[widget configure];
 	
-	
-	// load the widget
-	[widget load];
-	[widget preparePresentation]; // configure for default layout & block further changes
-	
-	// second check incase the widget set the value when being loaded
+	// simple check before loading the widget
 	BOOL requiresProtectedDataAccess = widget.requiresProtectedDataAccess;
 	BOOL failInProtectedDataAccess = requiresProtectedDataAccess && ![self.class protectedDataAvailable];
-	
-	// ensure the widget has already pushed a view controller
-	id topViewController = widget.topViewController;
-	
-	// if the widget does not have a root view controller, or it requests to dismiss in load method, then dismiss it immediately
-	if (_pendingDismissalRequest || failInProtectedDataAccess || topViewController == nil) {
-		
-		// show an error alert
-		if (!_pendingDismissalRequest && topViewController == nil) {
-			UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Unable to present widget" message:[NSString stringWithFormat:@"The widget \"%@\" does not have a root view controller.", widget.displayName] delegate:nil cancelButtonTitle:@"Dismiss" otherButtonTitles:nil];
-			[alertView show];
-			[alertView release];
-		} else if (failInProtectedDataAccess) {
-			[self _showProtectedDataUnavailable:widget presented:NO];
-		}
-		
-		// manually dismiss it
-		_pendingDismissalRequest = NO;
-		_isPresentingWidget = NO;
-		_isAnimating = NO;
-		[_presentedWidget release], _presentedWidget = nil;
-		[self.mainView removeContainerView];
-		
-		if (![self.class isIPad])
-			[[objc_getClass("SBUIController") sharedInstance] _releaseTransitionOrientationLock];
-		
-		// reset auto dim timer
-		[[objc_getClass("SBBacklightController") sharedInstance] resetLockScreenIdleTimer];
-		
+	if (failInProtectedDataAccess) {
+		[self _showProtectedDataUnavailable:widget presented:NO];
+		[self _manuallyDismissWidget];
 		return NO;
 	}
+	
+	[widget _setConfigured];
+	
+	// create PWContainerView
+	// this will also add navigation controller view as its subview
+	[self.mainView createContainerView];
 	
 	// configure active theme
 	PWTheme *theme = [PWController activeTheme];
@@ -741,7 +705,30 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	[theme _configureAppearance];
 	[theme setupTheme];
 	
-	_configuredTheme = YES;
+	// load the widget
+	// e.g. create or push custom view controllers
+	[widget load];
+	
+	// configure for default layout & block further changes
+	[widget preparePresentation];
+	
+	// ensure the widget has already pushed a view controller
+	id topViewController = widget.topViewController;
+	
+	// if the widget does not have a root view controller, or it requests to dismiss in load method, then dismiss it immediately
+	if (_pendingDismissalRequest || topViewController == nil) {
+		
+		// show an error alert
+		if (!_pendingDismissalRequest && topViewController == nil) {
+			UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Unable to present widget" message:[NSString stringWithFormat:@"The widget \"%@\" does not have a root view controller.", widget.displayName] delegate:nil cancelButtonTitle:@"Dismiss" otherButtonTitles:nil];
+			[alertView show];
+			[alertView release];
+		}
+		
+		// manually dismiss it
+		[self _manuallyDismissWidget];
+		return NO;
+	}
 	
 	[widget willPresent];
 	
@@ -805,7 +792,6 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 		return NO;
 	}
 	
-	_configuredTheme = NO;
 	_pendingDismissalRequest = NO;
 	
 	// hide debug bar
@@ -1421,6 +1407,23 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 
 + (BOOL)_shouldDisableLockScreenIdleTimer {
 	return [PWController sharedInstance].isPresentingWidget;
+}
+
+- (void)_manuallyDismissWidget {
+	
+	_pendingDismissalRequest = NO;
+	_isPresentingWidget = NO;
+	_isAnimating = NO;
+	
+	[_presentedWidget release], _presentedWidget = nil;
+	
+	[self.mainView removeContainerView];
+	
+	if (![self.class isIPad])
+		[[objc_getClass("SBUIController") sharedInstance] _releaseTransitionOrientationLock];
+	
+	// reset auto dim timer
+	[[objc_getClass("SBBacklightController") sharedInstance] resetLockScreenIdleTimer];
 }
 
 - (void)_showProtectedDataUnavailable:(PWWidget *)widget presented:(BOOL)presented {

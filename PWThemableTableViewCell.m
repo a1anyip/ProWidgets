@@ -46,7 +46,7 @@ static UIColor *separatorColor = nil;
 
 - (void)_configureAppearance {
 	
-	if (![PWController sharedInstance].configuredTheme || _configuredAppearance) return;
+	if (_configuredAppearance) return;
 	_configuredAppearance = YES;
 	
 	PWTheme *theme = [PWController activeTheme];

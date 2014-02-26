@@ -16,6 +16,7 @@
 	
 	UINavigationController *_navigationController;
 	
+	BOOL _configured;
 	BOOL _isPresenting;
 	
 	// inherit from PWBase
@@ -55,6 +56,7 @@
 @property(nonatomic, retain) NSDictionary *info;
 @property(nonatomic, retain) NSDictionary *userInfo;
 
+// these four variables can only be changed in loadInfo
 @property(nonatomic) PWWidgetLayout layout;
 @property(nonatomic, copy) NSString *title;
 @property(nonatomic, copy) UIColor *preferredTintColor;
@@ -75,8 +77,12 @@
  * Widget initialization
  **/
 
+- (void)configure;
 - (void)load;
 - (void)preparePresentation;
+
+- (void)_setConfigured;
+- (BOOL)_checkConfigured:(SEL)selector;
 
 //////////////////////////////////////////////////////////////////////
 

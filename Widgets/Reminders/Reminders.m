@@ -92,8 +92,6 @@
 
 - (void)load {
 	
-	[super load]; // load widget plist
-	
 	PWWidgetRemindersInterface defaultInterface = PWWidgetRemindersInterfaceAdd;
 	
 	if (defaultInterface == PWWidgetRemindersInterfaceAdd) {

@@ -29,8 +29,6 @@
 
 - (void)load {
 	
-	[super load]; // load widget plist
-	
 	PWWidgetAlarmInterface defaultInterface = PWWidgetAlarmInterfaceAdd;
 	
 	if (defaultInterface == PWWidgetAlarmInterfaceAdd) {

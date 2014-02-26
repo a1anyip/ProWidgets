@@ -15,8 +15,6 @@
 
 - (void)load {
 	
-	[super load]; // load widget plist
-	
 	PWWidgetCalendarInterface defaultInterface = PWWidgetCalendarInterfaceAdd;
 	
 	if (defaultInterface == PWWidgetCalendarInterfaceAdd) {

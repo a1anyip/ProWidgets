@@ -14,6 +14,12 @@
 	return YES;
 }
 
+- (void)configure {
+	// configure theme
+	self.layout = PWWidgetLayoutCustom;
+	[self loadThemeNamed:@"PWWidgetThemeGoogleAuthenticator"];
+}
+
 - (void)load {
 	
 	// check if the app is installed on the device
@@ -28,10 +34,6 @@
 	// push a custom view controller
 	_viewController = [PWWidgetGoogleAuthenticatorViewController new];
 	[self pushViewController:_viewController animated:NO];
-	
-	// configure theme
-	self.layout = PWWidgetLayoutCustom;
-	[self loadThemeNamed:@"PWWidgetThemeGoogleAuthenticator"];
 }
 
 - (void)willDismiss {

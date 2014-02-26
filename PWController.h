@@ -18,7 +18,6 @@
 	BOOL _protectedDataAvailableFromNotification;
 	
 	BOOL _configured;
-	BOOL _configuredTheme;
 	BOOL _pendingDismissalRequest;
 	
 	// Base Bundle
@@ -98,7 +97,6 @@
 @property(nonatomic, readonly) BOOL isPresentingWidget;
 @property(nonatomic, readonly) BOOL isAnimating;
 @property(nonatomic, readonly) BOOL isMinimized;
-@property(nonatomic) BOOL configuredTheme;
 @property(nonatomic) BOOL pendingDismissalRequest;
 
 // Preference
@@ -286,6 +284,7 @@
 
 + (BOOL)_shouldDisableLockScreenIdleTimer;
 
+- (void)_manuallyDismissWidget;
 - (void)_showProtectedDataUnavailable:(PWWidget *)widget presented:(BOOL)presented;
 
 - (void)_recordInitialTime;
