@@ -13,8 +13,6 @@
 	<key>PWInfoAuthor</key>
 	<string>Alan Yip</string>
 	<key>PWInfoDescription</key>
-	<string>View and add reminders</string>
-	<key>PWInfoPreferenceFile</key>
-	<string></string>
+	<string>Manage and add reminders</string>
 </dict>
 </plist>

@@ -114,9 +114,9 @@
 	EKCalendar *list = [EKCalendar calendarForEntityType:EKEntityTypeReminder eventStore:self.store];
 	
 	// retrieve preference
-	int sourcePreference = [widget intValueForPreferenceKey:@"sourcePreference" defaultValue:0]; // iCloud by defualt
+	int preferredSource = (int)[PWController sharedInstance].preferredSource;
 	
-	LOG(@"Reminder: retrieved source preference <value: %d>", sourcePreference);
+	LOG(@"Reminder: retrieved source preference <value: %d>", preferredSource);
 	
 	// set calendar title
 	list.title = name;
@@ -134,11 +134,11 @@
 		}
 	}
 	
-	calendarSource = (sourcePreference == 0) ? _iCloudSource : _localSource;
+	calendarSource = (preferredSource == 0) ? _iCloudSource : _localSource;
 	
 	// fallback
 	if (calendarSource == nil)
-		calendarSource = (sourcePreference == 0) ? _localSource : _iCloudSource;
+		calendarSource = (preferredSource == 0) ? _localSource : _iCloudSource;
 	
 	// no available source (rare)
 	if (calendarSource != nil) {

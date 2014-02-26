@@ -116,7 +116,7 @@
 	EKCalendar *calendar = [EKCalendar calendarForEntityType:EKEntityTypeEvent eventStore:self.store];
 	
 	// retrieve preference
-	int preferredSource = [PWController sharedInstance].preferredSource; // iCloud by defualt
+	int preferredSource = (int)[PWController sharedInstance].preferredSource; // iCloud by default
 	
 	LOG(@"Calendar: retrieved preferred source <value: %d>", (int)preferredSource);
 	

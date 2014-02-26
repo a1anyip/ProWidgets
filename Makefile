@@ -109,7 +109,7 @@ ACTIVATION_METHODS += ActivationMethods/ControlCenter
 ############################################################
 
 # Built-in Widgets
-WIDGETS = Widgets/Test
+#WIDGETS = Widgets/Test
 #WIDGETS += Widgets/Custom
 WIDGETS += Widgets/Calendar
 WIDGETS += Widgets/Reminders
