@@ -35,7 +35,7 @@
 		_contentView.backgroundColor = [UIColor clearColor];
 		_contentView.selectable = YES;
 		_contentView.alwaysBounceVertical = YES;
-		_contentView.textContainerInset = UIEdgeInsetsMake(padding, padding, padding, padding);
+		_contentView.textContainerInset = UIEdgeInsetsMake(padding / 2 /* top */, padding, padding, padding);
 		[self setEditing:NO];
 		[self addSubview:_contentView];
 		
@@ -51,7 +51,7 @@
 	CGSize size = self.frame.size;
 	CGFloat width = size.width;
 	CGFloat height = size.height;
-	CGFloat dateHeight = 30.0;
+	CGFloat dateHeight = 35.0;
 	
 	_dateLabel.frame = CGRectMake(0, 0, width, dateHeight);
 	_contentView.frame = CGRectMake(0, dateHeight, width, height - dateHeight);
