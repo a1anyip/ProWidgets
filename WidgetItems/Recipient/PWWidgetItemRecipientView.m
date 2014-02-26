@@ -35,6 +35,14 @@
 		_searchResultTableView = [[PWThemableTableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain];
 		_searchResultTableView.alpha = 0.0;
 		[self addSubview:_searchResultTableView];
+		
+		// configure colors
+		PWTheme *theme = [PWController activeTheme];
+		self.tintColor = [theme cellTintColor];
+		_textField.textColor = [theme cellInputTextColor];
+		_textField.tintColor = [[theme cellInputTextColor] colorWithAlphaComponent:.3];
+		[_textField setValue:[theme cellInputPlaceholderTextColor] forKeyPath:@"_placeholderLabel.textColor"];
+		_separator.backgroundColor = [theme cellSeparatorColor];
 	}
 	return self;
 }
@@ -47,19 +55,6 @@
 	_recipientTableView.dataSource = delegate;
 	_searchResultTableView.delegate = delegate;
 	_searchResultTableView.dataSource = delegate;
-}
-
-- (void)willMoveToSuperview:(UIView *)newSuperview {
-	if (newSuperview != nil) {
-		PWTheme *theme = [PWController activeTheme];
-		
-		self.tintColor = [theme cellTintColor];
-		
-		_textField.textColor = [theme cellInputTextColor];
-		[_textField setValue:[theme cellInputPlaceholderTextColor] forKeyPath:@"_placeholderLabel.textColor"];
-		
-		_separator.backgroundColor = [theme cellSeparatorColor];
-	}
 }
 
 - (void)layoutSubviews {

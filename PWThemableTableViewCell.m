@@ -29,8 +29,6 @@ static UIColor *separatorColor = nil;
 	return self;
 }
 
-//////////////////////////////////////////////////////////////////////
-
 - (void)willMoveToSuperview:(UIView *)newSuperview {
 	if (newSuperview != nil)
 		[self _configureAppearance];
@@ -38,7 +36,6 @@ static UIColor *separatorColor = nil;
 
 - (void)layoutSubviews {
 	[super layoutSubviews];
-	[self _configureAppearance];
 	CGSize size = self.bounds.size;
 	_customSeparatorView.frame = CGRectMake(0, size.height - .5, size.width, .5);
 	_customSeparatorView.backgroundColor = separatorColor;
@@ -77,8 +74,6 @@ static UIColor *separatorColor = nil;
 	// switch
 	[self setSwitchOnColor:[theme cellSwitchOnColor]];
 	[self setSwitchOffColor:[theme cellSwitchOffColor]];
-	
-	[self setNeedsLayout];
 }
 
 ////////// Normal //////////
