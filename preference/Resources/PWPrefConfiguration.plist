@@ -103,6 +103,18 @@ Local source might not work for some users.</string>
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSButtonCell</string>
+			<key>label</key>
+			<string>Reset Preference</string>
+			<key>action</key>
+			<string>resetPreference</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
 			<key>footerText</key>
 			<string>Unless specified, respring is not required after changing configurations.</string>
 		</dict>

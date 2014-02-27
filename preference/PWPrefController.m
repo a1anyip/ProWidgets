@@ -5,6 +5,8 @@
 #import "PWPrefActivation.h"
 #import "PWPrefConfiguration.h"
 
+#define TWEET_CONTENT @"I love #ProWidgets, a revolutionary widget suite and framework for iOS! http://prowidgets.net via @tweakcc"
+
 NSBundle *bundle;
 
 @implementation PWPrefController
@@ -49,7 +51,7 @@ NSBundle *bundle;
 
 - (void)share {
 	SLComposeViewController *composeController = [SLComposeViewController composeViewControllerForServiceType:SLServiceTypeTwitter];
-	[composeController setInitialText:@"I love #ProWidgets by @tweakcc!"];
+	[composeController setInitialText:TWEET_CONTENT];
 	[self presentViewController:composeController animated:YES completion:nil];
 }
 
@@ -77,7 +79,7 @@ NSBundle *bundle;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-	return section == 0 ? 4 : 2;
+	return section == 0 ? 4 : 3;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -117,10 +119,14 @@ NSBundle *bundle;
 	} else {
 		switch (row) {
 			case 0:
+				labelText = @"Website & Documentation";
+				icon = IMAGE(@"icon_website");
+				break;
+			case 1:
 				labelText = @"More by Alan Yip";
 				icon = IMAGE(@"icon_author");
 				break;
-			case 1:
+			case 2:
 				labelText = @"Follow @tweakcc";
 				icon = IMAGE(@"icon_twitter");
 				break;
@@ -172,9 +178,12 @@ NSBundle *bundle;
 		
 	} else if (section == 1) {
 		if (row == 0) {
+			// Website
+			OPEN_URL(@"http://prowidgets.net");
+		} else if (row == 1) {
 			// More by Alan Yip
 			OPEN_URL(@"http://alanyip.me");
-		} else if (row == 1) {
+		} else if (row == 2) {
 			// Follow @tweakcc
 #define CAN_OPEN(x) ([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:x]])
 			

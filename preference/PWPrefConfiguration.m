@@ -8,6 +8,12 @@ extern NSBundle *bundle;
 	return [super initWithPlist:@"PWPrefConfiguration" inBundle:bundle];
 }
 
+- (void)resetPreference {
+	[[NSDictionary dictionary] writeToFile:PWPrefPath atomically:YES];
+	CFNotificationCenterRef center = CFNotificationCenterGetDarwinNotifyCenter();
+	CFNotificationCenterPostNotification(center, CFSTR("cc.tweak.prowidgets.preferencechanged"), NULL, NULL, true);
+}
+
 - (void)respring {
 	
 }
