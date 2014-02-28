@@ -9,8 +9,28 @@
 
 #import "ListValue.h"
 #import "Alarm.h"
+#import "substrate.h"
+
+extern NSString *LocStrWithUILanguage(NSString *string);
+static NSString *(*original_LocStrWithAssistantLanguage)(NSString *string);
+
+static inline NSString *replaced_LocStrWithAssistantLanguage(NSString *string) {
+	LOG(@"Called replaced_LocStrWithAssistantLanguage <%@>", string);
+	if (![NSBundle instancesRespondToSelector:@selector(assistantUILocalizedStringForKey:table:)]) {
+		LOG(@"NSBundle does not respond to selector assistantUILocalizedStringForKey:table:");
+		return LocStrWithUILanguage(string);
+	} else {
+		LOG(@"NSBundle responds to selector assistantUILocalizedStringForKey:table:");
+		return original_LocStrWithAssistantLanguage(string);
+	}
+}
 
 @implementation PWWidgetAlarmItemListValue
+
++ (void)load {
+	// replace LocStrWithAssistantLanguage function
+	MSHookFunction(((void *)MSFindSymbol(NULL, "_LocStrWithAssistantLanguage")), (void *)replaced_LocStrWithAssistantLanguage, (void **)&original_LocStrWithAssistantLanguage);
+}
 
 - (NSString *)displayTextForValues:(NSArray *)values {
 	NSUInteger dateMask = [PWWidgetAlarm valuesToDateMask:values];

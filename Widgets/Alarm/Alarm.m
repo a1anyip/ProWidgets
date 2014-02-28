@@ -13,6 +13,9 @@
 
 @implementation PWWidgetAlarm
 
+// Remark:
+// extern NSString *DateMaskToString(NSInteger mask, BOOL longForm, BOOL showEvery, BOOL showNever)
+
 + (NSUInteger)valuesToDateMask:(NSArray *)values {
 	// convert repeat values to day setting (bitmask)
 	NSUInteger daySetting = 0;
