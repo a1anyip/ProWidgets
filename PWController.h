@@ -15,8 +15,6 @@
 	///// Runtime variables /////
 	/////////////////////////////
 	
-	BOOL _protectedDataAvailableFromNotification;
-	
 	BOOL _configured;
 	BOOL _pendingDismissalRequest;
 	
@@ -83,8 +81,6 @@
 	/////////////////////////
 	NSDate *_initialTime;
 }
-
-@property(nonatomic, readonly) BOOL protectedDataAvailableFromNotification;
 
 @property(nonatomic, readonly) NSBundle *baseBundle;
 @property(nonatomic, readonly) NSBundle *resourceBundle;

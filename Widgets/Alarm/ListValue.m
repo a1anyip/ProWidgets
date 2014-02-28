@@ -17,4 +17,19 @@
 	return DateMaskToString(dateMask, NO, YES, YES);
 }
 
++ (NSString *)A:(NSArray *)values {
+	NSUInteger dateMask = [PWWidgetAlarm valuesToDateMask:values];
+	return DateMaskToString(dateMask, NO, YES, YES);
+}
+
++ (NSString *)B:(NSArray *)values {
+	NSUInteger dateMask = [PWWidgetAlarm valuesToDateMask:values];
+	return DateMaskToString(dateMask, NO, YES, NO);
+}
+
++ (NSString *)C:(NSArray *)values {
+	NSUInteger dateMask = [PWWidgetAlarm valuesToDateMask:values];
+	return DateMaskToString(dateMask, NO, NO, NO);
+}
+
 @end

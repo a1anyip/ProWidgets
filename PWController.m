@@ -109,11 +109,8 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
  **/
 
 + (BOOL)protectedDataAvailable {
-	// double checks the availability from both app and notification
-	// to ensure that the protected data is actually available
-	BOOL fromApp = [UIApplication sharedApplication].protectedDataAvailable; // this is somehow unreliable
-	BOOL fromNotification = [PWController sharedInstance].protectedDataAvailableFromNotification;
-	return fromApp && fromNotification;
+	int unlockState = MKBGetDeviceLockState(NULL);
+	return unlockState == DeviceLockStateUnlockedWithPasscode || unlockState == DeviceLockStateUnlockedWithoutPasscode;
 }
 
 + (int)version {
@@ -385,12 +382,10 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 - (void)_protectedDataWillBecomeUnavailableHandler:(NSNotification *)notification {
 	LOG(@"PWController: _protectedDataWillBecomeUnavailableHandler");
 	[self _showProtectedDataUnavailable:[PWController activeWidget] presented:YES];
-	_protectedDataAvailableFromNotification = NO;
 }
 
 - (void)_protectedDataDidBecomeAvailableHandler:(NSNotification *)notification {
 	LOG(@"PWController: _protectedDataDidBecomeAvailableHandler");
-	_protectedDataAvailableFromNotification = YES;
 }
 
 - (void)_presentWidgetHandler:(NSNotification *)notification {
@@ -684,9 +679,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	[widget configure];
 	
 	// simple check before loading the widget
-	BOOL requiresProtectedDataAccess = widget.requiresProtectedDataAccess;
-	BOOL failInProtectedDataAccess = requiresProtectedDataAccess && ![self.class protectedDataAvailable];
-	if (failInProtectedDataAccess) {
+	if (widget.requiresProtectedDataAccess && ![self.class protectedDataAvailable]) {
 		[self _showProtectedDataUnavailable:widget presented:NO];
 		[self _manuallyDismissWidget];
 		return NO;

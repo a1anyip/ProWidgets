@@ -122,6 +122,15 @@ typedef enum {
 
 //////////////////////////////////////////////////////////////////////
 
+enum  {
+	DeviceLockStateUnlockedWithPasscode = 0,
+	DeviceLockStateLockedWithPasscode = 1,
+	DeviceLockStateTemporarilyUnlockedWithPasscode = 2, // still locked technically; will change to 1 soon
+	DeviceLockStateUnlockedWithoutPasscode = 3
+};
+
+extern int MKBGetDeviceLockState(void *unknown);
+
 extern int CalculatePerformExpression(const char* expr,
 									  int significantDigits,
 									  int flags,
