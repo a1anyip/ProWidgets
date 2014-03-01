@@ -10,6 +10,7 @@
 #import "PWWidgetItemRecipientView.h"
 #import "PWWidgetItemRecipientController.h"
 #import "../../PWThemableTableView.h"
+#import "../../PWThemableTextField.h"
 #import "../../PWController.h"
 #import "../../PWTheme.h"
 
@@ -18,7 +19,7 @@
 - (instancetype)init {
 	if ((self = [super init])) {
 		
-		_textField = [UITextField new];
+		_textField = [PWThemableTextField new];
 		_textField.placeholder = @"Type recipients here...";
 		[self addSubview:_textField];
 		
@@ -39,9 +40,6 @@
 		// configure colors
 		PWTheme *theme = [PWController activeTheme];
 		self.tintColor = [theme cellTintColor];
-		_textField.textColor = [theme cellInputTextColor];
-		_textField.tintColor = [[theme cellInputTextColor] colorWithAlphaComponent:.3];
-		[_textField setValue:[theme cellInputPlaceholderTextColor] forKeyPath:@"_placeholderLabel.textColor"];
 		_separator.backgroundColor = [theme cellSeparatorColor];
 	}
 	return self;

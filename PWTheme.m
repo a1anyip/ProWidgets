@@ -312,6 +312,13 @@ static NSDictionary *supportedColorString = nil;
 								blue:ADJUST(b)
 							   alpha:MAX(0.0, MIN(a * alphaMultiplier, 1.0))];
 	}
+	
+	CGFloat w;
+	if ([color getWhite:&w alpha:&a]) {
+		return [UIColor colorWithWhite:ADJUST(w)
+								 alpha:MAX(0.0, MIN(a * alphaMultiplier, 1.0))];
+	}
+	
 #undef ADJUST
 	return color;
 }

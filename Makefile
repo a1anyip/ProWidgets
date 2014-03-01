@@ -8,7 +8,7 @@ export DEBUGFLAG = -ggdb
 
 export TARGET = :clang
 export ARCHS = armv7 arm64
-export ADDITIONAL_OBJCFLAGS = -fvisibility=default -fvisibility-inlines-hidden -fno-objc-arc
+export ADDITIONAL_OBJCFLAGS = -fvisibility=default -fvisibility-inlines-hidden -fno-objc-arc -O2
 
 ############################################################
 
@@ -30,6 +30,9 @@ LIB += PWContentListViewController.m
 LIB += PWEventHandler.m
 LIB += PWThemableTableView.m
 LIB += PWThemableTableViewCell.m
+LIB += PWThemableTextField.m
+LIB += PWThemableTextView.m
+LIB += PWThemableSwitch.m
 LIB += PWAlertView.m
 
 ### Widget ###

@@ -9,9 +9,8 @@
 
 #import "header.h"
 
-@interface PWThemableTableView : UITableView
+@interface PWThemableSwitch : UISwitch
 
 - (void)_configureAppearance;
-- (void)setHideSeparatorInEmptyCells:(BOOL)hidden;
 
 @end
