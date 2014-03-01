@@ -11,12 +11,14 @@
 
 @interface PWWidgetRemindersOverviewViewController : PWContentViewController<UITableViewDelegate, UITableViewDataSource> {
 	
+	UILabel *_noLabel;
 	NSMutableArray *_reminders;
 }
 
 - (UITableView *)tableView;
 - (EKEventStore *)store;
 
+- (void)reload;
 - (void)loadReminders;
 
 @end

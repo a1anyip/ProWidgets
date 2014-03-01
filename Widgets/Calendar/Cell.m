@@ -117,7 +117,7 @@
 
 - (void)setTitleTextColor:(UIColor *)color {
 	
-	UIColor *lightColor = [PWTheme lightenColor:color];
+	UIColor *lightColor = [PWTheme translucentColor:color];
 	
 	_titleLabel.textColor = color;
 	_locationLabel.textColor = lightColor;

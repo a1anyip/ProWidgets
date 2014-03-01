@@ -26,6 +26,17 @@ extern char PWWidgetRemindersTableViewCellReminderKey;
 	
 	self.tableView.delegate = self;
 	self.tableView.dataSource = self;
+	
+	PWTheme *theme = [PWController activeTheme];
+	
+	_noLabel = [UILabel new];
+	_noLabel.text = @"No reminders";
+	_noLabel.textColor = [theme cellPlainTextColor];
+	_noLabel.font = [UIFont boldSystemFontOfSize:22.0];
+	_noLabel.textAlignment = NSTextAlignmentCenter;
+	_noLabel.frame = self.view.bounds;
+	_noLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+	[self.view addSubview:_noLabel];
 }
 
 - (NSString *)title {
@@ -48,6 +59,25 @@ extern char PWWidgetRemindersTableViewCellReminderKey;
 - (void)willBePresentedInNavigationController:(UINavigationController *)navigationController {
 	[self loadReminders];
 	[self setHandlerForEvent:[PWContentViewController titleTappedEventName] target:self selector:@selector(titleTapped)];
+}
+
+- (void)reload {
+	
+	// reload table view
+	[self.tableView reloadData];
+	
+	// fade in or out the no label
+	if ([_reminders count] == 0) {
+		self.tableView.alwaysBounceVertical = NO;
+		[UIView animateWithDuration:.2 animations:^{
+			_noLabel.alpha = 1.0;
+		}];
+	} else {
+		self.tableView.alwaysBounceVertical = YES;
+		[UIView animateWithDuration:.2 animations:^{
+			_noLabel.alpha = 0.0;
+		}];
+	}
 }
 
 - (void)titleTapped {
@@ -87,7 +117,7 @@ extern char PWWidgetRemindersTableViewCellReminderKey;
 	NSError *error = nil;
 	if ([store removeReminder:reminder commit:YES error:&error]) {
 		[_reminders removeObjectAtIndex:row];
-		[tableView reloadData];
+		[self reload];
 		applyFadeTransition(tableView, .3);
 	}
 }
@@ -160,7 +190,7 @@ extern char PWWidgetRemindersTableViewCellReminderKey;
 	
 	dispatch_async(dispatch_get_global_queue(0, 0), ^{
 		
-		NSPredicate *predicate = [self.store predicateForIncompleteRemindersWithDueDateStarting:nil ending:[NSDate distantFuture] calendars:nil];
+		NSPredicate *predicate = [self.store predicateForIncompleteRemindersWithDueDateStarting:nil ending:nil calendars:nil];
 		[self.store fetchRemindersMatchingPredicate:predicate completion:^(NSArray *reminders) {
 			
 			[_reminders release];
@@ -170,7 +200,7 @@ extern char PWWidgetRemindersTableViewCellReminderKey;
 			
 			dispatch_sync(dispatch_get_main_queue(), ^{
 				// reload table view
-				[self.tableView reloadData];
+				[self reload];
 				applyFadeTransition(self.tableView, .2);
 			});
 		}];
@@ -184,13 +214,14 @@ extern char PWWidgetRemindersTableViewCellReminderKey;
 		reminder.completed = YES;
 		if ([store saveReminder:reminder commit:YES error:nil]) {
 			[_reminders removeObject:reminder];
-			[self.tableView reloadData];
+			[self reload];
 			applyFadeTransition(self.tableView, .3);
 		}
 	}
 }
 
 - (void)dealloc {
+	RELEASE_VIEW(_noLabel)
 	RELEASE(_reminders)
 	[super dealloc];
 }

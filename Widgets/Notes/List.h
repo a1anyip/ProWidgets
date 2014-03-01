@@ -11,12 +11,14 @@
 
 @interface PWWidgetNotesListViewController : PWContentViewController<UITableViewDelegate, UITableViewDataSource> {
 	
+	UILabel *_noLabel;
 	NSMutableArray *_notes;
 }
 
 - (NoteContext *)noteContext;
 - (UITableView *)tableView;
 
+- (void)reload;
 - (void)loadNotes;
 - (void)removeNote:(NoteObject *)note;
 

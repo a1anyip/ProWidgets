@@ -11,12 +11,14 @@
 
 @interface PWWidgetCalendarOverviewViewController : PWContentViewController<UITableViewDelegate, UITableViewDataSource> {
 	
+	UILabel *_noLabel;
 	NSArray *_events;
 }
 
 - (UITableView *)tableView;
 - (EKEventStore *)store;
 
+- (void)reload;
 - (void)loadEvents;
 
 @end
