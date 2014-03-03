@@ -22,6 +22,12 @@
 
 #define CHECK_CONFIGURED(x) if (![self _checkConfigured:_cmd]) return x;
 
+@interface UINavigationBar (Private)
+
+- (id)backButtonViewAtPoint:(CGPoint)point;
+
+@end
+
 @implementation PWWidget
 
 //////////////////////////////////////////////////////////////////////
@@ -251,7 +257,7 @@
 	if (self.topViewController == nil) animated = NO;
 	
 	if (animated) {
-		applyFadeTransition(_navigationController.view, .3);
+		applyFadeTransition(_navigationController.view, .2);
 	}
 	
 	[_navigationController setViewControllers:viewControllers animated:NO];
@@ -338,6 +344,9 @@
 
 - (void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated {
 	
+	// resign first responder
+	[viewController.view endEditing:NO];
+	
 	// fix weird bug in iOS 7
 	UINavigationBar *navigationBar = navigationController.navigationBar;
 	[navigationBar.layer removeAllAnimations];
@@ -373,10 +382,7 @@
 
 - (void)navigationController:(UINavigationController *)navigationController didShowViewController:(UIViewController *)viewController animated:(BOOL)animated {
 	
-	// make title tappable
 	UINavigationBar *navigationBar = navigationController.navigationBar;
-	UIView *titleView = *(UIView **)instanceVar(navigationBar, "_titleView");
-	titleView.userInteractionEnabled = YES;
 	
 	// call internal method
 	if ([viewController isKindOfClass:[PWContentViewController class]]) {
@@ -384,16 +390,26 @@
 		[contentViewController _presentedInNavigationController:navigationController];
 	}
 	
-	if (titleView != nil && [titleView.gestureRecognizers count] == 0) {
+	if (!_configuredGestureRecognizers) {
 		
 		UITapGestureRecognizer *singleTap = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(titleSingleTapped:)] autorelease];
-		[titleView addGestureRecognizer:singleTap];
+		singleTap.delegate = self;
 		
 		UITapGestureRecognizer *doubleTap = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(titleDoubleTapped:)] autorelease];
+		doubleTap.delegate = self;
 		doubleTap.numberOfTapsRequired = 2;
-		[titleView addGestureRecognizer:doubleTap];
 		
 		[singleTap requireGestureRecognizerToFail:doubleTap];
+		
+		_configuredGestureRecognizers = YES;
+		
+		for (id x in navigationBar.gestureRecognizers) {
+			LOG(@"existing: %@", x);
+		}
+		
+		//navigationBar.gestureRecognizers = @[singleTap, doubleTap];
+		[navigationBar addGestureRecognizer:singleTap];
+		[navigationBar addGestureRecognizer:doubleTap];
 	}
 	
 	// auto set first responder
@@ -403,6 +419,20 @@
 }
 
 //////////////////////////////////////////////////////////////////////
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
+	UIView *view = touch.view;
+	BOOL isNavigationBar = [view isKindOfClass:[UINavigationBar class]];
+	if (!isNavigationBar) {
+		return NO;
+	} else {
+		CGPoint location = [touch locationInView:view];
+		if ([(UINavigationBar *)view backButtonViewAtPoint:location] != nil) {
+			return NO;
+		}
+	}
+	return YES;
+}
 
 - (void)titleSingleTapped:(UIGestureRecognizer *)gestureRecognizer {
 	if ([self.topViewController isKindOfClass:[PWContentViewController class]]) {

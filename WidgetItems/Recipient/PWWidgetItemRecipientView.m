@@ -39,7 +39,7 @@
 		
 		// configure colors
 		PWTheme *theme = [PWController activeTheme];
-		self.tintColor = [theme cellTintColor];
+		self.tintColor = [theme tintColor];
 		_separator.backgroundColor = [theme cellSeparatorColor];
 	}
 	return self;
@@ -64,7 +64,7 @@
 	CGFloat textFieldHeight = 44.0;
 	
 	CGRect textFieldRect = CGRectMake(PWDefaultItemCellPadding, 0, width - PWDefaultItemCellPadding * 2, textFieldHeight);
-	CGRect separatorRect = CGRectMake(0, textFieldHeight - 1.0, width, 1.0);
+	CGRect separatorRect = CGRectMake(0, textFieldHeight - .5, width, .5);
 	CGRect tableViewRect = CGRectMake(0, textFieldHeight, width, height - textFieldHeight);
 	
 	_textField.frame = textFieldRect;

@@ -49,16 +49,16 @@
 	return 7.0;
 }
 
+- (UIColor *)tintColor {
+	return [PWTheme systemBlueColor];
+}
+
 - (UIColor *)sheetBackgroundColor {
 	return [UIColor clearColor];
 }
 
 - (UIColor *)navigationBarBackgroundColor {
 	return [UIColor clearColor];
-}
-
-- (UIColor *)cellTintColor {
-	return [PWTheme systemBlueColor];
 }
 
 - (UIColor *)cellSelectedBackgroundColor {

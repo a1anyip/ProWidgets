@@ -46,7 +46,7 @@
 	if (_currentInterface == PWWidgetAlarmInterfaceAdd) return;
 	
 	if (_addViewControllers == nil) {
-		PWWidgetAlarmAddViewController *addViewController = [PWWidgetAlarmAddViewController new];
+		PWWidgetAlarmAddViewController *addViewController = [[PWWidgetAlarmAddViewController new] autorelease];
 		_addViewControllers = [@[addViewController] copy];
 	}
 	
@@ -59,7 +59,7 @@
 	if (_currentInterface == PWWidgetAlarmInterfaceOverview) return;
 	
 	if (_overviewViewControllers == nil) {
-		PWWidgetAlarmOverviewViewController *overviewViewController = [PWWidgetAlarmOverviewViewController new];
+		PWWidgetAlarmOverviewViewController *overviewViewController = [[PWWidgetAlarmOverviewViewController new] autorelease];
 		_overviewViewControllers = [@[overviewViewController] copy];
 	}
 	

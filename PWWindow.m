@@ -67,4 +67,9 @@
 	return CGAffineTransformIdentity;
 }
 
+- (void)dealloc {
+	DEALLOCLOG;
+	[super dealloc];
+}
+
 @end

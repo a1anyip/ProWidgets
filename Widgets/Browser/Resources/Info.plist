@@ -3,20 +3,18 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleIdentifier</key>
-	<string>cc.tweak.prowidgets.widget.dictionary</string>
+	<string>cc.tweak.prowidgets.widget.browser</string>
 	<key>NSPrincipalClass</key>
-	<string>PWWidgetDictionary</string>
+	<string>PWWidgetBrowser</string>
 	<key>PWInfoType</key>
 	<string>widget</string>
 	<key>PWInfoDisplayName</key>
-	<string>Dictionary</string>
+	<string>Browser</string>
 	<key>PWInfoAuthor</key>
 	<string>Alan Yip</string>
 	<key>PWInfoDescription</key>
-	<string>Look up the definition of a word</string>
+	<string>Open web links in app conveniently</string>
 	<key>PWInfoIconFile</key>
 	<string>icon.png</string>
-	<key>PWInfoPreferenceFile</key>
-	<string></string>
 </dict>
 </plist>

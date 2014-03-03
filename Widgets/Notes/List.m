@@ -45,7 +45,7 @@
 }
 
 - (NoteContext *)noteContext {
-	PWWidgetNotes *widget = (PWWidgetNotes *)[PWController activeWidget];
+	PWWidgetNotes *widget = (PWWidgetNotes *)self.widget;
 	return widget.noteContext;
 }
 
@@ -79,7 +79,7 @@
 }
 
 - (void)titleTapped {
-	PWWidgetNotes *widget = (PWWidgetNotes *)[PWController activeWidget];
+	PWWidgetNotes *widget = (PWWidgetNotes *)self.widget;
 	[widget switchToAddInterface];
 }
 
@@ -98,7 +98,7 @@
 	
 	PWWidgetNotesContentViewController *controller = [[[PWWidgetNotesContentViewController alloc] initWithNote:note] autorelease];
 	controller.listViewController = self;
-	[[PWController activeWidget] pushViewController:controller animated:YES];
+	[self.widget pushViewController:controller animated:YES];
 	
 	// deselect the cell
 	[tableView deselectRowAtIndexPath:indexPath animated:YES];

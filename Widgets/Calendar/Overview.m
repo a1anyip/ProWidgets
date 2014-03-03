@@ -50,7 +50,7 @@
 }
 
 - (EKEventStore *)store {
-	PWWidgetCalendar *widget = (PWWidgetCalendar *)[PWController activeWidget];
+	PWWidgetCalendar *widget = (PWWidgetCalendar *)self.widget;
 	return widget.eventStore;
 }
 
@@ -79,7 +79,7 @@
 }
 
 - (void)titleTapped {
-	PWWidgetCalendar *widget = (PWWidgetCalendar *)[PWController activeWidget];
+	PWWidgetCalendar *widget = (PWWidgetCalendar *)self.widget;
 	[widget switchToAddInterface];
 }
 
@@ -106,7 +106,7 @@
 	SpringBoard *app = (SpringBoard *)[UIApplication sharedApplication];
 	if ([app canOpenURL:url]) {
 		[app openURL:url];
-		[[PWController activeWidget] dismiss];
+		[self.widget dismiss];
 	}
 }
 
@@ -132,7 +132,7 @@
 	NSDate *date = row[@"date"];
 	if (date == nil) return nil;
 	
-	PWWidgetCalendar *widget = (PWWidgetCalendar *)[PWController activeWidget];
+	PWWidgetCalendar *widget = (PWWidgetCalendar *)self.widget;
 	NSDateFormatter *dateFormatter = widget.dateFormatter;
 	
 	[dateFormatter setDateStyle:NSDateFormatterShortStyle];

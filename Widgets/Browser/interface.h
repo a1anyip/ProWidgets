@@ -1,49 +1,70 @@
-@class _UIDictionaryManager, _UIDefinitionValue;
+@interface WebDataSource : NSObject
 
-@interface _UIDictionaryManager : NSObject {
-    NSArray *_availableDefinitionDictionaries;
-}
-
-@property(readonly) NSArray * availableDefinitionDictionaries;
-
-+ (id)_filteredDictionaryIDs;
-+ (instancetype)assetManager;
-+ (void)initialize;
-
-- (id)_allAvailableDefinitionDictionariesUsingRemoteInfo:(BOOL)arg1;
-- (id)_availableDictionaryAssets;
-- (id)_availableDictionaryAssetsUsingRemoteInfo:(BOOL)arg1;
-- (id)_currentlyAvailableDefinitionDictionaries;
-- (NSArray *)_definitionValuesForTerm:(id)arg1;
-- (BOOL)_hasDefinitionForTerm:(id)arg1;
-- (id)availableDefinitionDictionaries;
-- (void)dealloc;
-- (id)init;
+- (NSURLRequest *)request;
 
 @end
 
-@interface _UIDefinitionValue : NSObject {
-    NSAttributedString *_definition;
-    NSString *_localizedDictionaryName;
-    NSString *_longDefinition;
-    id _rawAsset;
-    NSString *_term;
-}
+@interface WebView : NSObject
 
-@property(readonly) NSAttributedString * definition;
-@property(readonly) NSString * localizedDictionaryName;
-@property(readonly) NSString * longDefinition;
-@property(retain) id rawAsset;
-@property(readonly) NSString * term;
+@end
 
-- (void)dealloc;
-- (id)definition;
-- (id)description;
-- (id)initWithLocalizedDictionaryName:(id)arg1 term:(id)arg2 definition:(id)arg3 longDefinition:(id)arg4;
-- (id)localizedDictionaryName;
-- (id)longDefinition;
-- (id)rawAsset;
-- (void)setRawAsset:(id)arg1;
-- (id)term;
+@interface WebFrame : NSObject
+
+- (BOOL)isMainFrame;
+- (WebDataSource *)dataSource;
+- (WebDataSource *)provisionalDataSource;
+
+@end
+
+@interface UIWebDocumentView : NSObject
+
+// private methods to force allow showing action sheet for all types of links
+- (void)setAllowsImageSheet:(BOOL)sheet;
+- (void)setAllowsDataDetectorsSheet:(BOOL)sheet;
+- (void)setAllowsLinkSheet:(BOOL)sheet;
+
+@end
+
+@interface UIWebView (Private)
+
+- (UIWebDocumentView *)_documentView;
+
+- (void)webView:(WebView *)webView didStartProvisionalLoadForFrame:(WebFrame *)frame;
+- (void)webView:(WebView *)webView didCommitLoadForFrame:(WebFrame *)frame;
+- (void)webView:(WebView *)view didReceiveTitle:(NSString *)title forFrame:(WebFrame *)frame;
+
+@end
+
+@class WebBookmarkCollection, WebBookmarkList, WebBookmark;
+
+@interface WebBookmarkCollection : NSObject
+
++ (instancetype)safariBookmarkCollection;
+
+- (WebBookmarkList *)listWithID:(NSUInteger)identifier;
+- (WebBookmarkList *)rootList;
+- (WebBookmark *)readingListFolder;
+- (WebBookmark *)bookmarksBarBookmark;
+
+@end
+
+@interface WebBookmarkList : NSObject
+
+- (NSArray *)bookmarkArray;
+
+@end
+
+@interface WebBookmark : NSObject
+
+- (BOOL)isFolder;
+- (BOOL)isWebFilterWhiteListFolder;
+- (BOOL)isReadingListFolder;
+- (BOOL)isBookmarksMenuFolder;
+- (BOOL)isBookmarksBarFolder;
+- (NSString *)localizedTitle;
+
+- (NSUInteger)identifier;
+- (NSString *)title;
+- (NSString *)address;
 
 @end

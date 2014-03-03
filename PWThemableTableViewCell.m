@@ -11,7 +11,15 @@
 #import "PWController.h"
 #import "PWTheme.h"
 
+static UIImage *disclosureImage = nil;
 static UIColor *separatorColor = nil;
+
+@interface UITableViewCell (PrivateTintColor)
+
+- (UIImage *)_disclosureImage:(BOOL)arg;
+- (UIButton *)_accessoryView:(BOOL)arg;
+
+@end
 
 @implementation PWThemableTableViewCell
 
@@ -35,10 +43,39 @@ static UIColor *separatorColor = nil;
 }
 
 - (void)layoutSubviews {
+	
 	[super layoutSubviews];
+	
 	CGSize size = self.bounds.size;
 	_customSeparatorView.frame = CGRectMake(0, size.height - .5, size.width, .5);
 	_customSeparatorView.backgroundColor = separatorColor;
+	
+	if (self.accessoryType == UITableViewCellAccessoryDisclosureIndicator) {
+		UIButton *accessoryView = [self _accessoryView:NO];
+		accessoryView.alpha = .25;
+	}
+}
+
+- (void)setAccessoryType:(UITableViewCellAccessoryType)accessoryType {
+	
+	UITableViewCellAccessoryType oldType = self.accessoryType;
+	[super setAccessoryType:accessoryType];
+	
+	if (accessoryType == UITableViewCellAccessoryDisclosureIndicator) {
+		
+		if (disclosureImage == nil) {
+			UIImage *image = [self _disclosureImage:NO];
+			disclosureImage = [[image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] retain];
+		}
+		
+		UIButton *accessoryView = [self _accessoryView:NO];
+		accessoryView.tintColor = [UIColor blackColor];
+		
+		// set accessory view (make it support tint color)
+		if (oldType != accessoryType) {
+			[accessoryView setImage:disclosureImage forState:UIControlStateNormal];
+		}
+	}
 }
 
 - (void)_configureAppearance {
@@ -48,11 +85,9 @@ static UIColor *separatorColor = nil;
 	
 	PWTheme *theme = [PWController activeTheme];
 	PWWidgetOrientation orientation = [PWController currentOrientation];
-	
-	//LOG(@"PWThemableTableViewCell: configure appearance for active theme: %@", theme);
-	
+		
 	// cell tint color
-	[self setTintColor:[theme cellTintColor]];
+	[self setTintColor:[theme tintColor]];
 	
 	// normal state
 	[self setBackgroundImage:[theme cellBackgroundImageForOrientation:orientation] forOrientation:orientation];
@@ -72,8 +107,9 @@ static UIColor *separatorColor = nil;
 	[self setSelectedButtonTextColor:[theme cellSelectedButtonTextColor]];
 	
 	// switch
-	[self setSwitchOnColor:[theme cellSwitchOnColor]];
-	[self setSwitchOffColor:[theme cellSwitchOffColor]];
+	[self setSwitchThumbColor:[theme switchThumbColor]];
+	[self setSwitchOnColor:[theme switchOnColor]];
+	[self setSwitchOffColor:[theme switchOffColor]];
 }
 
 ////////// Normal //////////
@@ -156,6 +192,7 @@ static UIColor *separatorColor = nil;
 
 ////////// Switch //////////
 
+- (void)setSwitchThumbColor:(UIColor *)color {}
 - (void)setSwitchOnColor:(UIColor *)color {}
 - (void)setSwitchOffColor:(UIColor *)color {}
 

@@ -105,7 +105,7 @@ static inline void configureCellHeight(PWThemeParsed *theme, NSDictionary *dict,
 	
 	imageKeys = [@[@"sheetBackgroundImage", @"navigationBarBackgroundImage", @"cellBackgroundImage", @"cellSelectedBackgroundImage"] copy];
 	
-	colorKeys = [@[@"sheetBackgroundColor", @"navigationBarBackgroundColor", @"navigationTitleTextColor", @"navigationButtonTextColor", @"cellTintColor", @"cellSeparatorColor", @"cellBackgroundColor", @"cellTitleTextColor", @"cellValueTextColor", @"cellButtonTextColor", @"cellInputTextColor", @"cellInputPlaceholderTextColor", @"cellPlainTextColor", @"cellSelectedBackgroundColor", @"cellSelectedTitleTextColor", @"cellSelectedValueTextColor", @"cellSelectedButtonTextColor", @"cellHeaderFooterViewBackgroundColor", @"cellHeaderFooterViewTitleTextColor", @"cellSwitchOnColor", @"cellSwitchOffColor"] copy];
+	colorKeys = [@[@"tintColor", @"sheetForegroundColor", @"sheetBackgroundColor", @"navigationBarBackgroundColor", @"navigationTitleTextColor", @"navigationButtonTextColor", @"cellSeparatorColor", @"cellBackgroundColor", @"cellTitleTextColor", @"cellValueTextColor", @"cellButtonTextColor", @"cellInputTextColor", @"cellInputPlaceholderTextColor", @"cellPlainTextColor", @"cellSelectedBackgroundColor", @"cellSelectedTitleTextColor", @"cellSelectedValueTextColor", @"cellSelectedButtonTextColor", @"cellHeaderFooterViewBackgroundColor", @"cellHeaderFooterViewTitleTextColor", @"switchThumbColor", @"switchOnColor", @"switchOffColor"] copy];
 	
 	doubleKeys = [@[@"cornerRadius"] copy];
 }

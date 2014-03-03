@@ -54,6 +54,14 @@
 	return 7.0;
 }
 
+- (UIColor *)tintColor {
+	return [UIColor colorWithWhite:.3 alpha:1.0];
+}
+
+- (UIColor *)sheetForegroundColor {
+	return [UIColor colorWithWhite:1.0 alpha:.3];
+}
+
 - (UIColor *)sheetBackgroundColor {
 	return [UIColor colorWithWhite:0.1 alpha:0.8];
 }
@@ -70,10 +78,6 @@
 // navigation bar buttons
 - (UIColor *)navigationButtonTextColor {
 	return [UIColor colorWithWhite:1 alpha:.2];
-}
-
-- (UIColor *)cellTintColor {
-	return [UIColor colorWithWhite:1.0 alpha:.2];
 }
 
 - (UIColor *)cellSeparatorColor {
@@ -136,11 +140,15 @@
 }
 
 // switch
-- (UIColor *)cellSwitchOnColor {
+- (UIColor *)switchThumbColor {
+	return [UIColor colorWithWhite:.4 alpha:1.0];
+}
+
+- (UIColor *)switchOnColor {
 	return [UIColor colorWithWhite:1 alpha:.15];
 }
 
-- (UIColor *)cellSwitchOffColor {
+- (UIColor *)switchOffColor {
 	return [UIColor colorWithWhite:1 alpha:.1];
 }
 

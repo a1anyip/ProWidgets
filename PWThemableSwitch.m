@@ -31,9 +31,11 @@
 	
 	PWTheme *theme = [PWController activeTheme];
 	
-	UIColor *switchOnColor = [theme cellSwitchOnColor];
-	UIColor *switchOffColor = [theme cellSwitchOffColor];
+	UIColor *switchThumbColor = [theme switchThumbColor];
+	UIColor *switchOnColor = [theme switchOnColor];
+	UIColor *switchOffColor = [theme switchOffColor];
 	
+	self.thumbTintColor = switchThumbColor;
 	self.tintColor = switchOffColor;
 	self.onTintColor = switchOnColor;
 }

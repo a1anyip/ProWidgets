@@ -41,6 +41,7 @@
 - (void)setSelectedButtonTextColor:(UIColor *)color;
 
 // Switch
+- (void)setSwitchThumbColor:(UIColor *)color;
 - (void)setSwitchOnColor:(UIColor *)color;
 - (void)setSwitchOffColor:(UIColor *)color;
 

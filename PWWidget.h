@@ -12,11 +12,12 @@
 #import "PWAlertView.h"
 #import "PWContentViewControllerDelegate.h"
 
-@interface PWWidget : PWBase<UINavigationControllerDelegate> {
+@interface PWWidget : PWBase<UINavigationControllerDelegate, UIGestureRecognizerDelegate> {
 	
 	UINavigationController *_navigationController;
 	
 	BOOL _configured;
+	BOOL _configuredGestureRecognizers;
 	BOOL _isPresenting;
 	
 	// inherit from PWBase

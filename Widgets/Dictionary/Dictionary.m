@@ -94,8 +94,9 @@
 		_resultViewController.content = result;
 		[self pushViewController:_resultViewController animated:YES];
 	} else {
-		[self showMessage:@"No definition found"];
-		[self setFirstResponder];
+		[self showMessage:@"No definition found" title:nil handler:^{
+			[self setFirstResponder];
+		}];
 	}
 }
 

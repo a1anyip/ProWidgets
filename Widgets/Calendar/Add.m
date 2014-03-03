@@ -16,7 +16,7 @@
 	
 	[self loadPlist:@"AddItems"];
 	
-	PWWidgetCalendar *widget = (PWWidgetCalendar *)[PWController activeWidget];
+	PWWidgetCalendar *widget = (PWWidgetCalendar *)self.widget;
 	_initialTomorrow = [widget.userInfo[@"type"] isEqualToString:@"tomorrow"];
 	
 	// fetch all available calendars
@@ -40,12 +40,12 @@
 }
 
 - (void)titleTapped {
-	PWWidgetCalendar *widget = (PWWidgetCalendar *)[PWController activeWidget];
+	PWWidgetCalendar *widget = (PWWidgetCalendar *)self.widget;
 	[widget switchToOverviewInterface];
 }
 
 - (EKEventStore *)store {
-	PWWidgetCalendar *widget = (PWWidgetCalendar *)[PWController activeWidget];
+	PWWidgetCalendar *widget = (PWWidgetCalendar *)self.widget;
 	return widget.eventStore;
 }
 
@@ -54,8 +54,8 @@
 	NSArray *calendars = [self.store calendarsForEntityType:EKEntityTypeEvent];
 	
 	if ([calendars count] == 0) {
-		[[PWController activeWidget] showMessage:@"You need at least one calendar to save events."];
-		[[PWController activeWidget] dismiss];
+		[self.widget showMessage:@"You need at least one calendar to save events."];
+		[self.widget dismiss];
 		return;
 	}
 	
@@ -86,7 +86,7 @@
 		
 		if (selectedIdentifier != nil) {
 			// cannot locate the new calendar
-			[[PWController activeWidget] showMessage:@"Unable to create calendar"];
+			[self.widget showMessage:@"Unable to create calendar"];
 		}
 		
 		EKCalendar *defaultCalendar = [self.store defaultCalendarForNewEvents];
@@ -158,7 +158,7 @@
 	}
 	
 	PWWidgetItemListValue *item = (PWWidgetItemListValue *)[self itemWithKey:@"calendar"];
-	[[PWController activeWidget] showMessage:@"Unable to create calendar"];
+	[self.widget showMessage:@"Unable to create calendar"];
 	[item setValue:nil];
 }
 
@@ -327,7 +327,7 @@
 				__block NSArray *oldCalendarValue = (NSArray *)[oldValue copy];
 				
 				// Create...
-				[[PWController activeWidget] prompt:@"Enter the calendar name" title:@"Create Calendar" buttonTitle:@"Create" defaultValue:nil style:UIAlertViewStylePlainTextInput completion:^(BOOL cancelled, NSString *firstValue, NSString *secondValue) {
+				[self.widget prompt:@"Enter the calendar name" title:@"Create Calendar" buttonTitle:@"Create" defaultValue:nil style:UIAlertViewStylePlainTextInput completion:^(BOOL cancelled, NSString *firstValue, NSString *secondValue) {
 					
 					if (cancelled) {
 						// set to previous value
@@ -385,7 +385,7 @@
 	NSUInteger selectedCalendarIndex = [(values[@"calendar"])[0] unsignedIntegerValue];
 	
 	if ([starts compare:ends] == NSOrderedDescending) {
-		[[PWController activeWidget] showMessage:@"The start date must be before the end date." title:@"Cannot Save Event"];
+		[self.widget showMessage:@"The start date must be before the end date." title:@"Cannot Save Event"];
 		return;
 	}
 	
@@ -451,7 +451,7 @@
 	[self.store saveEvent:event span:EKSpanFutureEvents error:nil];
 	
 	// dismiss
-	[[PWController activeWidget] dismiss];
+	[self.widget dismiss];
 }
 
 - (void)dealloc {

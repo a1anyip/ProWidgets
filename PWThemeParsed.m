@@ -59,13 +59,15 @@ PW_IMP_IMAGE(cellBackgroundImage, CellBackgroundImage)
 PW_IMP_IMAGE(cellSelectedBackgroundImage, CellSelectedBackgroundImage)
 
 // colors
+PW_IMP_COLOR(tintColor)
+
+PW_IMP_COLOR(sheetForegroundColor)
 PW_IMP_COLOR(sheetBackgroundColor)
 
 PW_IMP_COLOR(navigationBarBackgroundColor)
 PW_IMP_COLOR(navigationTitleTextColor)
 PW_IMP_COLOR(navigationButtonTextColor)
 
-PW_IMP_COLOR(cellTintColor)
 PW_IMP_COLOR(cellSeparatorColor);
 PW_IMP_COLOR(cellBackgroundColor)
 PW_IMP_COLOR(cellTitleTextColor)
@@ -83,8 +85,9 @@ PW_IMP_COLOR(cellSelectedButtonTextColor)
 PW_IMP_COLOR(cellHeaderFooterViewBackgroundColor)
 PW_IMP_COLOR(cellHeaderFooterViewTitleTextColor)
 
-PW_IMP_COLOR(cellSwitchOnColor)
-PW_IMP_COLOR(cellSwitchOffColor)
+PW_IMP_COLOR(switchThumbColor)
+PW_IMP_COLOR(switchOnColor)
+PW_IMP_COLOR(switchOffColor)
 
 // doubles
 PW_IMP_DOUBLE(cornerRadius, CornerRadius)
@@ -147,9 +150,11 @@ PW_IMP_DOUBLE(cornerRadius, CornerRadius)
 	PW_RELEASE_IMAGE(cellSelectedBackgroundImage)
 	
 	// release colors
+	PW_RELEASE(tintColor)
+	
+	PW_RELEASE(sheetForegroundColor)
 	PW_RELEASE(sheetBackgroundColor)
 	
-	PW_RELEASE(cellTintColor)
 	PW_RELEASE(cellSeparatorColor)
 	PW_RELEASE(cellBackgroundColor)
 	PW_RELEASE(cellTitleTextColor)
@@ -166,8 +171,9 @@ PW_IMP_DOUBLE(cornerRadius, CornerRadius)
 	PW_RELEASE(cellHeaderFooterViewBackgroundColor)
 	PW_RELEASE(cellHeaderFooterViewTitleTextColor)
 	
-	PW_RELEASE(cellSwitchOnColor)
-	PW_RELEASE(cellSwitchOffColor)
+	PW_RELEASE(switchThumbColor)
+	PW_RELEASE(switchOnColor)
+	PW_RELEASE(switchOffColor)
 	
 	[super dealloc];
 }

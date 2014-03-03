@@ -45,6 +45,7 @@
 - (BOOL)loadPlist:(NSString *)filename;
 
 - (BOOL)isTopViewController;
+- (PWWidget *)widget;
 
 // subclasses may override these methods
 - (void)keyboardWillShow:(CGFloat)height;

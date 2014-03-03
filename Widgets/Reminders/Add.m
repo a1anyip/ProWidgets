@@ -16,8 +16,6 @@
 	
 	[self loadPlist:@"AddItems"];
 	
-	//PWWidgetReminders *widget = (PWWidgetReminders *)[PWController activeWidget];
-	
 	// fetch all available lists
 	[self fetchLists:nil];
 	
@@ -37,17 +35,17 @@
 }
 
 - (void)titleTapped {
-	PWWidgetReminders *widget = (PWWidgetReminders *)[PWController activeWidget];
+	PWWidgetReminders *widget = (PWWidgetReminders *)self.widget;
 	[widget switchToOverviewInterface];
 }
 
 - (EKEventStore *)store {
-	PWWidgetReminders *widget = (PWWidgetReminders *)[PWController activeWidget];
+	PWWidgetReminders *widget = (PWWidgetReminders *)self.widget;
 	return widget.eventStore;
 }
 - (void)fetchLists:(NSString *)selectedIdentifier {
 	
-	PWWidgetReminders *widget = (PWWidgetReminders *)[PWController activeWidget];
+	PWWidgetReminders *widget = (PWWidgetReminders *)self.widget;
 	NSArray *lists = [self.store calendarsForEntityType:EKEntityTypeReminder];
 	
 	if ([lists count] == 0) {
@@ -110,7 +108,7 @@
 		name = @"Untitled";
 	}
 	
-	PWWidgetReminders *widget = (PWWidgetReminders *)[PWController activeWidget];
+	PWWidgetReminders *widget = (PWWidgetReminders *)self.widget;
 	EKCalendar *list = [EKCalendar calendarForEntityType:EKEntityTypeReminder eventStore:self.store];
 	
 	// retrieve preference
@@ -228,7 +226,7 @@
 				__block NSArray *oldListValue = [oldValue retain];
 				
 				// Create...
-				[[PWController activeWidget] prompt:@"Enter the list name" title:@"Create List" buttonTitle:@"Create" defaultValue:nil style:UIAlertViewStylePlainTextInput completion:^(BOOL cancelled, NSString *firstValue, NSString *secondValue) {
+				[self.widget prompt:@"Enter the list name" title:@"Create List" buttonTitle:@"Create" defaultValue:nil style:UIAlertViewStylePlainTextInput completion:^(BOOL cancelled, NSString *firstValue, NSString *secondValue) {
 					
 					if (cancelled) {
 						// set to previous value
@@ -312,7 +310,7 @@
 	[self.store saveReminder:reminder commit:YES error:nil];
 	
 	// dismiss
-	[[PWController activeWidget] dismiss];
+	[self.widget dismiss];
 }
 
 - (void)dealloc {

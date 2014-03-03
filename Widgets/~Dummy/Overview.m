@@ -42,7 +42,7 @@
 }
 
 - (void)titleTapped {
-	PWWidgetCalendar *widget = (PWWidgetCalendar *)[PWController activeWidget];
+	PWWidgetCalendar *widget = (PWWidgetCalendar *)self.widget;
 	[widget switchToAddInterface];
 }
 

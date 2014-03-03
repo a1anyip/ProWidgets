@@ -65,13 +65,15 @@ typedef struct PWThemeParsedOverrideSide {
 	PWThemeParsedImageSet _cellSelectedBackgroundImage;
 	
 	// colors
+	UIColor *_tintColor;
+	
+	UIColor *_sheetForegroundColor;
 	UIColor *_sheetBackgroundColor;
 	
 	UIColor *_navigationBarBackgroundColor;
 	UIColor *_navigationTitleTextColor;
 	UIColor *_navigationButtonTextColor;
 	
-	UIColor *_cellTintColor;
 	UIColor *_cellSeparatorColor;
 	UIColor *_cellBackgroundColor;
 	UIColor *_cellTitleTextColor;
@@ -89,8 +91,9 @@ typedef struct PWThemeParsedOverrideSide {
 	UIColor *_cellHeaderFooterViewBackgroundColor;
 	UIColor *_cellHeaderFooterViewTitleTextColor;
 	
-	UIColor *_cellSwitchOnColor;
-	UIColor *_cellSwitchOffColor;
+	UIColor *_switchThumbColor;
+	UIColor *_switchOnColor;
+	UIColor *_switchOffColor;
 	
 	// numerical values
 	CGFloat _cornerRadius;
@@ -101,13 +104,15 @@ typedef struct PWThemeParsedOverrideSide {
 PW_DECLARE_BOOL(wantsDarkKeyboard, WantsDarkKeyboard)
 
 // colors
+PW_DECLARE_COLOR(tintColor)
+
+PW_DECLARE_COLOR(sheetForegroundColor)
 PW_DECLARE_COLOR(sheetBackgroundColor)
 
 PW_DECLARE_COLOR(navigationBarBackgroundColor)
 PW_DECLARE_COLOR(navigationTitleTextColor)
 PW_DECLARE_COLOR(navigationButtonTextColor)
 
-PW_DECLARE_COLOR(cellTintColor)
 PW_DECLARE_COLOR(cellSeparatorColor)
 PW_DECLARE_COLOR(cellBackgroundColor)
 PW_DECLARE_COLOR(cellTitleTextColor)
@@ -125,8 +130,9 @@ PW_DECLARE_COLOR(cellSelectedButtonTextColor)
 PW_DECLARE_COLOR(cellHeaderFooterViewBackgroundColor)
 PW_DECLARE_COLOR(cellHeaderFooterViewTitleTextColor)
 
-PW_DECLARE_COLOR(cellSwitchOnColor)
-PW_DECLARE_COLOR(cellSwitchOffColor)
+PW_DECLARE_COLOR(switchThumbColor)
+PW_DECLARE_COLOR(switchOnColor)
+PW_DECLARE_COLOR(switchOffColor)
 
 // images
 PW_DECLARE_IMAGE(sheetBackgroundImage, SheetBackgroundImage)

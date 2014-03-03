@@ -30,6 +30,7 @@
 - (void)_configureAppearance {
 	
 	PWTheme *theme = [PWController activeTheme];
+	
 	UIColor *backgroundColor = [theme cellBackgroundColor];
 	UIColor *inputTextColor = [theme cellInputTextColor];
 	UIColor *inputPlaceholderTextColor = [theme cellInputPlaceholderTextColor];

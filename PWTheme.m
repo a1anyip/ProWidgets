@@ -461,6 +461,14 @@ static NSDictionary *supportedColorString = nil;
 ////////// Colors //////////
 ////////////////////////////
 
+- (UIColor *)tintColor {
+	return [self.class defaultTintColor];
+}
+
+- (UIColor *)sheetForegroundColor {
+	return [self.class defaultSheetForegroundColor];
+}
+
 - (UIColor *)sheetBackgroundColor {
 	return [self.class defaultSheetBackgroundColor];
 }
@@ -475,10 +483,6 @@ static NSDictionary *supportedColorString = nil;
 
 - (UIColor *)navigationButtonTextColor {
 	return [self.class defaultNavigationButtonTextColor];
-}
-
-- (UIColor *)cellTintColor {
-	return [self.class darkenColor:_preferredTintColor];
 }
 
 - (UIColor *)cellSeparatorColor {
@@ -537,12 +541,16 @@ static NSDictionary *supportedColorString = nil;
 	return [self.class defaultCellHeaderFooterViewTitleTextColor];
 }
 
-- (UIColor *)cellSwitchOnColor {
-	return [self.class defaultCellSwitchOnColor];
+- (UIColor *)switchThumbColor {
+	return [self.class defaultSwitchThumbColor];
 }
 
-- (UIColor *)cellSwitchOffColor {
-	return [self.class defaultCellSwitchOffColor];
+- (UIColor *)switchOnColor {
+	return [self.class defaultSwitchOnColor];
+}
+
+- (UIColor *)switchOffColor {
+	return [self.class defaultSwitchOffColor];
 }
 
 //////////////////////////////////////////
@@ -567,6 +575,14 @@ static NSDictionary *supportedColorString = nil;
 ////////// Colors //////////
 ////////////////////////////
 
++ (UIColor *)defaultTintColor {
+	return nil;
+}
+
++ (UIColor *)defaultSheetForegroundColor {
+	return [UIColor blackColor];
+}
+
 + (UIColor *)defaultSheetBackgroundColor {
 	return [UIColor whiteColor];
 }
@@ -581,10 +597,6 @@ static NSDictionary *supportedColorString = nil;
 
 + (UIColor *)defaultNavigationButtonTextColor {
 	return [self systemBlueColor];
-}
-
-+ (UIColor *)defaultCellTintColor {
-	return nil;
 }
 
 + (UIColor *)defaultCellSeparatorColor {
@@ -643,11 +655,15 @@ static NSDictionary *supportedColorString = nil;
 	return [UIColor colorWithWhite:.5 alpha:1.0];
 }
 
-+ (UIColor *)defaultCellSwitchOnColor {
++ (UIColor *)defaultSwitchThumbColor {
 	return nil;
 }
 
-+ (UIColor *)defaultCellSwitchOffColor {
++ (UIColor *)defaultSwitchOnColor {
+	return nil;
+}
+
++ (UIColor *)defaultSwitchOffColor {
 	return nil;
 }
 

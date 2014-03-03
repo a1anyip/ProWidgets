@@ -100,6 +100,10 @@
 	[_switch setOn:[value boolValue] animated:NO];
 }
 
+- (void)setSwitchThumbColor:(UIColor *)color {
+	_switch.thumbTintColor = color;
+}
+
 - (void)setSwitchOnColor:(UIColor *)color {
 	_switch.onTintColor = color;
 }

@@ -42,18 +42,11 @@
 		return;
 	}
 	
-	LOG(@"PWView retrieved container rect (%@)", NSStringFromCGRect(containerRect));
-	LOG(@"PWView _containerView = %@", _containerView);
-	
 	// update the frame of container view
 	_containerView.frame = containerRect;
 	[_containerView layoutIfNeeded];
 	
-	LOG(@"PWView set layout for container view");
-	
 	[self _updateBackgroundViewRect:containerRect animated:NO];
-	
-	LOG(@"PWView updated background view rect");
 }
 
 - (void)createContainerView {
@@ -123,7 +116,7 @@
 		CGFloat oldHeight = _containerView.keyboardHeight;
 		CGFloat defaultHeight = [[PWController sharedInstance] defaultHeightOfKeyboardInOrientation:currentOrientation];
 		if (oldHeight == defaultHeight) return; // no change
-		toRect.origin.y += (defaultHeight - oldHeight) / 2;
+		toRect.origin.y += (oldHeight - defaultHeight) / 2;
 		_containerView.keyboardHeight = defaultHeight;
 	}
 	

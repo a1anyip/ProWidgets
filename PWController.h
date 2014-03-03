@@ -9,12 +9,14 @@
 
 #import "header.h"
 
-@interface PWController : UIViewController <SBUIActiveOrientationObserver> {
+@interface PWController : UIViewController<SBUIActiveOrientationObserver> {
 	
 	/////////////////////////////
 	///// Runtime variables /////
 	/////////////////////////////
 	
+	BOOL _interfaceOrientationIsLocked;
+	UIInterfaceOrientation _lockedInterfaceOrientation;
 	BOOL _configured;
 	BOOL _pendingDismissalRequest;
 	
@@ -32,14 +34,9 @@
 	//////////////////////////
 	
 	// Main Window
-	// manage all orientation related stuff
 	PWWindow *_window;
 	
 	// Main View
-	// for placing widget and container
-	// also for presenting or dismissing widget
-	// manage all UI-related stuff
-	// it is also referenced as _view
 	PWView *_mainView;
 	
 	//////////////////////

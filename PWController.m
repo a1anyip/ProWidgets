@@ -63,6 +63,9 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 - (void)activeInterfaceOrientationDidChangeToOrientation:(UIInterfaceOrientation)activeInterfaceOrientation willAnimateWithDuration:(double)duration fromOrientation:(UIInterfaceOrientation)orientation {
 	LOG(@"PWController: activeInterfaceOrientationDidChangeToOrientation: %d", (int)activeInterfaceOrientation);
 	
+	if (_interfaceOrientationIsLocked)
+		return;
+	
 	void(^completionHandler)(BOOL) = ^(BOOL finished) {
 		
 		LOG(@"PWController: _lastFirstResponder: %@", _lastFirstResponder);
@@ -93,13 +96,15 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 - (void)activeInterfaceOrientationWillChangeToOrientation:(UIInterfaceOrientation)activeInterfaceOrientation {
 	LOG(@"PWController: activeInterfaceOrientationWillChangeToOrientation: %d", (int)activeInterfaceOrientation);
 	
+	if (_interfaceOrientationIsLocked)
+		return;
+	
 	if (_lastFirstResponder != nil) {
 		RELEASE(_lastFirstResponder)
 	}
 	
 	_lastFirstResponder = [[_window firstResponder] retain];
 	[[objc_getClass("SBUIController") sharedInstance] _hideKeyboard]; // force to hide keyboard
-	//[[objc_getClass("UIPeripheralHost") sharedInstance] forceOrderOutAutomaticAnimated:NO];
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -159,6 +164,10 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 }
 
 - (UIInterfaceOrientation)currentInterfaceOrientation {
+	
+	if (_interfaceOrientationIsLocked)
+		return _lockedInterfaceOrientation;
+	
 	UIApplication *app = [UIApplication sharedApplication];
 	if ([app isKindOfClass:objc_getClass("SpringBoard")]) {
 		return [(SpringBoard *)app activeInterfaceOrientation];
@@ -275,8 +284,6 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 
 - (void)_constructUI {
 	
-	LOG(@"PWController: Start constructing UI");
-	
 	// build window
 	_window = [PWWindow new];
 	
@@ -288,18 +295,17 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 		[self _applyParallaxEffect];
 	
 	// add main view to window
+	// it will be removed from window when a video is being played
+	// so no need to release it after addSubview
 	_window.rootViewController = self;
-	[_window addSubview:_mainView]; // retain once, +2
-	[_mainView release]; // +1
+	[_window addSubview:_mainView];
 	
 	LOG(@"PWController: Constructed window (%@) and main view (%@)", _window, _mainView);
 }
 
 // initialize PWView
 - (void)loadView {
-	PWView *view = [PWView new];
-	self.view = view;
-	[view release];
+	self.view = [[PWView new] autorelease];
 }
 
 /**
@@ -662,8 +668,12 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	}
 	
 	// block orientation change on non-iPad devices
-	if (![self.class isIPad])
+	if (![self.class isIPad]) {
+		_interfaceOrientationIsLocked = NO;
 		[[objc_getClass("SBUIController") sharedInstance] _lockOrientationForTransition];
+		_lockedInterfaceOrientation = [self currentInterfaceOrientation];
+		_interfaceOrientationIsLocked = YES;
+	}
 	
 	_pendingDismissalRequest = NO;
 	
@@ -830,8 +840,10 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 		_isAnimating = NO;
 		_presentedWidget = nil;
 		
-		if (![self.class isIPad])
+		if (![self.class isIPad]) {
 			[[objc_getClass("SBUIController") sharedInstance] _releaseTransitionOrientationLock];
+			_interfaceOrientationIsLocked = NO;
+		}
 		
 		// reset auto dim timer
 		[[objc_getClass("SBBacklightController") sharedInstance] resetLockScreenIdleTimer];
@@ -1098,6 +1110,10 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	NSString *preferenceFile = info[@"PWInfoPreferenceFile"];
 	if (preferenceFile == nil) preferenceFile = @"";
 	
+	// PWInfoAppIdentifier
+	NSString *appIdentifier = info[@"PWInfoAppIdentifier"];
+	if (appIdentifier == nil) appIdentifier = @"";
+	
 	// check if the widget is installed via URL
 	NSString *indicatorPath = [NSString stringWithFormat:@"%@/.installed", [bundle bundlePath]];
 	NSNumber *installedViaURL = @([[NSFileManager defaultManager] fileExistsAtPath:indicatorPath]);
@@ -1113,6 +1129,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 			 @"hasPreference": @([preferenceFile length] > 0),
 			 @"preferenceDefaults": preferenceDefaults,
 			 @"preferenceFile": preferenceFile,
+			 @"appIdentifier": appIdentifier,
 			 @"bundle": bundle,
 			 @"installedViaURL": installedViaURL
 			 };
@@ -1412,8 +1429,10 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	
 	[self.mainView removeContainerView];
 	
-	if (![self.class isIPad])
+	if (![self.class isIPad]) {
 		[[objc_getClass("SBUIController") sharedInstance] _releaseTransitionOrientationLock];
+		_interfaceOrientationIsLocked = NO;
+	}
 	
 	// reset auto dim timer
 	[[objc_getClass("SBBacklightController") sharedInstance] resetLockScreenIdleTimer];

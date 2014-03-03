@@ -124,8 +124,11 @@
 ////////// Colors //////////
 ////////////////////////////
 
+- (UIColor *)tintColor;
+
 // Determines the background color of the sheet
 // If nil, then default background color will be used instead
+- (UIColor *)sheetForegroundColor;
 - (UIColor *)sheetBackgroundColor;
 
 // Determines different colors in the navigation bar
@@ -135,12 +138,7 @@
 - (UIColor *)navigationButtonTextColor;
 
 // Determine different colors in the cells
-//
-// Not including the cells in custom table views that do not follow
-// values from theme
-//
 // If nil, then default colors will be used instead
-- (UIColor *)cellTintColor;
 - (UIColor *)cellSeparatorColor;
 - (UIColor *)cellBackgroundColor;
 - (UIColor *)cellTitleTextColor;
@@ -158,8 +156,9 @@
 - (UIColor *)cellHeaderFooterViewBackgroundColor;
 - (UIColor *)cellHeaderFooterViewTitleTextColor;
 
-- (UIColor *)cellSwitchOnColor;
-- (UIColor *)cellSwitchOffColor;
+- (UIColor *)switchThumbColor;
+- (UIColor *)switchOnColor;
+- (UIColor *)switchOffColor;
 
 //////////////////////////////////////////
 ////////// Sizes and Dimensions //////////
@@ -177,13 +176,15 @@
  * Default theme values
  **/
 
++ (UIColor *)defaultTintColor;
+
++ (UIColor *)defaultSheetForegroundColor;
 + (UIColor *)defaultSheetBackgroundColor;
 
 + (UIColor *)defaultNavigationBarBackgroundColor;
 + (UIColor *)defaultNavigationTitleTextColor;
 + (UIColor *)defaultNavigationButtonTextColor;
 
-+ (UIColor *)defaultCellTintColor;
 + (UIColor *)defaultCellSeparatorColor;
 + (UIColor *)defaultCellBackgroundColor;
 + (UIColor *)defaultCellTitleTextColor;
@@ -201,8 +202,9 @@
 + (UIColor *)defaultCellHeaderFooterViewBackgroundColor;
 + (UIColor *)defaultCellHeaderFooterViewTitleTextColor;
 
-+ (UIColor *)defaultCellSwitchOnColor;
-+ (UIColor *)defaultCellSwitchOffColor;
++ (UIColor *)defaultSwitchThumbColor;
++ (UIColor *)defaultSwitchOnColor;
++ (UIColor *)defaultSwitchOffColor;
 
 + (CGFloat)defaultCornerRadius;
 + (CGFloat)defaultHeightOfCellOfType:(PWWidgetCellType)type forOrientation:(PWWidgetOrientation)orientation;

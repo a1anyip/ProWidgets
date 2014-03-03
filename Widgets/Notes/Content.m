@@ -13,6 +13,7 @@
 #import "PWContentViewController.h"
 #import "PWController.h"
 #import "PWTheme.h"
+#import "PWThemableTextView.h"
 
 @implementation PWWidgetNotesContentView
 
@@ -31,7 +32,8 @@
 		[self addSubview:_dateLabel];
 		
 		CGFloat padding = 10.0;
-		_contentView = [UITextView new];
+		_contentView = [PWThemableTextView new];
+		_contentView.tintColor = [PWTheme systemBlueColor];
 		_contentView.backgroundColor = [UIColor clearColor];
 		_contentView.selectable = YES;
 		_contentView.alwaysBounceVertical = YES;
@@ -58,13 +60,6 @@
 }
 
 - (NSString *)content {
-	/*
-	NSAttributedString *attributedString = _contentView.attributedText;
-	NSDictionary *documentAttributes = @{ NSDocumentTypeDocumentAttribute: NSHTMLTextDocumentType };
-	NSData *htmlData = [attributedString dataFromRange:NSMakeRange(0, attributedString.length) documentAttributes:documentAttributes error:NULL];
-	NSString *htmlString = [[[NSString alloc] initWithData:htmlData encoding:NSUTF8StringEncoding] autorelease];
-	return htmlString;
-	*/
 	return _contentView.text;
 }
 
@@ -102,9 +97,9 @@
 
 - (void)setEditing:(BOOL)editing {
 	
+	_editing = editing;
+	
 	if (editing) {
-		
-		_edited = YES;
 		
 		_contentView.dataDetectorTypes = UIDataDetectorTypeNone;
 		_contentView.editable = YES;
@@ -121,10 +116,12 @@
 		[_contentView becomeFirstResponder];
 		
 	} else {
+		
 		_contentView.editable = NO;
 		_contentView.dataDetectorTypes = UIDataDetectorTypePhoneNumber | UIDataDetectorTypeLink | UIDataDetectorTypeAddress | UIDataDetectorTypeCalendarEvent;
-		[_contentView setNeedsDisplay];
-		[_contentView setNeedsLayout];
+		
+		//[_contentView setNeedsDisplay];
+		//[_contentView setNeedsLayout];
 		[_contentView resignFirstResponder];
 	}
 }
@@ -175,9 +172,7 @@
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
-	if (self.contentView.edited) {
-		[self saveNote];
-	}
+	[self saveNote];
 }
 
 - (void)willBePresentedInNavigationController:(UINavigationController *)navigationController {
@@ -194,6 +189,10 @@
 	self.requiresKeyboard = NO;
 }
 
+- (void)textViewDidChange:(UITextView *)textView {
+	_edited = YES;
+}
+
 - (void)actionButtonPressed {
 	PWWidgetNotesContentView *view = (PWWidgetNotesContentView *)self.view;
 	[view setEditing:NO];
@@ -204,43 +203,20 @@
 
 - (void)saveNote {
 	
+	if (!_edited) {
+		LOG(@"No change in note content");
+		return;
+	}
+	
 	PWWidgetNotesContentView *view = self.contentView;
 	
 	// new content
 	NSString *content = view.content;
-	NSString *bodyContent = content;
 	
 	if ([content length] == 0) {
 		// remove this note instead
 		[_listViewController removeNote:_noteObject];
-		[[PWController activeWidget] popViewControllerAnimated:YES];
-		return;
-	}
-	
-	// process body content
-	REPLACE(bodyContent, @"<", @"&lt;")
-	REPLACE(bodyContent, @">", @"&gt;")
-	
-	// old content
-	NSString *oldContent = [_noteObject content];
-	
-	LOG(@"PWWidgetNotesContentViewController: original content: %@", oldContent);
-	
-	// process old content
-	REPLACE(oldContent, @"&nbsp;", @" ")
-	REPLACE(oldContent, @"<div><br></div>", @"\n")
-	REPLACE(oldContent, @"<br>", @"\n")
-	REPLACE(oldContent, @"<br/>", @"\n")
-	REPLACE(oldContent, @"<div>", @"\n")
-	REPLACE(oldContent, @"</div>", @"")
-	REPLACE(oldContent, @"<p>", @"")
-	REPLACE(oldContent, @"</p>", @"\n")
-	
-	LOG(@"PWWidgetNotesContentViewController: old content: %@", oldContent);
-	LOG(@"PWWidgetNotesContentViewController: new content: %@", bodyContent);
-	
-	if ([oldContent isEqualToString:bodyContent]) {
-		LOG(@"PWWidgetNotesContentViewController: Not saving note because the content did not change.");
+		[self.widget popViewControllerAnimated:YES];
 		return;
 	}
 	
@@ -273,17 +249,23 @@
 	// modify the note body
 	NoteBodyObject *body = _noteObject.body;
 	
+	// process body content
+	NSString *bodyContent = content;
+	REPLACE(bodyContent, @"<", @"&lt;")
+	REPLACE(bodyContent, @">", @"&gt;")
 	REPLACE(bodyContent, @" ", @"&nbsp;")
 	REPLACE(bodyContent, @"\n", @"<br>")
 	
 	body.content = bodyContent;
 	
 	// save it
-	NoteContext *noteContext = [(PWWidgetNotes *)[PWController activeWidget] noteContext];
+	NoteContext *noteContext = [(PWWidgetNotes *)self.widget noteContext];
 	[noteContext saveOutsideApp:NULL];
 	
 	// update date value
 	[self.contentView setDate:modificationDate];
+	
+	_edited = NO;
 }
 
 #undef REPLACE

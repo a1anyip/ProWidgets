@@ -44,7 +44,7 @@
 }
 
 - (void)titleTapped {
-	PWWidgetAlarm *widget = (PWWidgetAlarm *)[PWController activeWidget];
+	PWWidgetAlarm *widget = (PWWidgetAlarm *)self.widget;
 	[widget switchToAddInterface];
 }
 

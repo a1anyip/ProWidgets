@@ -118,7 +118,7 @@
 	if (_currentInterface == PWWidgetRemindersInterfaceAdd) return;
 	
 	if (_addViewControllers == nil) {
-		PWWidgetRemindersAddViewController *addViewController = [PWWidgetRemindersAddViewController new];
+		PWWidgetRemindersAddViewController *addViewController = [[PWWidgetRemindersAddViewController new] autorelease];
 		_addViewControllers = [@[addViewController] copy];
 	}
 	
@@ -131,7 +131,7 @@
 	if (_currentInterface == PWWidgetRemindersInterfaceOverview) return;
 	
 	if (_overviewViewControllers == nil) {
-		PWWidgetRemindersOverviewViewController *overviewViewController = [PWWidgetRemindersOverviewViewController new];
+		PWWidgetRemindersOverviewViewController *overviewViewController = [[PWWidgetRemindersOverviewViewController new] autorelease];
 		_overviewViewControllers = [@[overviewViewController] copy];
 	}
 	

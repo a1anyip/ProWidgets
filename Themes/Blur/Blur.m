@@ -91,12 +91,12 @@
 }
 
 // switch
-- (UIColor *)cellSwitchOnColor {
-	return [self preferredTintColor] == nil ? [super cellSwitchOnColor] : [[self preferredTintColor] colorWithAlphaComponent:.8];
+- (UIColor *)switchOnColor {
+	return [self preferredTintColor] == nil ? [super switchOnColor] : [[self preferredTintColor] colorWithAlphaComponent:.8];
 }
 
-- (UIColor *)cellSwitchOffColor {
-	return [self preferredTintColor] == nil ? [super cellSwitchOffColor] : [UIColor colorWithWhite:0 alpha:.2];
+- (UIColor *)switchOffColor {
+	return [self preferredTintColor] == nil ? [super switchOffColor] : [UIColor colorWithWhite:0 alpha:.2];
 }
 
 - (void)setupTheme {

@@ -52,7 +52,7 @@ extern char PWWidgetRemindersTableViewCellReminderKey;
 }
 
 - (EKEventStore *)store {
-	PWWidgetReminders *widget = (PWWidgetReminders *)[PWController activeWidget];
+	PWWidgetReminders *widget = (PWWidgetReminders *)self.widget;
 	return widget.eventStore;
 }
 
@@ -81,7 +81,7 @@ extern char PWWidgetRemindersTableViewCellReminderKey;
 }
 
 - (void)titleTapped {
-	PWWidgetReminders *widget = (PWWidgetReminders *)[PWController activeWidget];
+	PWWidgetReminders *widget = (PWWidgetReminders *)self.widget;
 	[widget switchToAddInterface];
 }
 

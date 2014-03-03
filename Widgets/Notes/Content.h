@@ -13,12 +13,12 @@
 
 @interface PWWidgetNotesContentView : UIView {
 	
-	BOOL _edited;
+	BOOL _editing;
 	UILabel *_dateLabel;
 	UITextView *_contentView;
 }
 
-@property(nonatomic, readonly) BOOL edited;
+@property(nonatomic, readonly) BOOL editing;
 
 - (NSString *)content;
 
@@ -32,6 +32,7 @@
 
 @interface PWWidgetNotesContentViewController : PWContentViewController<UITextViewDelegate> {
 	
+	BOOL _edited;
 	PWWidgetNotesListViewController *_listViewController;
 	NoteObject *_noteObject;
 }

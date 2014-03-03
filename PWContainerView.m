@@ -22,6 +22,7 @@
 		
 		// create sheet background view
 		_containerBackgroundView = [UIImageView new];
+		_containerBackgroundView.userInteractionEnabled = NO;
 		[self addSubview:_containerBackgroundView];
 	}
 	return self;

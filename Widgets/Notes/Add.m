@@ -25,12 +25,12 @@
 }
 
 - (NoteContext *)noteContext {
-	PWWidgetNotes *widget = (PWWidgetNotes *)[PWController activeWidget];
+	PWWidgetNotes *widget = (PWWidgetNotes *)self.widget;
 	return widget.noteContext;
 }
 
 - (void)titleTapped {
-	PWWidgetNotes *widget = (PWWidgetNotes *)[PWController activeWidget];
+	PWWidgetNotes *widget = (PWWidgetNotes *)self.widget;
 	[widget switchToListInterface];
 }
 
@@ -41,8 +41,8 @@
 	NSArray *stores = [noteContext allStores];
 	
 	if ([stores count] == 0) {
-		[[PWController activeWidget] showMessage:@"You need at least one store to save notes." title:nil handler:^{
-			[[PWController activeWidget] dismiss];
+		[self.widget showMessage:@"You need at least one store to save notes." title:nil handler:^{
+			[self.widget dismiss];
 		}];
 		return;
 	}
@@ -80,7 +80,7 @@
 	unsigned int selectedAccountIndex = [(values[@"account"])[0] unsignedIntValue];
 	
 	if ([content length] == 0) {
-		[[PWController activeWidget] showMessage:@"Note content cannot be empty."];
+		[self.widget showMessage:@"Note content cannot be empty."];
 		PWWidgetItem *item = [self itemWithKey:@"content"];
 		[item becomeFirstResponder];
 		return;
@@ -143,7 +143,7 @@
 	[noteContext saveOutsideApp:NULL];
 	
 	// dismiss the widget
-	[[PWController activeWidget] dismiss];
+	[self.widget dismiss];
 }
 
 #undef REPLACE

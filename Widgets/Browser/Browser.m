@@ -7,73 +7,116 @@
 //  Copyright 2014 Alan Yip. All rights reserved.
 //
 
-#import "interface.h"
-#import "PWContentItemViewController.h"
-#import "PWWidget.h"
-#import "PWWidgetItem.h"
-#import "WidgetItems/items.h"
+#import "Browser.h"
+#import "Web.h"
+#import "Bookmark.h"
+#import "Add.h"
 
-@interface PWWidgetDictionaryResultViewController : PWContentItemViewController {
-	
-	NSString *_content;
+#define SAFARI_BUNDLE_PATH @"/Applications/MobileSafari.app/"
+
+#define ICON_GETTER(ivar, name) - (UIImage *)ivar {\
+	if (_##ivar == nil) {\
+		_##ivar = [[[UIImage imageNamed:name inBundle:[self safariBundle]] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] retain];\
+	}\
+	return _##ivar;\
 }
 
-@property(nonatomic, copy) NSString *content;
-
-@end
-
-@implementation PWWidgetDictionaryResultViewController
+@implementation PWWidgetBrowser
 
 - (void)load {
-	self.requiresKeyboard = NO;
-	self.shouldMaximizeContentHeight = YES;
-	[self loadPlist:@"DictionaryResultItems"];
+	
+	PWWidgetBrowserInterface defaultInterface = PWWidgetBrowserInterfaceWeb;
+	
+	if (defaultInterface == PWWidgetBrowserInterfaceWeb) {
+		[self switchToWebInterface];
+	} else {
+		[self switchToBookmarkInterface];
+	}
 }
 
-- (void)willBePresentedInNavigationController:(UINavigationController *)navigationController {
+- (NSBundle *)safariBundle {
+	if (_safariBundle == nil) {
+		_safariBundle = [[NSBundle bundleWithPath:SAFARI_BUNDLE_PATH] retain];
+	}
+	return _safariBundle;
+}
+
+ICON_GETTER(reloadIcon, @"NavigationBarReload")
+ICON_GETTER(stopIcon, @"NavigationBarStopLoading")
+ICON_GETTER(bookmarkIcon, @"Bookmark")
+ICON_GETTER(folderIcon, @"BookmarksListFolder")
+
+- (void)navigateToURLFromBookmarkInterface:(NSString *)url {
 	
-	PWWidgetItemWebView *item = (PWWidgetItemWebView *)[self itemWithKey:@"webView"];
-	NSString *content = nil;
+	if (_currentInterface == PWWidgetBrowserInterfaceWeb) return;
 	
-	// adjust the text and separator color
-	UIColor *textColor = [[PWController activeTheme] cellTitleTextColor];
-	UIColor *separatorColor = [[PWController activeTheme] cellSeparatorColor];
-	NSString *textRGBA = [PWTheme RGBAFromColor:textColor];
-	NSString *separatorRGBA = [PWTheme RGBAFromColor:separatorColor];
-	if (textRGBA != nil && separatorRGBA != nil) {
-		content = [NSString stringWithFormat:@"%@<style>* { color:%@ !important; background:none !important; border-color:%@ !important;  }</style>", _content, textRGBA, separatorRGBA];
-	} else {
-		content = _content;
+	[self switchToWebInterface];
+	
+	PWWidgetBrowserWebViewController *controller = [_webViewControllers firstObject];
+	if (controller != nil) {
+		[controller loadURLString:url];
+	}
+}
+
+- (void)addBookmarkFromWebInterfaceWithTitle:(NSString *)title url:(NSString *)url {
+	
+	if (_currentInterface == PWWidgetBrowserInterfaceBookmark) return;
+	
+	PWWidgetBrowserBookmarkViewController *bookmarkViewController = [[PWWidgetBrowserBookmarkViewController new] autorelease];
+	bookmarkViewController.isRoot = YES;
+	
+	PWWidgetBrowserAddBookmarkViewController *addViewController = [[PWWidgetBrowserAddBookmarkViewController new] autorelease];
+	addViewController.bookmarkTitle = title;
+	addViewController.bookmarkURL = url;
+	
+	[_bookmarkViewControllers release];
+	_bookmarkViewControllers = [@[bookmarkViewController, addViewController] copy];
+	
+	[self setViewControllers:_bookmarkViewControllers animated:YES];
+	_currentInterface = PWWidgetBrowserInterfaceBookmark;
+}
+
+- (void)switchToWebInterface {
+	
+	if (_currentInterface == PWWidgetBrowserInterfaceWeb) return;
+	
+	if (_webViewControllers == nil) {
+		PWWidgetBrowserWebViewController *webViewController = [[PWWidgetBrowserWebViewController new] autorelease];
+		_webViewControllers = [@[webViewController] copy];
 	}
 	
-	[item loadHTMLString:content baseURL:nil];
-	[_content release], _content = nil;
+	// update bookmark view controllers
+	if (_bookmarkViewControllers != nil) {
+		[_bookmarkViewControllers release];
+		_bookmarkViewControllers = [self.navigationController.viewControllers copy];
+	}
+	
+	[self setViewControllers:_webViewControllers animated:YES];
+	_currentInterface = PWWidgetBrowserInterfaceWeb;
+}
+
+- (void)switchToBookmarkInterface {
+	
+	if (_currentInterface == PWWidgetBrowserInterfaceBookmark) return;
+	
+	if (_bookmarkViewControllers == nil) {
+		PWWidgetBrowserBookmarkViewController *bookmarkViewController = [[PWWidgetBrowserBookmarkViewController new] autorelease];
+		bookmarkViewController.isRoot = YES;
+		_bookmarkViewControllers = [@[bookmarkViewController] copy];
+	}
+	
+	[self setViewControllers:_bookmarkViewControllers animated:YES];
+	_currentInterface = PWWidgetBrowserInterfaceBookmark;
 }
 
 - (void)dealloc {
-	RELEASE(_content)
-	[super dealloc];
-}
-
-@end
-
-@interface PWWidgetDictionary : PWWidget {
-	
-	PWWidgetDictionaryResultViewController *_resultViewController;
-}
-
-- (void)lookUp:(NSString *)word;
-- (void)setFirstResponder;
-
-@end
-
-@implementation PWWidgetDictionary
-
-- (void)submitEventHandler:(NSDictionary *)values {
-	
-}
-
-- (void)dealloc {
+	RELEASE(_webViewControllers)
+	RELEASE(_bookmarkViewControllers)
+	RELEASE(_reloadIcon)
+	RELEASE(_stopIcon)
+	RELEASE(_bookmarkIcon)
+	RELEASE(_folderIcon)
+	RELEASE(_safariBundle)
 	[super dealloc];
 }
 

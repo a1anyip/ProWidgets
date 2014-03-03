@@ -53,6 +53,10 @@
 	return [PWController activeWidget].topViewController == self;
 }
 
+- (PWWidget *)widget {
+	return [PWController activeWidget];
+}
+
 - (void)keyboardWillShow:(CGFloat)height {}
 - (void)keyboardWillHide {}
 - (void)configureFirstResponder {}
