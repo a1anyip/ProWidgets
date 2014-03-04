@@ -11,6 +11,7 @@
 
 @interface PWWidgetAlarmOverviewViewController : PWContentViewController<UITableViewDelegate, UITableViewDataSource> {
 	
+	UILabel *_noLabel;
 	NSArray *_alarms;
 }
 

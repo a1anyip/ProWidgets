@@ -81,11 +81,10 @@
 	unsigned int row = [indexPath row];
 	
 	if (row >= [_items count]) return;
-	//NSDictionary *item = _items[row];
 	
 	[_items removeObjectAtIndex:row];
 	[self reload];
-	applyFadeTransition(tableView, .3);
+	applyFadeTransition(tableView, PWTransitionAnimationDuration);
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -112,7 +111,7 @@
 		bookmarkViewController.folderTitle = title;
 		[widget pushViewController:bookmarkViewController animated:YES];
 	} else {
-		[widget navigateToURLFromBookmarkInterface:address];
+		[widget navigateToURL:address];
 	}
 }
 

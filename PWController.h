@@ -54,7 +54,7 @@
 	////////////////////////////
 	
 	// indicator of whether a widget is opened
-	BOOL _isPresentingWidget;
+	BOOL _isPresenting;
 	
 	// indicator of whether a widget is being opened (during animation)
 	BOOL _isAnimating;
@@ -65,6 +65,11 @@
 	// current widget
 	// keep a reference to the currently opened widget
 	PWWidget *_presentedWidget;
+	
+	// Pending widget
+	BOOL _hasPendingWidget;
+	PWWidget *_pendingWidget;
+	NSDictionary *_pendingUserInfo;
 	
 	/////////////////
 	///// Theme /////
@@ -87,7 +92,7 @@
 @property(nonatomic, readonly) PWBackgroundView *backgroundView;
 @property(nonatomic, readonly) PWContainerView *containerView;
 
-@property(nonatomic, readonly) BOOL isPresentingWidget;
+@property(nonatomic, readonly) BOOL isPresenting;
 @property(nonatomic, readonly) BOOL isAnimating;
 @property(nonatomic, readonly) BOOL isMinimized;
 @property(nonatomic) BOOL pendingDismissalRequest;
@@ -197,13 +202,14 @@
 - (PWWidget *)_createWidgetFromBundle:(NSBundle *)bundle;
 - (PWWidget *)_createWidgetNamed:(NSString *)name;
 
-// Minimization
-- (BOOL)_minimizeWidget;
-- (BOOL)_maximizeWidget;
-
 // Present or dismiss widget
 - (BOOL)_presentWidget:(PWWidget *)widget userInfo:(NSDictionary *)userInfo;
 - (BOOL)_dismissWidget;
+- (BOOL)_dismissMinimizedWidget;
+
+// Minimization
+- (BOOL)_minimizeWidget;
+- (BOOL)_maximizeWidget;
 
 //////////////////////////////////////////////////////////////////////
 
@@ -260,6 +266,9 @@
 - (UIImage *)iconOfWidgetInBundle:(NSBundle *)bundle;
 - (UIImage *)iconOfThemeNamed:(NSString *)name;
 - (UIImage *)iconOfThemeInBundle:(NSBundle *)bundle;
+
+- (UIImage *)maskOfWidgetNamed:(NSString *)name;
+- (UIImage *)maskOfWidgetInBundle:(NSBundle *)bundle;
 
 - (NSArray *)installedWidgets;
 - (NSDictionary *)enabledWidgets;

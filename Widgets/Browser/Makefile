@@ -7,5 +7,8 @@ Browser_LIBRARIES = prowidgets
 Browser_CFLAGS = -I../../
 Browser_LDFLAGS = -L../../$(THEOS_OBJ_DIR_NAME)
 
+SUBPROJECTS = Substrate 
+
 include theos/makefiles/common.mk
 include $(THEOS_MAKE_PATH)/bundle.mk
+include $(THEOS_MAKE_PATH)/aggregate.mk

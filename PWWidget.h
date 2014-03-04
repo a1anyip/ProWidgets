@@ -178,6 +178,8 @@
 - (void)keyboardWillShow:(CGFloat)height;
 - (void)keyboardWillHide;
 
+- (void)userInfoChanged:(NSDictionary *)userInfo;
+
 // these two methods are only for default layout
 - (void)itemValueChangedEventHandler:(PWWidgetItem *)item oldValue:(id)oldValue;
 - (void)submitEventHandler:(NSDictionary *)values;

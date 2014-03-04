@@ -25,12 +25,26 @@
 
 - (void)load {
 	
-	PWWidgetBrowserInterface defaultInterface = PWWidgetBrowserInterfaceWeb;
+	NSDictionary *userInfo = self.userInfo;
+	NSString *url = userInfo[@"url"];
 	
-	if (defaultInterface == PWWidgetBrowserInterfaceWeb) {
-		[self switchToWebInterface];
+	if (url != nil) {
+		[self navigateToURL:url];
 	} else {
-		[self switchToBookmarkInterface];
+		PWWidgetBrowserInterface defaultInterface = PWWidgetBrowserInterfaceWeb;
+		
+		if (defaultInterface == PWWidgetBrowserInterfaceWeb) {
+			[self switchToWebInterface];
+		} else {
+			[self switchToBookmarkInterface];
+		}
+	}
+}
+
+- (void)userInfoChanged:(NSDictionary *)userInfo {
+	NSString *url = userInfo[@"url"];
+	if (url != nil) {
+		[self navigateToURL:url];
 	}
 }
 
@@ -46,9 +60,7 @@ ICON_GETTER(stopIcon, @"NavigationBarStopLoading")
 ICON_GETTER(bookmarkIcon, @"Bookmark")
 ICON_GETTER(folderIcon, @"BookmarksListFolder")
 
-- (void)navigateToURLFromBookmarkInterface:(NSString *)url {
-	
-	if (_currentInterface == PWWidgetBrowserInterfaceWeb) return;
+- (void)navigateToURL:(NSString *)url {
 	
 	[self switchToWebInterface];
 	

@@ -28,7 +28,7 @@
 - (UIImage *)bookmarkIcon;
 - (UIImage *)folderIcon;
 
-- (void)navigateToURLFromBookmarkInterface:(NSString *)url;
+- (void)navigateToURL:(NSString *)url;
 - (void)addBookmarkFromWebInterfaceWithTitle:(NSString *)title url:(NSString *)url;
 
 - (void)switchToWebInterface;

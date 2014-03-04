@@ -9,6 +9,7 @@
 
 #import "PWController.h"
 #import "PWTestBar.h"
+#import "PWMiniView.h"
 
 #import "PWWindow.h"
 #import "PWView.h"
@@ -369,7 +370,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 
 - (void)_keyboardWillShowHandler:(NSNotification *)notification {
 	
-	if (!_isPresentingWidget) return;
+	if (!_isPresenting) return;
 	
 	NSDictionary *userInfo = [notification userInfo];
 	CGRect rect = [userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
@@ -381,7 +382,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 }
 
 - (void)_keyboardWillHideHandler:(NSNotification *)notification {
-	if (!_isPresentingWidget) return;
+	if (!_isPresenting) return;
 	[self.mainView keyboardWillHide];
 }
 
@@ -662,7 +663,43 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	
 	LOG(@"PWController: _presentWidget <widget: %@> <user info: %@>", widget, userInfo);
 	
-	if (_isPresentingWidget || _presentedWidget != nil) {
+	if (_hasPendingWidget) return NO;
+	
+	// auto maximize the widget
+	if (_isPresenting && _presentedWidget != nil && _isMinimized) {
+		
+		BOOL sameWidget = [widget.name isEqualToString:_presentedWidget.name];
+		
+		if (sameWidget) {
+			// maximize the widget
+			[self _maximizeWidget];
+			
+			// notify the widget that user info has changed
+			NSDictionary *oldUserInfo = _presentedWidget.userInfo;
+			if ((oldUserInfo == nil && userInfo != nil) || (oldUserInfo != nil && userInfo == nil) || ![oldUserInfo isEqual:userInfo]) {
+				_presentedWidget.userInfo = userInfo;
+				[_presentedWidget userInfoChanged:userInfo];
+			}
+		} else {
+			// ask the user whether to dismiss the minimized widget, and
+			// then present the new one
+			PWAlertView *alertView = [[PWAlertView alloc] initWithTitle:@"Another widget is minimized" message:@"Do you want to dismiss the minimized widget, and then present the new one?" buttonTitle:@"Yes" defaultValue:nil cancelButtonTitle:@"No" style:UIAlertViewStyleDefault completion:^(BOOL cancelled, NSString *firstValue, NSString *secondValue) {
+				// ensure the status does not change
+				if (!cancelled && !_hasPendingWidget && _isPresenting && _presentedWidget != nil && _isMinimized) {
+					_hasPendingWidget = YES;
+					_pendingWidget = [widget retain];
+					_pendingUserInfo = [userInfo retain];
+					[self _dismissMinimizedWidget];
+				}
+			}];
+			[alertView show];
+			[alertView release];
+		}
+		
+		return YES;
+	}
+	
+	if (_isPresenting || _presentedWidget != nil) {
 		LOG(@"PWController: Unable to present widget (%@). Reason: Another widget is currently being presented. (%@)", widget, _presentedWidget);
 		return NO;
 	}
@@ -677,7 +714,8 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	
 	_pendingDismissalRequest = NO;
 	
-	_isPresentingWidget = YES;
+	_isPresenting = YES;
+	_isMinimized = NO;
 	_isAnimating = YES;
 	_presentedWidget = [widget retain];
 	
@@ -736,7 +774,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	[widget willPresent];
 	
 	// update the mask in background view
-	[self.backgroundView show];
+	[self.backgroundView show:YES];
 	
 	// show PWWindow
 	[_window show];
@@ -785,13 +823,18 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	LOG(@"PWController: _dismissWidget: %@", _presentedWidget);
 	
 	// no widget is currently presented, unable to dismiss
-	if (!_isPresentingWidget || _presentedWidget == nil) {
+	if (!_isPresenting || _presentedWidget == nil) {
 		LOG(@"PWController: Unable to dismiss widget. Reason: No widget is presented.");
 		return NO;
 	}
 	
 	if (_isAnimating) {
 		LOG(@"PWController: Unable to dismiss widget. Widget is being animated.");
+		return NO;
+	}
+	
+	if (_isMinimized) {
+		LOG(@"PWController: Unable to dismiss widget. Widget is currently minimized.");
 		return NO;
 	}
 	
@@ -835,8 +878,8 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 		[_presentedWidget _dealloc];
 		[_presentedWidget release];
 		
-		_pendingDismissalRequest = NO;
-		_isPresentingWidget = NO;
+		_isPresenting = NO;
+		_isMinimized = NO;
 		_isAnimating = NO;
 		_presentedWidget = nil;
 		
@@ -855,11 +898,115 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	
 	CABasicAnimation *scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
 	scale.fromValue = [NSNumber numberWithFloat:1.0];
-	scale.toValue = [NSNumber numberWithFloat:0.8];
+	scale.toValue = [NSNumber numberWithFloat:0.7];
 	scale.fillMode = kCAFillModeForwards;
 	scale.removedOnCompletion = NO;
 	
 	layer.opacity = 0.0;
+	
+	[layer addAnimation:fade forKey:@"fade"];
+	[layer addAnimation:scale forKey:@"scale"];
+	[CATransaction commit];
+	
+	return YES;
+}
+
+- (BOOL)_dismissMinimizedWidget {
+	
+	LOG(@"PWController: _dismissMinimizedWidget: %@", _presentedWidget);
+	
+	// no widget is currently presented, unable to dismiss
+	if (!_isPresenting || _presentedWidget == nil) {
+		LOG(@"PWController: Unable to dismiss widget. Reason: No widget is presented.");
+		return NO;
+	}
+	
+	if (_isAnimating) {
+		LOG(@"PWController: Unable to dismiss widget. Widget is being animated.");
+		return NO;
+	}
+	
+	if (!_isMinimized) {
+		LOG(@"PWController: Unable to dismiss widget. Widget is not minimized.");
+		return NO;
+	}
+	
+	_pendingDismissalRequest = NO;
+	
+	// update flag
+	_isAnimating = YES;
+	
+	// force hide keyboard
+	[_window endEditing:YES];
+	
+	// notify widget
+	[_presentedWidget willDismiss];
+	
+	// remove theme
+	[[PWController activeTheme] removeTheme];
+	
+	// remove container view
+	[self.mainView removeContainerView];
+	
+	// perform animation
+	CALayer *layer = self.window.miniView.layer;
+	CGFloat scaleTo = PWMinimizationScale * 0.8;
+	
+	[CATransaction begin];
+	[CATransaction setAnimationDuration:PWAnimationDuration];
+	[CATransaction setCompletionBlock:^{
+		
+		[_presentedWidget didDismiss];
+		
+		// hide window
+		// stop blocking user interaction
+		[_window hide];
+		
+		// remove mini view
+		[self.window removeMiniView];
+		
+		// show main view
+		self.mainView.hidden = NO;
+		
+		// this is to force release all the event handlers that may retain widget instance (inside block)
+		// then widget will never get released
+		[_presentedWidget _dealloc];
+		[_presentedWidget release];
+		
+		_isPresenting = NO;
+		_isMinimized = NO;
+		_isAnimating = NO;
+		_presentedWidget = nil;
+		
+		if (![self.class isIPad]) {
+			[[objc_getClass("SBUIController") sharedInstance] _releaseTransitionOrientationLock];
+			_interfaceOrientationIsLocked = NO;
+		}
+		
+		// reset auto dim timer
+		[[objc_getClass("SBBacklightController") sharedInstance] resetLockScreenIdleTimer];
+		
+		// check if there is any pending widget
+		if (_hasPendingWidget) {
+			_hasPendingWidget = NO;
+			[self _presentWidget:_pendingWidget userInfo:_pendingUserInfo];
+			RELEASE(_pendingWidget)
+			RELEASE(_pendingUserInfo)
+		}
+	}];
+	
+	CABasicAnimation *fade = [CABasicAnimation animationWithKeyPath:@"opacity"];
+	fade.fromValue = [NSNumber numberWithFloat:1.0];
+	fade.toValue = [NSNumber numberWithFloat:0.0];
+	
+	CABasicAnimation *scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
+	scale.fromValue = [NSNumber numberWithFloat:PWMinimizationScale];
+	scale.toValue = [NSNumber numberWithFloat:scaleTo];
+	scale.fillMode = kCAFillModeForwards;
+	scale.removedOnCompletion = NO;
+	
+	layer.opacity = 0.0;
+	layer.transform = CATransform3DMakeScale(scaleTo, scaleTo, 1.0);
 	
 	[layer addAnimation:fade forKey:@"fade"];
 	[layer addAnimation:scale forKey:@"scale"];
@@ -873,7 +1020,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	LOG(@"PWController: _minimizeWidget: %@", _presentedWidget);
 	
 	// no widget is currently presented, unable to dismiss
-	if (!_isPresentingWidget || _presentedWidget == nil) {
+	if (!_isPresenting || _presentedWidget == nil) {
 		LOG(@"PWController: Unable to minimize widget. Reason: No widget is presented.");
 		return NO;
 	}
@@ -888,7 +1035,106 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 		return NO;
 	}
 	
-	// TODO
+	_isMinimized = YES;
+	_pendingDismissalRequest = NO;
+	
+	// hide debug bar
+	[[PWTestBar sharedInstance] hide];
+	
+	// update flag
+	_isAnimating = YES;
+	
+	// force hide keyboard
+	[_window endEditing:YES];
+	
+	// generate image for mini view
+	UIGraphicsBeginImageContextWithOptions(self.containerView.bounds.size, NO, 0);
+	
+	PWTheme *theme = [PWController activeTheme];
+	[theme enterSnapshotMode];
+	[self.containerView drawViewHierarchyInRect:self.containerView.bounds afterScreenUpdates:YES];
+	[theme exitSnapshotMode];
+	
+	UIImage *snapshot = UIGraphicsGetImageFromCurrentImageContext();
+	UIGraphicsEndImageContext();
+	
+	// apply gaussian blur to the snapshot
+	/*
+	CIFilter *filter = [CIFilter filterWithName:@"CIGaussianBlur"];
+	[filter setDefaults];
+	[filter setValue:[CIImage imageWithCGImage:[snapshot CGImage]] forKey:kCIInputImageKey];
+	[filter setValue:@(3.0) forKey:kCIInputRadiusKey];
+	CIImage *outputImage = [filter outputImage];
+	snapshot = [UIImage imageWithCIImage:outputImage];
+	*/
+	
+	// hide container view
+	self.containerView.hidden = YES;
+	
+	// hide background view
+	[self.backgroundView hide];
+	
+	// ask window to create a mini view with the snapshot image
+	PWMiniView *miniView = [self.window createMiniViewWithSnapshot:snapshot];
+	
+	// animate the layer
+	CALayer *layer = miniView.layer;
+	CGFloat fadeTo = .9;
+	CGFloat viewScale = PWMinimizationScale;
+	CGFloat initialExtraScale = .92;
+	CGPoint initialPosition = [self.window getInitialPositionOfMiniView];
+	
+	[CATransaction begin];
+	[CATransaction setAnimationDuration:.3];
+	[CATransaction setAnimationTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
+	[CATransaction setCompletionBlock:^{
+		
+		// hide main view
+		self.mainView.hidden = YES;
+		
+		// configure its appearance
+		[layer setCornerRadius:20.0];
+		[layer setBorderColor:[UIColor colorWithWhite:.3 alpha:.8].CGColor];
+		[layer setBorderWidth:3.0];
+		
+		// perform second animation
+		[CATransaction begin];
+		[CATransaction setAnimationDuration:.15];
+		[CATransaction setAnimationTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
+		[CATransaction setCompletionBlock:^{
+			_isAnimating = NO;
+		}];
+		
+		CABasicAnimation *scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
+		scale.fromValue = [NSNumber numberWithFloat:viewScale * initialExtraScale];
+		scale.toValue = [NSNumber numberWithFloat:viewScale];
+		
+		layer.transform = CATransform3DMakeScale(viewScale, viewScale, 1.0);
+		
+		[layer addAnimation:scale forKey:@"scale"];
+		[CATransaction commit];
+	}];
+	
+	CABasicAnimation *fade = [CABasicAnimation animationWithKeyPath:@"opacity"];
+	fade.fromValue = [NSNumber numberWithFloat:1.0];
+	fade.toValue = [NSNumber numberWithFloat:fadeTo];
+	
+	CABasicAnimation *scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
+	scale.fromValue = [NSNumber numberWithFloat:1.0];
+	scale.toValue = [NSNumber numberWithFloat:viewScale * initialExtraScale];
+	
+	CABasicAnimation *position = [CABasicAnimation animationWithKeyPath:@"position"];
+	position.fromValue = [NSValue valueWithCGPoint:layer.position];
+	position.toValue = [NSValue valueWithCGPoint:initialPosition];
+	
+	layer.opacity = fadeTo;
+	layer.transform = CATransform3DMakeScale(viewScale * initialExtraScale, viewScale * initialExtraScale, 1.0);
+	layer.position = initialPosition;
+	
+	[layer addAnimation:fade forKey:@"fade"];
+	[layer addAnimation:scale forKey:@"scale"];
+	[layer addAnimation:position forKey:@"position"];
+	[CATransaction commit];
 	
 	return YES;
 }
@@ -898,7 +1144,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	LOG(@"PWController: _maximizeWidget: %@", _presentedWidget);
 	
 	// no widget is currently presented, unable to dismiss
-	if (!_isPresentingWidget || _presentedWidget == nil) {
+	if (!_isPresenting || _presentedWidget == nil) {
 		LOG(@"PWController: Unable to maximize widget. Reason: No widget is presented.");
 		return NO;
 	}
@@ -913,7 +1159,62 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 		return NO;
 	}
 	
-	// TODO
+	// update flag
+	_isAnimating = YES;
+	
+	// request key window
+	[self.window show];
+	
+	PWMiniView *miniView = self.window.miniView;
+	CGFloat miniViewScale = PWMinimizationScale;
+	CGPoint miniViewCenter = miniView.center;
+	
+	// show main view and container view
+	self.containerView.hidden = NO;
+	self.mainView.hidden = NO;
+	
+	// remove mini view
+	[self.window removeMiniView];
+	
+	// animate the layer
+	CALayer *layer = self.containerView.layer;
+	CGFloat fadeFrom = .8;
+	
+	[CATransaction begin];
+	[CATransaction setAnimationDuration:.2];
+	[CATransaction setAnimationTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
+	[CATransaction setCompletionBlock:^{
+		
+		// show background view
+		[self.backgroundView show:NO];
+		
+		// force main view to perform layoutSubviews
+		[self.mainView setNeedsLayout];
+		
+		// ask the top view controller to configure first responder (regain keyboard)
+		[_presentedWidget.topViewController configureFirstResponder];
+		
+		// update flags
+		_isAnimating = NO;
+		_isMinimized = NO;
+	}];
+	
+	CABasicAnimation *fade = [CABasicAnimation animationWithKeyPath:@"opacity"];
+	fade.fromValue = @(fadeFrom);
+	fade.toValue = @(1.0);
+	
+	CABasicAnimation *scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
+	scale.fromValue = @(miniViewScale);
+	scale.toValue = @(1.0);
+	
+	CABasicAnimation *position = [CABasicAnimation animationWithKeyPath:@"position"];
+	position.fromValue = [NSValue valueWithCGPoint:miniViewCenter];
+	position.toValue = [NSValue valueWithCGPoint:layer.position];
+	
+	[layer addAnimation:fade forKey:@"fade"];
+	[layer addAnimation:scale forKey:@"scale"];
+	[layer addAnimation:position forKey:@"position"];
+	[CATransaction commit];
 	
 	return YES;
 }
@@ -1347,6 +1648,24 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	return [UIImage imageNamed:iconFile inBundle:bundle];
 }
 
+- (UIImage *)maskOfWidgetNamed:(NSString *)name {
+	NSBundle *bundle = [self _bundleNamed:name ofType:@"Widgets"];
+	return [self maskOfWidgetInBundle:bundle];
+}
+
+- (UIImage *)maskOfWidgetInBundle:(NSBundle *)bundle {
+	
+	if (bundle == nil) return nil;
+	
+	NSDictionary *info = [self infoOfWidgetInBundle:bundle];
+	NSString *maskFile = info[@"maskFile"];
+	
+	if (maskFile == nil || [maskFile length] == 0)
+		return nil;
+	
+	return [UIImage imageNamed:maskFile inBundle:bundle];
+}
+
 - (NSArray *)installedWidgets {
 	return [self _installedBundlesOfType:@"Widgets" infoSelector:@selector(infoOfWidgetInBundle:)];
 }
@@ -1416,13 +1735,13 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
  **/
 
 + (BOOL)_shouldDisableLockScreenIdleTimer {
-	return [PWController sharedInstance].isPresentingWidget;
+	return [PWController sharedInstance].isPresenting;
 }
 
 - (void)_manuallyDismissWidget {
 	
 	_pendingDismissalRequest = NO;
-	_isPresentingWidget = NO;
+	_isPresenting = NO;
 	_isAnimating = NO;
 	
 	[_presentedWidget release], _presentedWidget = nil;

@@ -408,6 +408,9 @@ static NSDictionary *supportedColorString = nil;
  * Override these methods to configure the theme
  **/
 
+- (void)enterSnapshotMode {}
+- (void)exitSnapshotMode {}
+
 // Setup Theme
 // for themers to setup the theme
 // e.g. set background image

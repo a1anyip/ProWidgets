@@ -12,10 +12,13 @@
 #define VERSION 100
 #define PWPrefPath @"/var/mobile/Library/Preferences/cc.tweak.prowidgets.plist"
 
+#define PWMinimizationScale .2
+
 #define PWBackgroundViewFadeDuration 0.1
 #define PWBackgroundViewAlpha 0.5
 
 #define PWAnimationDuration .28
+#define PWTransitionAnimationDuration .2
 
 #define PWSheetMotionEffectDistance 10.0
 #define PWSheetHorizontalMargin 6.0
@@ -69,7 +72,7 @@
 @class PWController;
 
 // Core
-@class PWTestBar, PWBase, PWWindow, PWBackgroundView, PWView, PWContainerView, PWContentViewController, PWContentItemViewController, PWContentListViewController, PWEventHandler, PWThemableTableView, PWThemableTableViewCell, PWAlertView;
+@class PWTestBar, PWMiniView, PWBase, PWWindow, PWBackgroundView, PWView, PWContainerView, PWContentViewController, PWContentItemViewController, PWContentListViewController, PWEventHandler, PWThemableTableView, PWThemableTableViewCell, PWAlertView;
 
 // Widget
 @class PWWidget, PWWidgetJS, PWWidgetPlistParser, PWWidgetItem, PWWidgetItemCell;

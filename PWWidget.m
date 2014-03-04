@@ -317,6 +317,8 @@
 - (void)keyboardWillShow:(CGFloat)height {}
 - (void)keyboardWillHide {}
 
+- (void)userInfoChanged:(NSDictionary *)userInfo {}
+
 - (void)itemValueChangedEventHandler:(PWWidgetItem *)item oldValue:(id)oldValue {}
 - (void)submitEventHandler:(NSDictionary *)values {}
 

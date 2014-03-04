@@ -47,7 +47,7 @@
 		[self addSubview:_webView];
 		
 		_messageLabel = [UILabel new];
-		_messageLabel.text = @"Type the website URL or\nTap on title to view bookmarks";
+		//_messageLabel.text = @"Type  or\nTap on title to view bookmarks";
 		_messageLabel.font = [UIFont boldSystemFontOfSize:16.0];
 		_messageLabel.textColor = [theme sheetForegroundColor];
 		_messageLabel.numberOfLines = 0;
@@ -68,7 +68,7 @@
 	CGFloat textFieldHorizontalPadding = 10.0;
 	CGFloat textFieldHeight = 35.0;
 	CGFloat buttonSize = 25.0;
-	CGFloat messageLabelHeight = 100.0;
+	CGFloat messageLabelHeight = 60.0;
 	
 	CGRect textFieldRect;
 	if (_buttonHidden) {
@@ -181,7 +181,9 @@
 	}
 	
 	[self updateNavigationButtonState];
-	
+}
+
+- (void)configureFirstResponder {
 	// auto focus URL if it's empty
 	UITextField *textField = self.webView.textField;
 	if ([textField.text length] == 0) {

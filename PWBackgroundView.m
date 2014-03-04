@@ -20,10 +20,10 @@
 	return self;
 }
 
-- (void)show {
+- (void)show:(BOOL)shouldAnimateTransform {
 	
 	[self clearMask];
-	self.shouldAnimateTransform = YES;
+	self.shouldAnimateTransform = shouldAnimateTransform;
 	
 	self.alpha = 0.0;
 	[UIView animateWithDuration:PWAnimationDuration animations:^{

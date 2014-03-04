@@ -19,6 +19,21 @@ typedef enum {
 	AlarmDaySettingSunday	= 1 << 6
 } AlarmDaySetting;
 
+@interface AppController : UIApplication
+
+- (void)_selectViewController:(id)viewController;
+
+@end
+
+@interface ClockManager : NSObject
+
++ (instancetype)sharedManager;
++ (void)loadUserPreferences;
++ (void)saveAndNotifyForUserPreferences:(BOOL)arg1 localNotifications:(BOOL)arg2;
+- (void)refreshScheduledLocalNotificationsCache;
+
+@end
+
 @interface AlarmManager : NSObject
 
 @property(readonly, nonatomic) int defaultSoundType;
@@ -30,9 +45,11 @@ typedef enum {
 
 - (void)unloadAlarms;
 - (void)loadAlarms;
+- (void)loadScheduledNotifications;
 
 - (NSArray *)alarms;
 - (Alarm *)alarmWithId:(NSString *)alarmId;
+- (void)setAlarm:(Alarm *)alarm active:(BOOL)active;
 - (void)updateAlarm:(Alarm *)alarm active:(BOOL)active;
 - (void)addAlarm:(Alarm *)alarm active:(BOOL)active;
 - (void)removeAlarm:(Alarm *)alarm;

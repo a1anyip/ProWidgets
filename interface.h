@@ -102,6 +102,13 @@
 
 @end
 
+@interface CAFilter : NSObject
+
++ (instancetype)filterWithName:(NSString *)name;
+- (void)setValue:(id)value forKey:(id)key;
+
+@end
+
 @interface UIWindow ()
 
 - (UIResponder *)firstResponder;
@@ -110,6 +117,7 @@
 
 @interface UIView ()
 
++ (void)setAnimationPosition:(CGPoint)position;
 - (NSString *)recursiveDescription;
 
 @end

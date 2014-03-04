@@ -182,8 +182,6 @@ static NSDate *_alarmsLastModified = nil;
 
 + (NSArray *)allAlarms {
 	
-	if (![PWController protectedDataAvailable]) return [NSArray array];
-	
 	AlarmManager *manager = [self _alarmManager];
 	NSArray *alarms = [[manager alarms] copy];
 	
@@ -203,8 +201,6 @@ static NSDate *_alarmsLastModified = nil;
 }
 
 + (PWAPIAlarm *)addAlarmWithTitle:(NSString *)title active:(BOOL)active hour:(NSUInteger)hour minute:(NSUInteger)minute daySetting:(NSUInteger)daySetting allowsSnooze:(BOOL)allowsSnooze sound:(NSString *)sound soundType:(AlarmSoundType)soundType {
-	
-	if (![PWController protectedDataAvailable]) return nil;
 	
 	if (title == nil) {
 		title = @"";
@@ -239,7 +235,6 @@ static NSDate *_alarmsLastModified = nil;
 + (void)removeAlarmWithId:(NSString *)alarmId {
 	
 	if (alarmId == nil) return;
-	if (![PWController protectedDataAvailable]) return;
 	
 	NSDictionary *dict = @{
 						   @"action": @"remove",
@@ -270,7 +265,6 @@ static NSDate *_alarmsLastModified = nil;
 + (void)setDefaultSound:(NSString *)identifier ofType:(AlarmSoundType)type {
 	
 	if (identifier == nil) return;
-	if (![PWController protectedDataAvailable]) return;
 	
 	NSDictionary *dict = @{
 						   @"action": @"setDefaultSound",
@@ -283,8 +277,6 @@ static NSDate *_alarmsLastModified = nil;
 }
 
 + (AlarmManager *)_alarmManager {
-	
-	if (![PWController protectedDataAvailable]) return nil;
 	
 	// retrieve the alarm instance
 	AlarmManager *manager = [AlarmManager sharedManager];
@@ -416,7 +408,6 @@ PW_IMP_ALARM(daySetting, DaySetting, NSUInteger)
 - (void)_updateAlarmValue:(id)value forKey:(NSString *)key {
 	
 	if (_alarmId == nil || key == nil || value == nil) return;
-	if (![PWController protectedDataAvailable]) return;
 	
 	NSDictionary *dict = @{
 						   @"action": @"update",
@@ -425,7 +416,7 @@ PW_IMP_ALARM(daySetting, DaySetting, NSUInteger)
 						   @"value": value
 						   };
 	
-	// notify MobileTimer to make the changes (synchronized)
+	// notify MobileTimer to make the changes (synchronous)
 	[OBJCIPC sendMessageToAppWithIdentifier:TimerIdentifier messageName:@"PWAPIAlarm" dictionary:dict];
 }
 

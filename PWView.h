@@ -11,6 +11,7 @@
 #import "PWController.h"
 #import "PWBackgroundView.h"
 #import "PWContainerView.h"
+#import "PWMiniView.h"
 
 @interface PWView : UIView {
 	

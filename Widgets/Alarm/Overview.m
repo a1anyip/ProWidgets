@@ -23,6 +23,17 @@
 	
 	self.tableView.delegate = self;
 	self.tableView.dataSource = self;
+	
+	PWTheme *theme = [PWController activeTheme];
+	
+	_noLabel = [UILabel new];
+	_noLabel.text = @"Loading";
+	_noLabel.textColor = [theme sheetForegroundColor];
+	_noLabel.font = [UIFont boldSystemFontOfSize:22.0];
+	_noLabel.textAlignment = NSTextAlignmentCenter;
+	_noLabel.frame = self.view.bounds;
+	_noLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+	[self.view addSubview:_noLabel];
 }
 
 - (NSString *)title {
@@ -39,8 +50,28 @@
 
 - (void)willBePresentedInNavigationController:(UINavigationController *)navigationController {
 	[self configureCloseButton];
-	[self setHandlerForEvent:[PWContentViewController titleTappedEventName] target:self selector:@selector(titleTapped)];
 	[self retrieveAlarms];
+	[self setHandlerForEvent:[PWContentViewController titleTappedEventName] target:self selector:@selector(titleTapped)];
+}
+
+- (void)reload {
+	
+	// reload table view
+	[self.tableView reloadData];
+	
+	// fade in or out the no label
+	if ([_alarms count] == 0) {
+		_noLabel.text = @"No Alarms";
+		self.tableView.alwaysBounceVertical = NO;
+		[UIView animateWithDuration:PWTransitionAnimationDuration animations:^{
+			_noLabel.alpha = 1.0;
+		}];
+	} else {
+		self.tableView.alwaysBounceVertical = YES;
+		[UIView animateWithDuration:PWTransitionAnimationDuration animations:^{
+			_noLabel.alpha = 0.0;
+		}];
+	}
 }
 
 - (void)titleTapped {
@@ -63,6 +94,30 @@
 	
 	// deselect the cell
 	[tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
+
+- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
+	return YES;
+}
+
+- (UITableViewCellEditingStyle)tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath {
+	return UITableViewCellEditingStyleDelete;
+}
+
+- (NSString *)tableView:(UITableView *)tableView titleForDeleteConfirmationButtonForRowAtIndexPath:(NSIndexPath *)indexPath {
+	return @"Remove";
+}
+
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
+	
+	unsigned int row = [indexPath row];
+	
+	if (row >= [_alarms count]) return;
+	
+	PWAPIAlarm *alarm = _alarms[row];
+	[PWAPIAlarmManager removeAlarm:alarm];
+	
+	[self retrieveAlarms];
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -100,20 +155,19 @@
 
 - (void)retrieveAlarms {
 	
-	// retrieve all alarms via API
-	[_alarms release];
-	_alarms = [[PWAPIAlarmManager allAlarms] retain];
-	
-	// reload table view
-	[self.tableView reloadData];
-	
-	// from http://stackoverflow.com/questions/7547934/animated-reloaddata-on-uitableview
-	CATransition *animation = [CATransition animation];
-	[animation setType:kCATransitionFade];
-	[animation setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut]];
-	[animation setFillMode:kCAFillModeBoth];
-	[animation setDuration:.2];
-	[[self.tableView layer] addAnimation:animation forKey:@"fade"];
+	dispatch_async(dispatch_get_global_queue(0, 0), ^{
+		
+		// retrieve all alarms via API
+		[_alarms release];
+		_alarms = [[PWAPIAlarmManager allAlarms] copy];
+		
+		dispatch_sync(dispatch_get_main_queue(), ^{
+			// reload table view
+			[self reload];
+			applyFadeTransition(self.tableView, PWTransitionAnimationDuration);
+		});
+		
+	});
 }
 
 - (void)toggleActiveStateOfAlarmAtRow:(NSUInteger)row {
@@ -130,6 +184,7 @@
 }
 
 - (void)dealloc {
+	RELEASE_VIEW(_noLabel)
 	RELEASE(_alarms)
 	[super dealloc];
 }

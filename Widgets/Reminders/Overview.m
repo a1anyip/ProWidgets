@@ -30,8 +30,8 @@ extern char PWWidgetRemindersTableViewCellReminderKey;
 	PWTheme *theme = [PWController activeTheme];
 	
 	_noLabel = [UILabel new];
-	_noLabel.text = @"No reminders";
-	_noLabel.textColor = [theme cellPlainTextColor];
+	_noLabel.text = @"Loading";
+	_noLabel.textColor = [theme sheetForegroundColor];
 	_noLabel.font = [UIFont boldSystemFontOfSize:22.0];
 	_noLabel.textAlignment = NSTextAlignmentCenter;
 	_noLabel.frame = self.view.bounds;
@@ -68,13 +68,14 @@ extern char PWWidgetRemindersTableViewCellReminderKey;
 	
 	// fade in or out the no label
 	if ([_reminders count] == 0) {
+		_noLabel.text = @"No Reminders";
 		self.tableView.alwaysBounceVertical = NO;
-		[UIView animateWithDuration:.2 animations:^{
+		[UIView animateWithDuration:PWTransitionAnimationDuration animations:^{
 			_noLabel.alpha = 1.0;
 		}];
 	} else {
 		self.tableView.alwaysBounceVertical = YES;
-		[UIView animateWithDuration:.2 animations:^{
+		[UIView animateWithDuration:PWTransitionAnimationDuration animations:^{
 			_noLabel.alpha = 0.0;
 		}];
 	}
@@ -118,10 +119,9 @@ extern char PWWidgetRemindersTableViewCellReminderKey;
 	if ([store removeReminder:reminder commit:YES error:&error]) {
 		[_reminders removeObjectAtIndex:row];
 		[self reload];
-		applyFadeTransition(tableView, .3);
+		applyFadeTransition(tableView, PWTransitionAnimationDuration);
 	}
 }
-
 
 //////////////////////////////////////////////////////////////////////
 
@@ -201,7 +201,7 @@ extern char PWWidgetRemindersTableViewCellReminderKey;
 			dispatch_sync(dispatch_get_main_queue(), ^{
 				// reload table view
 				[self reload];
-				applyFadeTransition(self.tableView, .2);
+				applyFadeTransition(self.tableView, PWTransitionAnimationDuration);
 			});
 		}];
 	});
@@ -215,7 +215,7 @@ extern char PWWidgetRemindersTableViewCellReminderKey;
 		if ([store saveReminder:reminder commit:YES error:nil]) {
 			[_reminders removeObject:reminder];
 			[self reload];
-			applyFadeTransition(self.tableView, .3);
+			applyFadeTransition(self.tableView, PWTransitionAnimationDuration);
 		}
 	}
 }

@@ -17,7 +17,7 @@
 
 @property(nonatomic) BOOL shouldAnimateTransform;
 
-- (void)show;
+- (void)show:(BOOL)shouldAnimateTransform;
 - (void)hide;
 
 - (void)clearMask;

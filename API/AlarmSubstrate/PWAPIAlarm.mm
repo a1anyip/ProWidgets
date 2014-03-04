@@ -12,6 +12,9 @@
 #import "substrate.h"
 #import <objcipc/objcipc.h>
 
+#define CLOCKMANAGER_UPDATE [objc_getClass("ClockManager") saveAndNotifyForUserPreferences:YES localNotifications:YES];
+#define UI_UPDATE [alarmViewController viewWillAppear:YES];
+
 %hook AppController
 
 // to prevent MobileTimer app from terminating itself
@@ -28,17 +31,20 @@ static inline __attribute__((constructor)) void init() {
 		
 		[OBJCIPC registerIncomingMessageFromSpringBoardHandlerForMessageName:@"PWAPIAlarm" handler:^NSDictionary *(NSDictionary *dict) {
 			
-			if (![UIApplication sharedApplication].protectedDataAvailable) {
-				LOG(@"Protected data is not available.");
-				return nil;
-			}
+			[objc_getClass("ClockManager") loadUserPreferences];
+			ClockManager *clockManager = [objc_getClass("ClockManager") sharedManager];
+			[clockManager refreshScheduledLocalNotificationsCache];
 			
 			AlarmManager *manager = [objc_getClass("AlarmManager") sharedManager];
+			[manager loadAlarms];
+			[manager loadScheduledNotifications];
+			
 			NSString *action = dict[@"action"];
 			NSString *alarmId = dict[@"alarmId"];
 			
 			// retrieve alarm view controller
-			AlarmViewController *alarmViewController = MSHookIvar<AlarmViewController *>([UIApplication sharedApplication], "_alarmViewController");
+			AppController *app = (AppController *)[UIApplication sharedApplication];
+			AlarmViewController *alarmViewController = MSHookIvar<AlarmViewController *>(app, "_alarmViewController");
 			
 			LOG(@"PWAPIAlarm: Received action (%@)", action);
 			
@@ -100,23 +106,12 @@ static inline __attribute__((constructor)) void init() {
 					[manager handleAlarm:alarm startedUsingSong:alarm.sound];
 				}
 				
-				// notify view controller to add the alarm and update its table view
-				[alarmViewController didEditAlarm:alarm];
-				
-				// update its active state
-				if (!active) {
-					[alarmViewController activeChangedForAlarm:alarm active:NO];
-				}
-				
-				// write to preference file
-				[AlarmManager writeAlarmsToPreferences:manager.alarms];
-				CFPreferencesSynchronize(CFSTR("com.apple.mobiletimer"), kCFPreferencesAnyUser, kCFPreferencesAnyHost);
-				
-				// to force the view controller to update its UI
-				[alarmViewController viewWillAppear:YES];
+				[manager addAlarm:alarm active:active];
+				CLOCKMANAGER_UPDATE;
+				UI_UPDATE;
 				
 				// retrieve the alarm id
-				NSString *alarmId = alarm.alarmId;
+				NSString *alarmId = [[alarm.alarmId copy] autorelease];
 				
 				// release the alarm instance
 				[alarm release];
@@ -134,13 +129,8 @@ static inline __attribute__((constructor)) void init() {
 				
 				// remove the alarm
 				[manager removeAlarm:alarm];
-				
-				// write to preference file
-				[AlarmManager writeAlarmsToPreferences:manager.alarms];
-				CFPreferencesSynchronize(CFSTR("com.apple.mobiletimer"), kCFPreferencesAnyUser, kCFPreferencesAnyHost);
-				
-				// to force the view controller to update its UI
-				[alarmViewController viewWillAppear:YES];
+				CLOCKMANAGER_UPDATE;
+				UI_UPDATE;
 				
 			} else if ([action isEqualToString:@"update"]) {
 				
@@ -160,8 +150,10 @@ static inline __attribute__((constructor)) void init() {
 				
 				if ([key isEqualToString:@"active"]) {
 					
-					[alarmViewController activeChangedForAlarm:alarm active:[numberValue boolValue]];
-					[alarmViewController viewWillAppear:YES];
+					[manager setAlarm:alarm active:[numberValue boolValue]];
+					CLOCKMANAGER_UPDATE;
+					UI_UPDATE;
+					
 					return nil;
 					
 				} else if ([key isEqualToString:@"title"]) {
@@ -200,15 +192,9 @@ static inline __attribute__((constructor)) void init() {
 					[manager handleAlarm:alarm startedUsingSong:alarm.sound];
 				}
 				
-				// notify view controller to add the alarm and update its table view
-				[alarmViewController didEditAlarm:alarm];
-				
-				// write to preference file
-				[AlarmManager writeAlarmsToPreferences:manager.alarms];
-				CFPreferencesSynchronize(CFSTR("com.apple.mobiletimer"), kCFPreferencesAnyUser, kCFPreferencesAnyHost);
-				
-				// to force the view controller to update its UI
-				[alarmViewController viewWillAppear:YES];
+				[manager updateAlarm:alarm active:alarm.active];
+				CLOCKMANAGER_UPDATE;
+				UI_UPDATE;
 				
 			} else if ([action isEqualToString:@"setDefaultSound"]) {
 				
@@ -216,7 +202,7 @@ static inline __attribute__((constructor)) void init() {
 				NSUInteger type = [dict[@"type"] unsignedIntegerValue];
 				
 				[manager setDefaultSound:identifier ofType:type];
-				CFPreferencesSynchronize(CFSTR("com.apple.mobiletimer"), kCFPreferencesAnyUser, kCFPreferencesAnyHost);
+				CLOCKMANAGER_UPDATE;
 			}
 			
 			return nil;

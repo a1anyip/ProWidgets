@@ -35,7 +35,7 @@ static void handleException(NSException *exception) {
 %hook UITextEffectsWindow
 
 - (void)setWindowLevel:(CGFloat)windowLevel {
-	if ([[PWController sharedInstance] isPresentingWidget])
+	if ([[PWController sharedInstance] isPresenting])
 		%orig([(UIWindow *)[PWController sharedInstance].window windowLevel] + 1.0);
 	else
 		%orig;

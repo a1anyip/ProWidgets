@@ -19,6 +19,7 @@ LIB = PWController.m
 
 ### Core ###
 LIB += PWTestBar.m
+LIB += PWMiniView.m
 LIB += PWBase.m
 LIB += PWWindow.m
 LIB += PWBackgroundView.m
@@ -151,7 +152,7 @@ PREFERENCE = preference
 
 LIBRARY_NAME = libprowidgets
 libprowidgets_FILES = $(LIB) $(API)
-libprowidgets_FRAMEWORKS = CoreFoundation Foundation UIKit CoreGraphics QuartzCore JavaScriptCore EventKit
+libprowidgets_FRAMEWORKS = CoreFoundation Foundation UIKit CoreGraphics CoreImage QuartzCore JavaScriptCore EventKit
 libprowidgets_PRIVATE_FRAMEWORKS = MobileKeyBag Calculate MobileTimer ToneKit ToneLibrary AddressBook MessageUI ChatKit
 libprowidgets_INSTALL_PATH = /Library/ProWidgets
 libprowidgets_LIBRARIES = substrate objcipc

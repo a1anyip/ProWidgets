@@ -27,8 +27,8 @@
 	PWTheme *theme = [PWController activeTheme];
 	
 	_noLabel = [UILabel new];
-	_noLabel.text = @"No notes";
-	_noLabel.textColor = [theme cellPlainTextColor];
+	_noLabel.text = @"Loading";
+	_noLabel.textColor = [theme sheetForegroundColor];
 	_noLabel.font = [UIFont boldSystemFontOfSize:22.0];
 	_noLabel.textAlignment = NSTextAlignmentCenter;
 	_noLabel.frame = self.view.bounds;
@@ -66,13 +66,14 @@
 	
 	// fade in or out the no label
 	if ([_notes count] == 0) {
+		_noLabel.text = @"No Notes";
 		self.tableView.alwaysBounceVertical = NO;
-		[UIView animateWithDuration:.2 animations:^{
+		[UIView animateWithDuration:PWTransitionAnimationDuration animations:^{
 			_noLabel.alpha = 1.0;
 		}];
 	} else {
 		self.tableView.alwaysBounceVertical = YES;
-		[UIView animateWithDuration:.2 animations:^{
+		[UIView animateWithDuration:PWTransitionAnimationDuration animations:^{
 			_noLabel.alpha = 0.0;
 		}];
 	}
@@ -169,7 +170,7 @@
 		_notes = [allNotes copy];
 		dispatch_async(dispatch_get_main_queue(), ^{
 			[self reload];
-			applyFadeTransition(self.tableView, .2);
+			applyFadeTransition(self.tableView, PWTransitionAnimationDuration);
 		});
 	});
 }

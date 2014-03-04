@@ -28,6 +28,13 @@
 
 - (void)setValue:(NSDictionary *)value {
 	
+	if (value == nil) {
+		// reset
+		RELEASE(_selectedToneIdentifier)
+		_selectedToneType = ToneTypeRingtone;
+		return;
+	}
+	
 	if (![value isKindOfClass:[NSDictionary class]]) return;
 	
 	NSString *identifier = value[@"identifier"];
@@ -84,7 +91,11 @@
 }
 
 - (void)setSelectedToneIdentifier:(NSString *)identifier toneType:(ToneType)toneType {
-	[self setValue:@{ @"identifier":identifier, @"type":@(toneType) }];
+	if (identifier == nil) {
+		[self setValue:nil];
+	} else {
+		[self setValue:@{ @"identifier":identifier, @"type":@(toneType) }];
+	}
 }
 
 - (void)selectedToneIdentifierChanged:(NSString *)identifier toneType:(ToneType)toneType {

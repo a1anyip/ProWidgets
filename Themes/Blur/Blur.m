@@ -99,6 +99,22 @@
 	return [self preferredTintColor] == nil ? [super switchOffColor] : [UIColor colorWithWhite:0 alpha:.2];
 }
 
+- (void)enterSnapshotMode {
+	UIColor *barTintColor = [self preferredTintColor];
+	BOOL shouldTintBar = barTintColor != nil;
+	if (shouldTintBar) {
+		_barBlurView.backgroundColor = barTintColor;
+	} else {
+		_barBlurView.backgroundColor = [UIColor whiteColor];
+	}
+	_contentBlurView.backgroundColor = [UIColor whiteColor];
+}
+
+- (void)exitSnapshotMode {
+	_barBlurView.backgroundColor = [UIColor clearColor];
+	_contentBlurView.backgroundColor = [UIColor clearColor];
+}
+
 - (void)setupTheme {
 	
 	UINavigationBar *navigationBar = [self navigationBar];

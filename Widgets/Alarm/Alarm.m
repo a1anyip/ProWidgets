@@ -26,10 +26,6 @@
 	return daySetting;
 }
 
-- (BOOL)requiresProtectedDataAccess {
-	return YES;
-}
-
 - (void)load {
 	
 	PWWidgetAlarmInterface defaultInterface = PWWidgetAlarmInterfaceAdd;
