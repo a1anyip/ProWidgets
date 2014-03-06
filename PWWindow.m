@@ -9,6 +9,7 @@
 
 #import "PWWindow.h"
 #import "PWController.h"
+#import "PWWidgetController.h"
 #import "PWContainerView.h"
 #import "PWView.h"
 #import "PWMiniView.h"
@@ -38,10 +39,12 @@
 	
 	mainView.transform = CGAffineTransformIdentity;
 	mainView.transform = transform;
-	
-	// main view should always fill this window
 	mainView.frame = self.bounds;
+	
+	[mainView setNeedsLayout];
 	[mainView layoutIfNeeded];
+	
+	[PWWidgetController adjustLayoutForAllControllers];
 }
 
 // simply show the window and make it key

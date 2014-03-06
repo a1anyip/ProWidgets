@@ -10,6 +10,7 @@
 #import "header.h"
 #import "interface.h"
 #import "PWController.h"
+#import "PWWidgetController.h"
 
 %hook SpringBoard
 
@@ -18,9 +19,8 @@
 	NSString *scheme = [[url scheme] lowercaseString];
 	NSString *urlString = url.absoluteString;
 	if (([scheme isEqualToString:@"http"] || [scheme isEqualToString:@"https"]) && urlString != nil) {
-		PWController *controller = [PWController sharedInstance];
 		NSDictionary *userInfo = @{ @"from": @"app", @"url": urlString };
-		[controller presentWidgetNamed:@"Browser" userInfo:userInfo];
+		[PWWidgetController presentWidgetNamed:@"Browser" userInfo:userInfo];
 	} else {
 		%orig;
 	}

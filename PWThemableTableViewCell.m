@@ -11,7 +11,7 @@
 #import "PWController.h"
 #import "PWTheme.h"
 
-static UIImage *disclosureImage = nil;
+//static UIImage *disclosureImage = nil;
 
 @interface UITableViewCell (PrivateTintColor)
 
@@ -49,12 +49,12 @@ static UIImage *disclosureImage = nil;
 	_customSeparatorView.frame = CGRectMake(0, size.height - .5, size.width, .5);
 	_customSeparatorView.backgroundColor = _theme.cellSeparatorColor;
 	
-	if (self.accessoryType == UITableViewCellAccessoryDisclosureIndicator) {
+	/*if (self.accessoryType == UITableViewCellAccessoryDisclosureIndicator) {
 		UIButton *accessoryView = [self _accessoryView:NO];
 		accessoryView.alpha = .25;
-	}
+	}*/
 }
-
+/*
 - (void)setAccessoryType:(UITableViewCellAccessoryType)accessoryType {
 	
 	UITableViewCellAccessoryType oldType = self.accessoryType;
@@ -75,7 +75,7 @@ static UIImage *disclosureImage = nil;
 			[accessoryView setImage:disclosureImage forState:UIControlStateNormal];
 		}
 	}
-}
+}*/
 
 - (void)_configureAppearance {
 	

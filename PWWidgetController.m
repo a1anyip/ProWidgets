@@ -34,11 +34,20 @@ static NSMutableSet *_controllers = nil;
 	return NO;
 }
 
++ (BOOL)isPresentingMaximizedWidget {
+	if (_controllers == nil || [_controllers count] == 0) return NO;
+	for (PWWidgetController *controller in _controllers) {
+		if (controller.isPresented && !controller.isMinimized) return YES;
+	}
+	return NO;
+}
+
 + (BOOL)isLocked {
 	return _lockCount > 0;
 }
 
 + (void)lock {
+	LOG(@"lock: %d", (int)_lockCount + 1);
 	if (++_lockCount == 1) {
 		// block orientation change on non-iPad devices
 		if (![PWController isIPad]) {
@@ -52,7 +61,7 @@ static NSMutableSet *_controllers = nil;
 }
 
 + (void)releaseLock {
-	
+	LOG(@"releaseLock: %d", (int)_lockCount - 1);
 	if (--_lockCount == 0) {
 		
 		if (![PWController isIPad]) {
@@ -185,6 +194,18 @@ static NSMutableSet *_controllers = nil;
 	return nil;
 }
 
++ (void)adjustLayoutForAllControllers {
+	for (PWWidgetController *controller in [self allControllers]) {
+		[controller adjustLayout];
+	}
+}
+
++ (void)minimizeAllControllers {
+	for (PWWidgetController *controller in [self allControllers]) {
+		[controller minimize];
+	}
+}
+
 + (void)updateActiveController:(PWWidgetController *)controller {
 	LOG(@"updateActiveController: %@", controller);
 	_activeController = controller;
@@ -208,9 +229,12 @@ static NSMutableSet *_controllers = nil;
 	LOG(@"_presentWithUserInfo: %@", _widget);
 	
 	[self.class lock];
+	[self _resetKeyboardHeight];
 	
 	PWController *controller = [PWController sharedInstance];
+	PWWindow *window = controller.window;
 	PWView *view = controller.mainView;
+	PWBackgroundView *backgroundView = view.backgroundView;
 	
 	_isAnimating = YES;
 	_isPresented = YES;
@@ -278,8 +302,9 @@ static NSMutableSet *_controllers = nil;
 	[_widget willPresent];
 	
 	// adjust the center and bounds of container view
+	CGPoint center = [self _containerCenter];
 	CGRect bounds = [self _containerBounds];
-	_containerView.center = view.center;
+	_containerView.center = center;
 	_containerView.bounds = bounds;
 	
 	// begin animation
@@ -316,6 +341,11 @@ static NSMutableSet *_controllers = nil;
 	// make myself active
 	[self makeActive:YES];
 	
+	// show window and background view
+	[window show];
+	[backgroundView show:YES];
+	[self _resizeAnimated:NO];
+	
 	return YES;
 }
 
@@ -337,8 +367,12 @@ static NSMutableSet *_controllers = nil;
 		return NO;
 	}
 	
-	_isAnimating = YES;
+	PWController *controller = [PWController sharedInstance];
+	PWWindow *window = controller.window;
+	PWView *view = controller.mainView;
+	PWBackgroundView *backgroundView = view.backgroundView;
 	
+	_isAnimating = YES;
 	[self resignActive:YES];
 	
 	// notify widget
@@ -389,6 +423,10 @@ static NSMutableSet *_controllers = nil;
 	[layer addAnimation:fade forKey:@"fade"];
 	[layer addAnimation:scale forKey:@"scale"];
 	[CATransaction commit];
+	
+	// show window and background view
+	[window hide];
+	[backgroundView hide];
 	
 	return YES;
 }
@@ -461,8 +499,6 @@ static NSMutableSet *_controllers = nil;
 	CABasicAnimation *scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
 	scale.fromValue = @(PWMinimizationScale);
 	scale.toValue = @(scaleTo);
-	scale.fillMode = kCAFillModeForwards;
-	scale.removedOnCompletion = NO;
 	
 	layer.opacity = 0.0;
 	layer.transform = CATransform3DMakeScale(scaleTo, scaleTo, 1.0);
@@ -476,9 +512,17 @@ static NSMutableSet *_controllers = nil;
 
 - (void)_forceDismiss {
 	
+	PWController *controller = [PWController sharedInstance];
+	PWWindow *window = controller.window;
+	PWView *view = controller.mainView;
+	PWBackgroundView *backgroundView = view.backgroundView;
+	
 	_isAnimating = NO;
 	_isPresented = NO;
 	_pendingDismissalRequest = NO;
+	
+	[window hide];
+	[backgroundView hide];
 	
 	RELEASE(_widget)
 	[self removeContainerView];
@@ -506,6 +550,11 @@ static NSMutableSet *_controllers = nil;
 		return NO;
 	}
 	
+	PWController *controller = [PWController sharedInstance];
+	PWWindow *window = controller.window;
+	PWView *view = controller.mainView;
+	PWBackgroundView *backgroundView = view.backgroundView;
+	
 	_isMinimized = YES;
 	_isAnimating = YES;
 	
@@ -523,7 +572,7 @@ static NSMutableSet *_controllers = nil;
 	CGFloat fadeTo = .9;
 	CGFloat viewScale = PWMinimizationScale;
 	CGFloat initialExtraScale = .95;
-	CGPoint initialPosition = [self getInitialPositionOfMiniView];
+	CGPoint initialPosition = [self _miniViewCenter];
 	
 	[CATransaction begin];
 	[CATransaction setAnimationDuration:.3];
@@ -575,6 +624,10 @@ static NSMutableSet *_controllers = nil;
 	[layer addAnimation:position forKey:@"position"];
 	[CATransaction commit];
 	
+	// hide window and background view
+	[window hide];
+	[backgroundView hide];
+	
 	return YES;
 }
 
@@ -596,6 +649,12 @@ static NSMutableSet *_controllers = nil;
 	}
 	
 	[self.class lock];
+	[self _resetKeyboardHeight];
+	
+	PWController *controller = [PWController sharedInstance];
+	PWWindow *window = controller.window;
+	PWView *view = controller.mainView;
+	PWBackgroundView *backgroundView = view.backgroundView;
 	
 	_isAnimating = YES;
 	
@@ -607,6 +666,9 @@ static NSMutableSet *_controllers = nil;
 	
 	// remove mini view
 	[self removeMiniView];
+	
+	// resize and re-position the container view once again
+	[self _resizeAnimated:NO];
 	
 	// animate the layer
 	CALayer *layer = _containerView.layer;
@@ -626,6 +688,9 @@ static NSMutableSet *_controllers = nil;
 		// update flags
 		_isAnimating = NO;
 		_isMinimized = NO;
+		
+		[backgroundView show:NO];
+		[self _resizeAnimated:NO];
 	}];
 	
 	CABasicAnimation *fade = [CABasicAnimation animationWithKeyPath:@"opacity"];
@@ -648,6 +713,9 @@ static NSMutableSet *_controllers = nil;
 	[CATransaction commit];
 	
 	[self makeActive:NO];
+	
+	// show window and background view
+	[window show];
 	
 	return YES;
 }
@@ -679,6 +747,7 @@ static NSMutableSet *_controllers = nil;
 		[_widget.topViewController configureFirstResponder];
 	}
 	[_containerView hideOverlay];
+	[self _resizeAnimated:YES];
 }
 
 - (void)resignActive:(BOOL)makeActive {
@@ -702,18 +771,6 @@ static NSMutableSet *_controllers = nil;
 			}
 		}
 	}
-}
-
-- (void)keyboardWillShowHandler:(CGFloat)height {
-	
-}
-
-- (void)keyboardWillHideHandler {
-	
-}
-
-- (void)protectedDataWillBecomeUnavailableHandler {
-	[self _showProtectedDataUnavailable:YES];
 }
 
 - (PWContainerView *)createContainerView {
@@ -784,43 +841,63 @@ static NSMutableSet *_controllers = nil;
 	RELEASE_VIEW(_miniView)
 }
 
-- (CGPoint)getInitialPositionOfMiniView {
+- (void)adjustLayout {
 	
-	if (_recordedLastPosition)
-		return _lastPosition;
+	if (!_isPresented) return;
 	
-	PWContainerView *containerView = _containerView;
-	CGSize size = containerView.bounds.size;
-	CGFloat screenWidth = 320.0;
-	CGFloat statusBarHeight = 20.0;
-	CGFloat scaledWidth = size.width * PWMinimizationScale;
-	CGFloat scaledHeight = size.height * PWMinimizationScale;
-	CGFloat originX = screenWidth - scaledWidth * .5;
-	CGFloat originY = statusBarHeight + scaledHeight * .5;
+	// resize widget
+	if (!_isMinimized) {
+		[self _resizeAnimated:NO];
+	}
 	
-	return CGPointMake(originX, originY);
+	// re-position mini view
+	if (_isMinimized) {
+		_miniView.center = [self _miniViewCenter];
+	}
+}
+
+- (CGPoint)_containerCenter {
+	
+	PWController *controller = [PWController sharedInstance];
+	PWView *view = controller.mainView;
+	id<PWContentViewControllerDelegate> viewController = _widget.topViewController;
+	
+	if (_widget == nil || viewController == nil || ![viewController.class conformsToProtocol:@protocol(PWContentViewControllerDelegate)])
+		return CGPointZero;
+	
+	PWWidgetOrientation orientation = [PWController currentOrientation];
+	BOOL requiresKeyboard = viewController.requiresKeyboard;
+	
+	// set default keyboard height
+	if (_keyboardHeight == 0.0) {
+		_keyboardHeight = [[PWController sharedInstance] defaultHeightOfKeyboardInOrientation:orientation];
+	}
+	
+	// view dimensions
+	CGSize size = view.bounds.size;
+	CGFloat width = size.width;
+	CGFloat height = size.height;
+	CGFloat keyboardHeight = requiresKeyboard ? _keyboardHeight : 0.0;
+	
+	return CGPointMake(width / 2, height / 2 - keyboardHeight / 2);
 }
 
 - (CGRect)_containerBounds {
 	
 	PWController *controller = [PWController sharedInstance];
 	PWView *view = controller.mainView;
-	PWWidget *widget = _widget;
 	id<PWContentViewControllerDelegate> viewController = _widget.topViewController;
 	
-	if (widget == nil || viewController == nil || ![viewController.class conformsToProtocol:@protocol(PWContentViewControllerDelegate)])
+	if (_widget == nil || viewController == nil || ![viewController.class conformsToProtocol:@protocol(PWContentViewControllerDelegate)])
 		return CGRectZero;
 	
 	PWWidgetOrientation orientation = [PWController currentOrientation];
 	BOOL requiresKeyboard = viewController.requiresKeyboard;
 	
-	// maximum size and height
-	CGSize size = view.frame.size;
-	CGFloat availableHeight = [controller availableHeightInOrientation:orientation withKeyboard:requiresKeyboard];
-	
 	// view dimensions
+	CGSize size = view.bounds.size;
 	CGFloat width = size.width;
-	//CGFloat height = size.height;
+	CGFloat availableHeight = [controller availableHeightInOrientation:orientation withKeyboard:requiresKeyboard];
 	
 	// calculate container width
 	CGFloat contentWidth = [viewController contentWidthForOrientation:orientation];
@@ -835,17 +912,61 @@ static NSMutableSet *_controllers = nil;
 	return CGRectMake(0, 0, containerWidth, containerHeight);
 }
 
+- (CGPoint)_miniViewCenter {
+	
+	CGFloat margin = 2.0;
+	CGFloat statusBarHeight = 20.0;
+	
+	PWView *view = [PWController sharedInstance].mainView;
+	CGSize viewSize = view.bounds.size;
+	
+	CGSize miniViewSize = _miniView.bounds.size;
+	miniViewSize.width *= PWMinimizationScale;
+	miniViewSize.height *= PWMinimizationScale;
+	
+	CGFloat originX;
+	CGFloat originY;
+	
+	if (_recordedLastPosition) {
+		originX = margin + _lastPosition.x * (viewSize.width - margin * 2);
+		originY = margin + _lastPosition.y * (viewSize.height - margin * 2);
+	} else {
+		originX = viewSize.width;
+		originY = statusBarHeight;
+	}
+	
+	CGFloat minX = miniViewSize.width / 2;
+	CGFloat maxX = viewSize.width - minX;
+	CGFloat minY = miniViewSize.height / 2;
+	CGFloat maxY = viewSize.height - minY;
+	
+	minX += margin;
+	maxX -= margin;
+	minY += margin;
+	maxY -= margin;
+	
+	// limit the moving bounds
+	CGPoint center = CGPointMake(originX, originY);
+	center.x = MAX(minX, MIN(center.x, maxX));
+	center.y = MAX(minY, MIN(center.y, maxY));
+	
+	return center;
+}
+
 - (void)_resizeAnimated:(BOOL)animated {
 	
 	LOG(@"_resizeAnimated: %@", animated ? @"YES" : @"NO");
 	
 	PWView *mainView = [PWController sharedInstance].mainView;
+	CGPoint currentCenter = _containerView.center;
 	CGRect currentBounds = _containerView.bounds;
+	CGPoint center = [self _containerCenter];
 	CGRect bounds = [self _containerBounds];
 	CGFloat cornerRadius = [_widget.theme cornerRadius];
 	
-	if (CGRectEqualToRect(currentBounds, bounds)) {
-		LOG(@"_resizeAnimated: rect remains unchanged");
+	if (CGPointEqualToPoint(currentCenter, center) && CGRectEqualToRect(currentBounds, bounds)) {
+		LOG(@"_resizeAnimated: center and rect remain unchanged");
+		[mainView updateBackgroundViewRect:_containerView.frame cornerRadius:cornerRadius animated:NO];
 		return;
 	}
 	
@@ -854,17 +975,61 @@ static NSMutableSet *_controllers = nil;
 	}
 	
 	if (!animated) {
+		_containerView.center = center;
 		_containerView.bounds = bounds;
 		[mainView updateBackgroundViewRect:_containerView.frame cornerRadius:cornerRadius animated:NO];
 	} else {
 		
 		[UIView animateWithDuration:PWAnimationDuration delay:0.0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionTransitionNone animations:^{
+			_containerView.center = center;
 			_containerView.bounds = bounds;
 			[_containerView setNeedsLayout];
 		} completion:nil];
 		
-		[mainView updateBackgroundViewRect:_containerView.frame cornerRadius:cornerRadius animated:YES];
+		CGRect rect = bounds;
+		rect.origin.x = center.x - bounds.size.width / 2;
+		rect.origin.y = center.y - bounds.size.height / 2;
+		[mainView updateBackgroundViewRect:rect cornerRadius:cornerRadius animated:YES];
 	}
+}
+
+- (void)_resetKeyboardHeight {
+	_keyboardHeight = [[PWController sharedInstance] defaultHeightOfKeyboardInOrientation:[PWController currentOrientation]];
+}
+
+- (void)_keyboardWillShowHandler:(CGFloat)height {
+	
+	if (height != _keyboardHeight) {
+		
+		_keyboardHeight = height;
+		
+		if (_isActive) {
+			//[self _resizeAnimated:YES];
+		} else if (_isMinimized) {
+			//[self _resizeAnimated:NO];
+		}
+	}
+}
+
+- (void)_keyboardWillHideHandler {
+	
+	PWWidgetOrientation orientation = [PWController currentOrientation];
+	CGFloat keyboardHeight = [[PWController sharedInstance] defaultHeightOfKeyboardInOrientation:orientation];
+	
+	if (_keyboardHeight != keyboardHeight) {
+		
+		_keyboardHeight = keyboardHeight;
+		
+		if (_isActive) {
+			//[self _resizeAnimated:YES];
+		} else if (_isMinimized) {
+			//[self _resizeAnimated:NO];
+		}
+	}
+}
+
+- (void)_protectedDataWillBecomeUnavailableHandler {
+	[self _showProtectedDataUnavailable:YES];
 }
 
 - (void)_showProtectedDataUnavailable:(BOOL)presented {
@@ -902,7 +1067,7 @@ static NSMutableSet *_controllers = nil;
 	UIGestureRecognizerState state = [sender state];
 	
 	PWView *view = [PWController sharedInstance].mainView;
-	CGSize viewSize = view.frame.size;
+	CGSize viewSize = view.bounds.size;
 	CGSize containerViewSize = _containerView.bounds.size;
 	
 	//CGFloat midX = viewSize.width / 2;
@@ -949,7 +1114,7 @@ static NSMutableSet *_controllers = nil;
 	UIGestureRecognizerState state = [sender state];
 	
 	PWView *view = [PWController sharedInstance].mainView;
-	CGSize viewSize = view.frame.size;
+	CGSize viewSize = view.bounds.size;
 	CGSize miniViewSize = _miniView.bounds.size;
 	
 	miniViewSize.width *= PWMinimizationScale;
@@ -976,13 +1141,21 @@ static NSMutableSet *_controllers = nil;
 	
 	if (state == UIGestureRecognizerStateEnded) {
 		
-		if (center.x <= midX) {
-			center.x = minX;
-		} else {
-			center.x = maxX;
+		CGFloat velocity = 1.0;
+		
+		// snap to either left or right side
+		if (![PWController isIPad]) {
+			
+			if (center.x <= midX) {
+				center.x = minX;
+			} else {
+				center.x = maxX;
+			}
+			
+			velocity = 1.0 - fabs(_miniView.center.x - midX) / midX;
 		}
 		
-		[UIView animateWithDuration:PWTransitionAnimationDuration animations:^{
+		[UIView animateWithDuration:PWTransitionAnimationDuration * velocity animations:^{
 			_miniView.center = center;
 		}];
 		
@@ -997,8 +1170,11 @@ static NSMutableSet *_controllers = nil;
 		}];
 	}
 	
+	CGFloat lastPositionX = (center.x - margin) / (viewSize.width - margin * 2);
+	CGFloat lastPositionY = (center.y - margin) / (viewSize.height - margin * 2);
+	
 	_recordedLastPosition = YES;
-	_lastPosition = center;
+	_lastPosition = CGPointMake(lastPositionX, lastPositionY);
 }
 
 - (void)handleMiniViewSingleTap:(UITapGestureRecognizer *)sender {

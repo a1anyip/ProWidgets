@@ -20,7 +20,6 @@
 	
 	BOOL _recordedLastPosition;
 	CGPoint _lastPosition;
-	
 	CGFloat _keyboardHeight;
 	
 	PWBackgroundView *_backgroundView;
@@ -36,6 +35,7 @@
 @property(nonatomic, readonly) BOOL isMinimized;
 
 @property(nonatomic, assign) BOOL pendingDismissalRequest;
+@property(nonatomic, assign) CGFloat keyboardHeight;
 
 @property(nonatomic, readonly) PWBackgroundView *backgroundView;
 @property(nonatomic, readonly) PWContainerView *containerView;
@@ -44,6 +44,7 @@
 @property(nonatomic, readonly) PWWidget *widget;
 
 + (BOOL)isPresentingWidget;
++ (BOOL)isPresentingMaximizedWidget;
 
 + (BOOL)isLocked;
 + (void)lock;
@@ -62,6 +63,8 @@
 + (instancetype)controllerForPresentedWidgetNamed:(NSString *)name;
 + (instancetype)controllerForPresentedWidgetWithPrincipalClass:(Class)principalClass;
 
++ (void)adjustLayoutForAllControllers;
++ (void)minimizeAllControllers;
 + (void)updateActiveController:(PWWidgetController *)controller;
 
 - (instancetype)initWithWidget:(PWWidget *)widget;
@@ -77,11 +80,6 @@
 - (void)makeActive:(BOOL)configureFirstResponder;
 - (void)resignActive:(BOOL)makeActive;
 
-// notification handlers
-- (void)keyboardWillShowHandler:(CGFloat)height;
-- (void)keyboardWillHideHandler;
-- (void)protectedDataWillBecomeUnavailableHandler;
-
 // container view
 - (PWContainerView *)createContainerView;
 - (void)removeContainerView;
@@ -89,11 +87,19 @@
 // mini view
 - (PWMiniView *)createMiniView;
 - (void)removeMiniView;
-- (CGPoint)getInitialPositionOfMiniView;
+
+// adjust layout
+- (void)adjustLayout;
 
 // private methods
+- (CGPoint)_containerCenter;
 - (CGRect)_containerBounds;
+- (CGPoint)_miniViewCenter;
 - (void)_resizeAnimated:(BOOL)animated;
+- (void)_resetKeyboardHeight;
+- (void)_keyboardWillShowHandler:(CGFloat)height;
+- (void)_keyboardWillHideHandler;
+- (void)_protectedDataWillBecomeUnavailableHandler;
 - (void)_showProtectedDataUnavailable:(BOOL)presented;
 
 // gesture recognizer handlers

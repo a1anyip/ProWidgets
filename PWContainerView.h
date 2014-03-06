@@ -13,13 +13,11 @@
 	
 	PWWidgetController *_widgetController;
 	
-	CGFloat _keyboardHeight;
 	UIImageView *_containerBackgroundView;
 	UIView *_overlayView;
 	UIView *_navigationControllerView;
 }
 
-@property(nonatomic) CGFloat keyboardHeight;
 @property(nonatomic, readonly) UIImageView *containerBackgroundView;
 @property(nonatomic, assign) UIView *navigationControllerView;
 

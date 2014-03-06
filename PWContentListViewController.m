@@ -273,8 +273,6 @@
 	NSString *cellIdentifier = @"PWContentListViewControllerCell";
 	PWThemableTableViewCell *cell = (PWThemableTableViewCell *)[tableView dequeueReusableCellWithIdentifier:cellIdentifier];
 	
-	//LOG(@"PWContentListViewController: cell for row %u (title: %@) (cell: %@)", row, title, cell);
-	
 	if (!cell) {
 		cell = [[[PWThemableTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier theme:self.theme] autorelease];
 	}
@@ -302,14 +300,6 @@
 	
 	return cell;
 }
-
-//////////////////////////////////////////////////////////////////////
-/*
-- (CGFloat)contentHeightForOrientation:(PWWidgetOrientation)orientation {
-	CGFloat cellHeight = [self.theme heightOfCellOfType:PWWidgetCellTypeNormal forOrientation:orientation];
-	return cellHeight * [[_delegate listItemTitles] count];
-}
-*/
 
 - (void)dealloc {
 	_delegate = nil;

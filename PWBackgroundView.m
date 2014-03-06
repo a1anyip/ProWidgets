@@ -58,7 +58,16 @@
 }
 
 - (void)clearMask {
+	
 	self.layer.mask = nil;
+	RELEASE(_mask)
+	
+	if (_finalPath != NULL) {
+		CGPathRelease(_finalPath);
+		_finalPath = NULL;
+	}
+	
+	_finalPathCount = 0;
 }
 
 - (void)setMaskRect:(CGRect)rect cornerRadius:(CGFloat)cornerRadius animated:(BOOL)animated {
@@ -123,19 +132,23 @@
 		[CATransaction setAnimationDuration:PWAnimationDuration];
 		[CATransaction setAnimationTimingFunction:function];
 		
-		// to make sure no
-		__block CAShapeLayer *blockMask = [_mask retain];
-		__block CGPathRef blockToCGPath = CGPathRetain(toCGPath);
+		// there is another animation ongoing
+		if (_finalPath != NULL) CGPathRelease(_finalPath);
+		_finalPath = CGPathRetain(toCGPath);
+		
+		NSUInteger count = ++_finalPathCount;
 		[CATransaction setCompletionBlock:^{
-			if (blockMask != nil && blockToCGPath != NULL) {
-				blockMask.path = blockToCGPath;
+			if (_mask != nil && _finalPath != NULL && _finalPathCount == count) {
+				_mask.path = _finalPath;
+				[_mask removeAllAnimations];
+				CGPathRelease(_finalPath), _finalPath = NULL;
+			} else {
+				LOG(@"PWBackgroundView: count does not match _finalPathCount");
 			}
-			CGPathRelease(blockToCGPath), blockToCGPath = NULL;
-			[blockMask release], blockMask = nil;
 		}];
 		
 		CABasicAnimation *pathAnimation = [CABasicAnimation animationWithKeyPath:@"path"];
-		pathAnimation.fromValue = (id)fromCGPath;
+		if (_shouldAnimateTransform) pathAnimation.fromValue = (id)fromCGPath;
 		pathAnimation.toValue = (id)toCGPath;
 		pathAnimation.fillMode = kCAFillModeForwards;
 		pathAnimation.removedOnCompletion = NO;
@@ -153,8 +166,7 @@
 
 - (void)dealloc {
 	DEALLOCLOG;
-	self.layer.mask = nil;
-	RELEASE(_mask)
+	[self clearMask];
 	[super dealloc];
 }
 

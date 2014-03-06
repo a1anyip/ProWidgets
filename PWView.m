@@ -26,9 +26,7 @@
 		
 		// create PWBackgroundView
 		_backgroundView = [PWBackgroundView new];
-		//_backgroundView.backgroundColor = [UIColor blackColor];
-		//_backgroundView.alpha = .4;
-		_backgroundView.userInteractionEnabled = NO;
+		_backgroundView.userInteractionEnabled = YES;
 		[self addSubview:_backgroundView];
 	}
 	return self;
@@ -36,17 +34,24 @@
 
 - (void)layoutSubviews {
 	[super layoutSubviews];
-	_backgroundView.frame = self.bounds;
+	_backgroundView.frame = CGRectInset(self.bounds, -PWSheetMotionEffectDistance, -PWSheetMotionEffectDistance);
 }
 
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
 	
 	UIView *result = [super hitTest:point withEvent:event];
 	
+	// background view
+	if (result == _backgroundView) {
+		return result;
+	}
+	
+	// mini view
 	if ([result isKindOfClass:[PWMiniView class]]) {
 		return result;
 	}
 	
+	// container views
 	NSSet *widgetControllers = [PWWidgetController allControllers];
 	if ([widgetControllers count] > 0) {
 		for (PWWidgetController *widgetController in widgetControllers) {
@@ -63,8 +68,6 @@
 }
 
 - (void)updateBackgroundViewRect:(CGRect)rect cornerRadius:(CGFloat)cornerRadius animated:(BOOL)animated {
-	CGFloat extraSize = PWSheetMotionEffectDistance;
-	_backgroundView.frame = CGRectInset(self.bounds, -extraSize, -extraSize);
 	[_backgroundView setMaskRect:rect cornerRadius:cornerRadius animated:animated];
 }
 

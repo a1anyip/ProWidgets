@@ -64,8 +64,7 @@ static void handleException(NSException *exception) {
 %hook SBBacklightController
 
 - (void)_lockScreenDimTimerFired {
-	BOOL disabled = [PWController _shouldDisableLockScreenIdleTimer];
-	if (disabled) {
+	if ([PWWidgetController isLocked]) {
 		[self resetLockScreenIdleTimer];
 	} else {
 		%orig;
@@ -74,7 +73,52 @@ static void handleException(NSException *exception) {
 
 %end
 
+%hook SBNotificationCenterController
+
+- (void)beginPresentationWithTouchLocation:(CGPoint)touchLocation {
+	if ([PWWidgetController isPresentingMaximizedWidget]) {
+		[PWWidgetController minimizeAllControllers];
+	}
+	%orig;
+}
+
+%end
+
+%hook SBControlCenterController
+
+- (void)beginTransitionWithTouchLocation:(CGPoint)touchLocation {
+	if ([PWWidgetController isPresentingMaximizedWidget]) {
+		[PWWidgetController minimizeAllControllers];
+	}
+	%orig;
+}
+
+%end
+
 %hook SpringBoard
+
+-(void)_handleMenuButtonEvent {
+	LOG(@"PWBootstrap: _handleMenuButtonEvent");
+	NSTimer *menuButtonTimer = *(NSTimer **)instanceVar(self, "_menuButtonTimer");
+	if (menuButtonTimer == nil) {
+		PWWidgetController *activeController = [PWWidgetController activeController];
+		if (activeController != nil && [activeController dismiss]) {
+			// reset menuButtonClickCount
+			Ivar ivar = class_getInstanceVariable([self class], "_menuButtonClickCount");
+			uintptr_t *_menuButtonClickCount = (uintptr_t *)((char *)self + ivar_getOffset(ivar));
+			*_menuButtonClickCount = 0;
+			return;
+		}
+	}
+	
+	%orig;
+}
+
+- (void)handleMenuDoubleTap {
+	if (![PWWidgetController isPresentingMaximizedWidget]) {
+		%orig;
+	}
+}
 
 - (void)applicationDidFinishLaunching:(id)application {
 	

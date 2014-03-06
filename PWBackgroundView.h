@@ -13,6 +13,9 @@
 	
 	BOOL _shouldAnimateTransform;
 	CAShapeLayer *_mask;
+	
+	NSUInteger _finalPathCount;
+	CGPathRef _finalPath;
 }
 
 @property(nonatomic) BOOL shouldAnimateTransform;

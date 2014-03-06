@@ -69,7 +69,6 @@
 @property(nonatomic, readonly) PWWindow *window;
 @property(nonatomic, readonly) PWView *mainView;
 @property(nonatomic, readonly) PWBackgroundView *backgroundView;
-@property(nonatomic, readonly) PWContainerView *containerView;
 
 // Preference
 @property(nonatomic, readonly) BOOL enabledParallax;
@@ -217,8 +216,6 @@
 /**
  * Private methods
  **/
-
-+ (BOOL)_shouldDisableLockScreenIdleTimer;
 
 - (void)_recordInitialTime;
 - (void)_outputDuration;

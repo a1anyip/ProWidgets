@@ -14,7 +14,6 @@
 #import "PWWindow.h"
 #import "PWView.h"
 #import "PWBackgroundView.h"
-#import "PWContainerView.h"
 
 #import "PWWidget.h"
 #import "PWWidgetJS.h"
@@ -69,12 +68,10 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	
 	if (_interfaceOrientationIsLocked)
 		return;
-	/*
+	
 	void(^completionHandler)(BOOL) = ^(BOOL finished) {
 		
 		LOG(@"PWController: _lastFirstResponder: %@", _lastFirstResponder);
-		
-		_window.backgroundColor = [UIColor clearColor];
 		
 		[_lastFirstResponder resignFirstResponder];
 		
@@ -85,29 +82,23 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 		RELEASE(_lastFirstResponder)
 	};
 	
-	if (!_isAnimating) {
-		
-		_window.backgroundColor = self.backgroundView.backgroundColor;
-		
-		[UIView animateWithDuration:duration animations:^{
-			[_window adjustLayout];
-		} completion:completionHandler];
-	} else {
-		completionHandler(NO);
-	}*/
+	[UIView animateWithDuration:duration animations:^{
+		[_window adjustLayout];
+	} completion:completionHandler];
 }
 
 - (void)activeInterfaceOrientationWillChangeToOrientation:(UIInterfaceOrientation)activeInterfaceOrientation {
 	LOG(@"PWController: activeInterfaceOrientationWillChangeToOrientation: %d", (int)activeInterfaceOrientation);
 	
-	if (_interfaceOrientationIsLocked)
-		return;
+	if (!_interfaceOrientationIsLocked) {
 	
-	if (_lastFirstResponder != nil) {
-		RELEASE(_lastFirstResponder)
+		if (_lastFirstResponder != nil) {
+			RELEASE(_lastFirstResponder)
+		}
+		
+		_lastFirstResponder = [[_window firstResponder] retain];
 	}
 	
-	_lastFirstResponder = [[_window firstResponder] retain];
 	[[objc_getClass("SBUIController") sharedInstance] _hideKeyboard]; // force to hide keyboard
 }
 
@@ -294,12 +285,12 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	return [UIImage imageNamed:name inBundle:_resourceBundle];
 }
 
-- (PWBackgroundView *)backgroundView {
-	return nil;//self.mainView.backgroundView;
+- (PWView *)mainView {
+	return (PWView *)self.view;
 }
 
-- (PWContainerView *)containerView {
-	return nil;//self.mainView.containerView;
+- (PWBackgroundView *)backgroundView {
+	return self.mainView.backgroundView;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -433,21 +424,23 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	CGFloat height = [self.class isLandscape] ? rect.size.width : rect.size.height;
 	LOG(@"PWController: _keyboardWillShowHandler <keyboard height: %.2f>", height);
 	
-	PWWidgetController *activeController = [PWWidgetController activeController];
-	[activeController keyboardWillShowHandler:height];
+	for (PWWidgetController *controller in [PWWidgetController allControllers]) {
+		[controller _keyboardWillShowHandler:height];
+	}
 }
 
 - (void)_keyboardWillHideHandler:(NSNotification *)notification {
 	if (![PWWidgetController isPresentingWidget]) return;
-	PWWidgetController *activeController = [PWWidgetController activeController];
-	[activeController keyboardWillHideHandler];
+	for (PWWidgetController *controller in [PWWidgetController allControllers]) {
+		[controller _keyboardWillHideHandler];
+	}
 }
 
 - (void)_protectedDataWillBecomeUnavailableHandler:(NSNotification *)notification {
 	LOG(@"PWController: _protectedDataWillBecomeUnavailableHandler");
 	if (![PWWidgetController isPresentingWidget]) return;
 	for (PWWidgetController *controller in [PWWidgetController allControllers]) {
-		[controller protectedDataWillBecomeUnavailableHandler];
+		[controller _protectedDataWillBecomeUnavailableHandler];
 	}
 }
 
@@ -1037,10 +1030,6 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 /**
  * Private methods
  **/
-
-+ (BOOL)_shouldDisableLockScreenIdleTimer {
-	return [PWWidgetController isLocked];
-}
 
 - (void)_recordInitialTime {
 	_initialTime = [[NSDate date] retain];
