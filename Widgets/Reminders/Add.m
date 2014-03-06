@@ -35,13 +35,11 @@
 }
 
 - (void)titleTapped {
-	PWWidgetReminders *widget = (PWWidgetReminders *)self.widget;
-	[widget switchToOverviewInterface];
+	[[PWWidgetReminders widget] switchToOverviewInterface];
 }
 
 - (EKEventStore *)store {
-	PWWidgetReminders *widget = (PWWidgetReminders *)self.widget;
-	return widget.eventStore;
+	return [PWWidgetReminders widget].eventStore;
 }
 - (void)fetchLists:(NSString *)selectedIdentifier {
 	

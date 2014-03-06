@@ -47,6 +47,6 @@ typedef NS_ENUM(NSUInteger, ToneType) {
 + (ToneType)toneTypeFromNumber:(NSNumber *)number;
 + (TonePickerType)tonePickerTypeFromNumber:(NSNumber *)number;
 
-- (instancetype)initWithTonePickerType:(TonePickerType)tonePickerType selectedToneIdentifier:(NSString *)identifier toneType:(ToneType)toneType;
+- (instancetype)initWithTonePickerType:(TonePickerType)tonePickerType selectedToneIdentifier:(NSString *)identifier toneType:(ToneType)toneType forWidget:(PWWidget *)widget;
 
 @end

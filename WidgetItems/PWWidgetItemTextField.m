@@ -83,14 +83,14 @@
 
 //////////////////////////////////////////////////////////////////////
 
-- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
-	if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier])) {
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier theme:(PWTheme *)theme {
+	if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier theme:theme])) {
 		
 		_textField = [UITextField new];
 		_textField.textColor = [UIColor blackColor];
 		_textField.borderStyle = UITextBorderStyleNone;
 		_textField.clearButtonMode = UITextFieldViewModeAlways;
-		_textField.keyboardAppearance = [PWController activeTheme].wantsDarkKeyboard ? UIKeyboardAppearanceDark : UIKeyboardAppearanceDefault;
+		_textField.keyboardAppearance = self.item.theme.wantsDarkKeyboard ? UIKeyboardAppearanceDark : UIKeyboardAppearanceDefault;
 		
 		_iconView = [UIImageView new];
 		_iconView.backgroundColor = [UIColor clearColor];

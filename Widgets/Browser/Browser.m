@@ -32,7 +32,6 @@
 		[self navigateToURL:url];
 	} else {
 		PWWidgetBrowserInterface defaultInterface = PWWidgetBrowserInterfaceWeb;
-		
 		if (defaultInterface == PWWidgetBrowserInterfaceWeb) {
 			[self switchToWebInterface];
 		} else {
@@ -74,10 +73,10 @@ ICON_GETTER(folderIcon, @"BookmarksListFolder")
 	
 	if (_currentInterface == PWWidgetBrowserInterfaceBookmark) return;
 	
-	PWWidgetBrowserBookmarkViewController *bookmarkViewController = [[PWWidgetBrowserBookmarkViewController new] autorelease];
+	PWWidgetBrowserBookmarkViewController *bookmarkViewController = [[[PWWidgetBrowserBookmarkViewController alloc] initForWidget:self] autorelease];
 	bookmarkViewController.isRoot = YES;
 	
-	PWWidgetBrowserAddBookmarkViewController *addViewController = [[PWWidgetBrowserAddBookmarkViewController new] autorelease];
+	PWWidgetBrowserAddBookmarkViewController *addViewController = [[[PWWidgetBrowserAddBookmarkViewController alloc] initForWidget:self] autorelease];
 	addViewController.bookmarkTitle = title;
 	addViewController.bookmarkURL = url;
 	
@@ -93,7 +92,7 @@ ICON_GETTER(folderIcon, @"BookmarksListFolder")
 	if (_currentInterface == PWWidgetBrowserInterfaceWeb) return;
 	
 	if (_webViewControllers == nil) {
-		PWWidgetBrowserWebViewController *webViewController = [[PWWidgetBrowserWebViewController new] autorelease];
+		PWWidgetBrowserWebViewController *webViewController = [[[PWWidgetBrowserWebViewController alloc] initForWidget:self] autorelease];
 		_webViewControllers = [@[webViewController] copy];
 	}
 	
@@ -112,7 +111,7 @@ ICON_GETTER(folderIcon, @"BookmarksListFolder")
 	if (_currentInterface == PWWidgetBrowserInterfaceBookmark) return;
 	
 	if (_bookmarkViewControllers == nil) {
-		PWWidgetBrowserBookmarkViewController *bookmarkViewController = [[PWWidgetBrowserBookmarkViewController new] autorelease];
+		PWWidgetBrowserBookmarkViewController *bookmarkViewController = [[[PWWidgetBrowserBookmarkViewController alloc] initForWidget:self] autorelease];
 		bookmarkViewController.isRoot = YES;
 		_bookmarkViewControllers = [@[bookmarkViewController] copy];
 	}

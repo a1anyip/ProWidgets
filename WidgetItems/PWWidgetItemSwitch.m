@@ -47,8 +47,8 @@
 
 //////////////////////////////////////////////////////////////////////
 
-- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
-	if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier])) {
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier theme:(PWTheme *)theme {
+	if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier theme:theme])) {
 		
 		_switch = [UISwitch new];
 		[self.contentView addSubview:_switch];

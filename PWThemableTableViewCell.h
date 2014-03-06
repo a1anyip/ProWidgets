@@ -11,11 +11,14 @@
 
 @interface PWThemableTableViewCell : UITableViewCell {
 	
+	PWTheme *_theme;
+	
 	BOOL _configuredAppearance;
 	UIView *_customSeparatorView;
 }
 
-+ (void)setSeparatorColor:(UIColor *)color;
+- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier theme:(PWTheme *)theme;
+- (PWTheme *)theme;
 
 //////////////////////////////////////////////////////////////////////
 

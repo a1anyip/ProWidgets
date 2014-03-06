@@ -42,7 +42,7 @@
 	if (_currentInterface == PWWidgetCalendarInterfaceAdd) return;
 	
 	if (_addViewControllers == nil) {
-		PWWidgetCalendarAddViewController *addViewController = [[PWWidgetCalendarAddViewController new] autorelease];
+		PWWidgetCalendarAddViewController *addViewController = [[[PWWidgetCalendarAddViewController alloc] initForWidget:self] autorelease];
 		_addViewControllers = [@[addViewController] copy];
 	}
 	
@@ -55,7 +55,7 @@
 	if (_currentInterface == PWWidgetCalendarInterfaceOverview) return;
 	
 	if (_overviewViewControllers == nil) {
-		PWWidgetCalendarOverviewViewController *overviewViewController = [[PWWidgetCalendarOverviewViewController new] autorelease];
+		PWWidgetCalendarOverviewViewController *overviewViewController = [[[PWWidgetCalendarOverviewViewController alloc] initForWidget:self] autorelease];
 		_overviewViewControllers = [@[overviewViewController] copy];
 	}
 	

@@ -11,6 +11,7 @@
 
 @interface PWThemableTextField : UITextField
 
-- (void)_configureAppearance;
+- (instancetype)initWithFrame:(CGRect)frame theme:(PWTheme *)theme;
+- (void)_configureAppearance:(PWTheme *)theme;
 
 @end

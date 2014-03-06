@@ -13,23 +13,14 @@
 
 @implementation PWThemableSwitch
 
-- (instancetype)init {
-	if ((self = [super init])) {
-		[self _configureAppearance];
-	}
-	return self;
-}
-
-- (instancetype)initWithFrame:(CGRect)frame {
+- (instancetype)initWithFrame:(CGRect)frame theme:(PWTheme *)theme {
 	if ((self = [super initWithFrame:frame])) {
-		[self _configureAppearance];
+		[self _configureAppearance:theme];
 	}
 	return self;
 }
 
-- (void)_configureAppearance {
-	
-	PWTheme *theme = [PWController activeTheme];
+- (void)_configureAppearance:(PWTheme *)theme {
 	
 	UIColor *switchThumbColor = [theme switchThumbColor];
 	UIColor *switchOnColor = [theme switchOnColor];

@@ -7,6 +7,8 @@
 //
 
 #import "View.h"
+#import "PWController.h"
+#import "PWWidgetController.h"
 
 NSUInteger iconPerPage = 5; // either 4 or 5
 
@@ -211,7 +213,8 @@ static inline UIImage *scaleImage(UIImage *image) {
 		// dismiss notification center
 		[[objc_getClass("SBNotificationCenterController") sharedInstance] dismissAnimated:YES];
 		// present the widget
-		[[PWController sharedInstance] presentWidgetFromBundle:bundle userInfo:userInfo];
+		//[[PWController sharedInstance] presentWidgetFromBundle:bundle userInfo:userInfo];
+		[PWWidgetController presentWidgetFromBundle:bundle userInfo:userInfo];
 	}
 }
 

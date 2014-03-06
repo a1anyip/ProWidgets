@@ -12,7 +12,6 @@
 #import "PWTheme.h"
 
 static UIImage *disclosureImage = nil;
-static UIColor *separatorColor = nil;
 
 @interface UITableViewCell (PrivateTintColor)
 
@@ -23,18 +22,18 @@ static UIColor *separatorColor = nil;
 
 @implementation PWThemableTableViewCell
 
-+ (void)setSeparatorColor:(UIColor *)color {
-	[separatorColor release];
-	separatorColor = [color retain];
-}
-
-- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
+- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier theme:(PWTheme *)theme {
 	if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier])) {
+		_theme = [theme retain];
 		_customSeparatorView = [UIView new];
 		_customSeparatorView.userInteractionEnabled = NO;
 		[self addSubview:_customSeparatorView];
 	}
 	return self;
+}
+
+- (PWTheme *)theme {
+	return _theme;
 }
 
 - (void)willMoveToSuperview:(UIView *)newSuperview {
@@ -48,7 +47,7 @@ static UIColor *separatorColor = nil;
 	
 	CGSize size = self.bounds.size;
 	_customSeparatorView.frame = CGRectMake(0, size.height - .5, size.width, .5);
-	_customSeparatorView.backgroundColor = separatorColor;
+	_customSeparatorView.backgroundColor = _theme.cellSeparatorColor;
 	
 	if (self.accessoryType == UITableViewCellAccessoryDisclosureIndicator) {
 		UIButton *accessoryView = [self _accessoryView:NO];
@@ -83,7 +82,7 @@ static UIColor *separatorColor = nil;
 	if (_configuredAppearance) return;
 	_configuredAppearance = YES;
 	
-	PWTheme *theme = [PWController activeTheme];
+	PWTheme *theme = _theme;
 	PWWidgetOrientation orientation = [PWController currentOrientation];
 		
 	// cell tint color
@@ -200,6 +199,7 @@ static UIColor *separatorColor = nil;
 
 - (void)dealloc {
 	DEALLOCLOG;
+	RELEASE(_theme)
 	RELEASE_VIEW(_customSeparatorView)
 	[super dealloc];
 }

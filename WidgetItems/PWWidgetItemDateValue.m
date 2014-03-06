@@ -165,8 +165,8 @@ static NSDateFormatter *dateFormatter = nil;
 
 //////////////////////////////////////////////////////////////////////
 
-- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
-	if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier])) {
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier theme:(PWTheme *)theme {
+	if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier theme:theme])) {
 		
 		// create a date formatter
 		if (dateFormatter == nil) {

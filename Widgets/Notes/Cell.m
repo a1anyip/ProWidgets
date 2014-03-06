@@ -12,8 +12,8 @@
 
 @implementation PWWidgetNotesTableViewCell
 
-- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
-	if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier])) {
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier theme:(PWTheme *)theme {
+	if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier theme:theme])) {
 		
 		self.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
 		
@@ -45,7 +45,7 @@
 }
 
 - (void)setDate:(NSDate *)date {
-	NSString *dateText = [(PWWidgetNotes *)[PWController activeWidget] parseDate:date];
+	NSString *dateText = [[PWWidgetNotes widget] parseDate:date];
 	self.textLabel.text = dateText;
 }
 

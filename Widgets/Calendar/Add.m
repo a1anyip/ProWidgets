@@ -40,13 +40,11 @@
 }
 
 - (void)titleTapped {
-	PWWidgetCalendar *widget = (PWWidgetCalendar *)self.widget;
-	[widget switchToOverviewInterface];
+	[[PWWidgetCalendar widget] switchToOverviewInterface];
 }
 
 - (EKEventStore *)store {
-	PWWidgetCalendar *widget = (PWWidgetCalendar *)self.widget;
-	return widget.eventStore;
+	return [PWWidgetCalendar widget].eventStore;
 }
 
 - (void)fetchCalendars:(NSString *)selectedIdentifier {

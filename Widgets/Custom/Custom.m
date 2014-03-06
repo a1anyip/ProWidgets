@@ -17,13 +17,5 @@
 
 @implementation PWWidgetCustom
 
-- (CGSize)overrideSize {
-	return CGSizeMake(290, 350);
-}
-
-- (void)action:(NSDictionary *)values {
-	
-	[self removeItemAtIndex:2 animated:NO];
-}
 
 @end

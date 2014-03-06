@@ -249,7 +249,7 @@ NSString *expression = [NSString stringWithFormat:@"%f", [expressionNumber doubl
 			NSString *icon = item[@"icon"];
 			UIImage *iconImage = nil;
 			if (icon != nil) {
-				iconImage = [UIImage imageNamed:icon inBundle:[PWController activeWidget].bundle];
+				iconImage = [UIImage imageNamed:icon inBundle:itemViewController.widget.bundle];
 			}
 			
 			// should fill height

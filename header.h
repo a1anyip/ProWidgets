@@ -12,7 +12,7 @@
 #define VERSION 100
 #define PWPrefPath @"/var/mobile/Library/Preferences/cc.tweak.prowidgets.plist"
 
-#define PWMinimizationScale .2
+#define PWMinimizationScale .3
 
 #define PWBackgroundViewFadeDuration 0.1
 #define PWBackgroundViewAlpha 0.5
@@ -69,7 +69,7 @@
 //////////////////////////////////////////////////////////////////////
 
 // Controller
-@class PWController;
+@class PWController, PWWidgetController;
 
 // Core
 @class PWTestBar, PWMiniView, PWBase, PWWindow, PWBackgroundView, PWView, PWContainerView, PWContentViewController, PWContentItemViewController, PWContentListViewController, PWEventHandler, PWThemableTableView, PWThemableTableViewCell, PWAlertView;

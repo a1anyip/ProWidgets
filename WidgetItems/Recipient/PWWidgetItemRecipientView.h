@@ -25,6 +25,8 @@
 @property(nonatomic, readonly) UITableView *recipientTableView;
 @property(nonatomic, readonly) UITableView *searchResultTableView;
 
+- (instancetype)initWithTheme:(PWTheme *)theme;
+
 - (void)setDelegate:(id<UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource>)delegate;
 
 @end

@@ -91,7 +91,7 @@ PW_IMP_HANDLER(itemValueChangedEventHandler, ItemValueChangedEventHandler)
 	NSString *filename = [icon isUndefined] || [icon isNull] ? nil : [icon toString];
 	
 	if (filename != nil && [filename length] > 0) {
-		PWWidget *widget = [PWController activeWidget];
+		PWWidget *widget = _widgetItem.widget;
 		_icon = [widget imageNamed:filename];
 	}
 	

@@ -6,6 +6,7 @@ Alarm_PRIVATE_FRAMEWORKS = MobileTimer
 Alarm_LIBRARIES = substrate prowidgets
 Alarm_CFLAGS = -I../../
 Alarm_LDFLAGS = -L../../$(THEOS_OBJ_DIR_NAME)
+Alarm_BUNDLE_EXTENSION = widget
 
 include theos/makefiles/common.mk
 include $(THEOS_MAKE_PATH)/bundle.mk

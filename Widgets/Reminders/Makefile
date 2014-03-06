@@ -6,6 +6,7 @@ Reminders_PRIVATE_FRAMEWORKS =
 Reminders_LIBRARIES = prowidgets
 Reminders_CFLAGS = -I../../
 Reminders_LDFLAGS = -L../../$(THEOS_OBJ_DIR_NAME)
+Reminders_BUNDLE_EXTENSION = widget
 
 include theos/makefiles/common.mk
 include $(THEOS_MAKE_PATH)/bundle.mk

@@ -20,7 +20,7 @@
 - (instancetype)init {
 	if ((self = [super init])) {
 		
-		PWTheme *theme = [PWController activeTheme];
+		PWTheme *theme = [PWWidgetNotes theme];
 		UIColor *textColor = [theme cellTitleTextColor];
 		
 		_dateLabel = [UILabel new];
@@ -68,7 +68,7 @@
 }
 
 - (void)setDate:(NSDate *)date {
-	NSDateFormatter *dateFormatter = [(PWWidgetNotes *)[PWController activeWidget] dateFormatter];
+	NSDateFormatter *dateFormatter = [[PWWidgetNotes widget] dateFormatter];
 	[dateFormatter setDateStyle:NSDateFormatterLongStyle];
 	[dateFormatter setTimeStyle:NSDateFormatterShortStyle];
 	NSString *result = [dateFormatter stringFromDate:date];
@@ -80,7 +80,7 @@
 	
 	NSMutableAttributedString *attributedString = [[[NSMutableAttributedString alloc] initWithData:[content dataUsingEncoding:NSUnicodeStringEncoding] options:@{ NSDocumentTypeDocumentAttribute: NSHTMLTextDocumentType } documentAttributes:nil error:nil] autorelease];
 	
-	PWTheme *theme = [PWController activeTheme];
+	PWTheme *theme = [PWWidgetNotes theme];
 	UIColor *textColor = [theme cellTitleTextColor];
 	
 	// set font and text color
@@ -105,7 +105,7 @@
 		_contentView.editable = YES;
 		
 		NSMutableAttributedString *attributedString = [[_contentView.attributedText mutableCopy] autorelease];
-		PWTheme *theme = [PWController activeTheme];
+		PWTheme *theme = [PWWidgetNotes theme];
 		UIColor *textColor = [theme cellTitleTextColor];
 		
 		// set font and text color
@@ -120,8 +120,6 @@
 		_contentView.editable = NO;
 		_contentView.dataDetectorTypes = UIDataDetectorTypePhoneNumber | UIDataDetectorTypeLink | UIDataDetectorTypeAddress | UIDataDetectorTypeCalendarEvent;
 		
-		//[_contentView setNeedsDisplay];
-		//[_contentView setNeedsLayout];
 		[_contentView resignFirstResponder];
 	}
 }
@@ -138,7 +136,7 @@
 @implementation PWWidgetNotesContentViewController
 
 - (instancetype)initWithNote:(NoteObject *)noteObject {
-	if ((self = [super init])) {
+	if ((self = [super initForWidget:[PWWidgetNotes widget]])) {
 		
 		_noteObject = [noteObject retain];
 		

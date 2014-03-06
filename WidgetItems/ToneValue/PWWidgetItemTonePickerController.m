@@ -39,17 +39,12 @@
 	return [number unsignedIntegerValue] == (NSUInteger)ToneTypeMediaItem ? ToneTypeMediaItem : ToneTypeRingtone;
 }
 
-- (instancetype)init {
-	if ((self = [super init])) {
+- (instancetype)initWithTonePickerType:(TonePickerType)tonePickerType selectedToneIdentifier:(NSString *)identifier toneType:(ToneType)toneType forWidget:(PWWidget *)widget {
+	if ((self = [super initForWidget:widget])) {
+		
 		self.automaticallyAdjustsScrollViewInsets = NO;
 		self.requiresKeyboard = NO;
 		self.shouldMaximizeContentHeight = YES;
-	}
-	return self;
-}
-
-- (instancetype)initWithTonePickerType:(TonePickerType)tonePickerType selectedToneIdentifier:(NSString *)identifier toneType:(ToneType)toneType {
-	if ((self = [self init])) {
 		
 		_tonePickerType = tonePickerType;
 		

@@ -14,8 +14,8 @@ char PWWidgetRemindersTableViewCellReminderKey;
 
 @implementation PWWidgetRemindersTableViewCell
 
-- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
-	if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier])) {
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier theme:(PWTheme *)theme {
+	if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier theme:theme])) {
 		// button
 		_button = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
 		_button.adjustsImageWhenHighlighted = NO;
@@ -71,7 +71,7 @@ char PWWidgetRemindersTableViewCellReminderKey;
 	NSString *repeatText = nil;
 	
 	// convert date to readable string
-	dateText = [(PWWidgetReminders *)[PWController activeWidget] parseDate:alarmDate allDay:NO shortForm:YES];
+	dateText = [[PWWidgetReminders widget] parseDate:alarmDate allDay:NO shortForm:YES];
 	
 	// convert recurrence rule to string
 	EKRecurrenceFrequency frequency = recurrenceRule.frequency;
@@ -106,6 +106,9 @@ char PWWidgetRemindersTableViewCellReminderKey;
 }
 
 - (void)setListColor:(UIColor *)color {
+	
+	PWWidgetReminders *widget = [PWWidgetReminders widget];
+	
 	if (_listColor == nil || ![_listColor isEqual:color]) {
 		[_listColor release];
 		_listColor = [color retain];
@@ -113,8 +116,8 @@ char PWWidgetRemindersTableViewCellReminderKey;
 		UIColor *darkerColor = [PWTheme darkenColor:color];
 		
 		// retrieve the images
-		UIImage *normal = [[PWController activeWidget] imageNamed:@"buttonNormal"];
-		UIImage *pressed = [[PWController activeWidget] imageNamed:@"buttonPressed"];
+		UIImage *normal = [widget imageNamed:@"buttonNormal"];
+		UIImage *pressed = [widget imageNamed:@"buttonPressed"];
 		
 		// tint the images
 		normal = [PWTheme tintImage:normal withColor:darkerColor];

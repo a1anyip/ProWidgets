@@ -56,11 +56,11 @@
 - (void)select {
 	
 	if (_tonePickerController == nil) {
-		_tonePickerController = [[PWWidgetItemTonePickerController alloc] initWithTonePickerType:_tonePickerType selectedToneIdentifier:_selectedToneIdentifier toneType:_selectedToneType];
+		_tonePickerController = [[PWWidgetItemTonePickerController alloc] initWithTonePickerType:_tonePickerType selectedToneIdentifier:_selectedToneIdentifier toneType:_selectedToneType forWidget:self.itemViewController.widget];
 		_tonePickerController.delegate = self;
 	}
 	
-	[[PWController activeWidget] pushViewController:_tonePickerController animated:YES];
+	[self.itemViewController.widget pushViewController:_tonePickerController animated:YES];
 }
 
 - (void)setExtraAttributes:(NSDictionary *)attributes {

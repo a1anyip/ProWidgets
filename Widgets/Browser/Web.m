@@ -20,9 +20,9 @@
 - (instancetype)init {
 	if ((self = [super init])) {
 		
-		PWTheme *theme = [PWController activeTheme];
+		PWTheme *theme = [PWWidgetBrowser theme];
 		
-		_textField = [PWThemableTextField new];
+		_textField = [[PWThemableTextField alloc] initWithFrame:CGRectZero theme:theme];
 		_textField.backgroundColor = [UIColor clearColor];
 		_textField.clearButtonMode = UITextFieldViewModeWhileEditing;
 		_textField.font = [UIFont systemFontOfSize:14.0];
@@ -103,7 +103,7 @@
 }
 
 - (void)setButtonState:(BOOL)loading {
-	PWWidgetBrowser *widget = (PWWidgetBrowser *)[PWController activeWidget];
+	PWWidgetBrowser *widget = [PWWidgetBrowser widget];
 	if (loading) {
 		[_actionButton setImage:[widget stopIcon] forState:UIControlStateNormal];
 	} else {
@@ -429,7 +429,7 @@
 	
 	_actionSheet = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:[NSString stringWithFormat:@"Open in %@", defaultBrowserText], @"Copy URL", @"Share...", @"Bookmark...", @"Close Browser", nil];
 	
-	PWTheme *theme = [PWController activeTheme];
+	PWTheme *theme = self.theme;
 	if (theme.wantsDarkKeyboard) {
 		_actionSheet.actionSheetStyle = UIActionSheetStyleBlackTranslucent;
 	}

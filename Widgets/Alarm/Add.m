@@ -30,8 +30,7 @@
 }
 
 - (void)titleTapped {
-	PWWidgetAlarm *widget = (PWWidgetAlarm *)self.widget;
-	[widget switchToOverviewInterface];
+	[[PWWidgetAlarm widget] switchToOverviewInterface];
 }
 
 - (void)itemValueChangedEventHandler:(PWWidgetItem *)item oldValue:(id)oldValue {

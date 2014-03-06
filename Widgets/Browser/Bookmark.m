@@ -30,7 +30,7 @@
 }
 
 - (void)loadView {
-	self.view = [[[PWThemableTableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain] autorelease];
+	self.view = [[[PWThemableTableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain theme:self.theme] autorelease];
 }
 
 - (UITableView *)tableView {
@@ -47,8 +47,7 @@
 }
 
 - (void)titleTapped {
-	PWWidgetBrowser *widget = (PWWidgetBrowser *)self.widget;
-	[widget switchToWebInterface];
+	[[PWWidgetBrowser widget] switchToWebInterface];
 }
 
 - (void)reload {
@@ -106,7 +105,7 @@
 	NSString *address = item[@"address"];
 	
 	if (isFolder) {
-		PWWidgetBrowserBookmarkViewController *bookmarkViewController = [[PWWidgetBrowserBookmarkViewController new] autorelease];
+		PWWidgetBrowserBookmarkViewController *bookmarkViewController = [[[PWWidgetBrowserBookmarkViewController alloc] initForWidget:self.widget] autorelease];
 		bookmarkViewController.folderIdentifier = identifier;
 		bookmarkViewController.folderTitle = title;
 		[widget pushViewController:bookmarkViewController animated:YES];
@@ -137,7 +136,7 @@
 	PWThemableTableViewCell *cell = (PWThemableTableViewCell *)[tableView dequeueReusableCellWithIdentifier:identifier];
 	
 	if (!cell) {
-		cell = [[[PWThemableTableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:identifier] autorelease];
+		cell = [[[PWThemableTableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:identifier theme:self.theme] autorelease];
 	}
 	
 	PWWidgetBrowser *widget = (PWWidgetBrowser *)self.widget;

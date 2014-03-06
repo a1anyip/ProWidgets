@@ -6,6 +6,7 @@ Mail_PRIVATE_FRAMEWORKS = Notes
 Mail_LIBRARIES = prowidgets
 Mail_CFLAGS = -I../../
 Mail_LDFLAGS = -L../../$(THEOS_OBJ_DIR_NAME)
+Mail_BUNDLE_EXTENSION = widget
 
 include theos/makefiles/common.mk
 include $(THEOS_MAKE_PATH)/bundle.mk

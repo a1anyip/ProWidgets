@@ -49,40 +49,19 @@
 	NSArray *_hiddenWidgetOrder;
 	NSString *_defaultThemeName;
 	
-	////////////////////////////
-	///// Presented widget /////
-	////////////////////////////
-	
-	// indicator of whether a widget is opened
-	BOOL _isPresenting;
-	
-	// indicator of whether a widget is being opened (during animation)
-	BOOL _isAnimating;
-	
-	// indicator of whether a widget is minimized
-	BOOL _isMinimized;
-	
-	// current widget
-	// keep a reference to the currently opened widget
-	PWWidget *_presentedWidget;
-	
 	// Pending widget
 	BOOL _hasPendingWidget;
 	PWWidget *_pendingWidget;
 	NSDictionary *_pendingUserInfo;
-	
-	/////////////////
-	///// Theme /////
-	/////////////////
-	BOOL _loadedDefaultTheme;
-	NSString *_cachedDefaultThemeTheme;
-	PWTheme *_cachedDefaultTheme; // only save defualt theme
 	
 	/////////////////////////
 	///// Private stuff /////
 	/////////////////////////
 	NSDate *_initialTime;
 }
+
+@property(nonatomic, assign) BOOL interfaceOrientationIsLocked;
+@property(nonatomic, assign) UIInterfaceOrientation lockedInterfaceOrientation;
 
 @property(nonatomic, readonly) NSBundle *baseBundle;
 @property(nonatomic, readonly) NSBundle *resourceBundle;
@@ -91,11 +70,6 @@
 @property(nonatomic, readonly) PWView *mainView;
 @property(nonatomic, readonly) PWBackgroundView *backgroundView;
 @property(nonatomic, readonly) PWContainerView *containerView;
-
-@property(nonatomic, readonly) BOOL isPresenting;
-@property(nonatomic, readonly) BOOL isAnimating;
-@property(nonatomic, readonly) BOOL isMinimized;
-@property(nonatomic) BOOL pendingDismissalRequest;
 
 // Preference
 @property(nonatomic, readonly) BOOL enabledParallax;
@@ -116,8 +90,23 @@
 //////////////////////////////////////////////////////////////////////
 
 /**
+ * Bundle loaders
+ **/
+
++ (NSBundle *)bundleNamed:(NSString *)name ofType:(NSString *)type extension:(NSString *)extension;
++ (NSBundle *)widgetBundleNamed:(NSString *)name;
++ (NSBundle *)scriptBundleNamed:(NSString *)name;
++ (NSBundle *)themeBundleNamed:(NSString *)name;
++ (NSBundle *)activationMethodBundleNamed:(NSString *)name;
+
+//////////////////////////////////////////////////////////////////////
+
+/**
  * Getters
  **/
+
++ (BOOL)supportsDragging;
++ (BOOL)supportsMultipleWidgetsOnScreen;
 
 + (BOOL)protectedDataAvailable;
 + (int)version;
@@ -157,59 +146,14 @@
 - (void)_loadPreference;
 - (void)_reloadPreference;
 
-/**
- * Notification handlers
- **/
-- (void)_presentWidgetHandler:(NSNotification *)notification;
-- (void)_dismissWidgetHandler:(NSNotification *)notification;
-
-//////////////////////////////////////////////////////////////////////
-
-/**
- * General bundle loaders
- **/
-
-- (NSBundle *)_bundleNamed:(NSString *)name ofType:(NSString *)type;
-
 //////////////////////////////////////////////////////////////////////
 
 /**
  * Theme
  **/
 
-// Retrieve active theme
-+ (PWTheme *)activeTheme;
-- (PWTheme *)activeTheme;
-
-- (NSString *)defaultThemeName;
-
-- (PWTheme *)loadDefaultTheme;
-- (PWTheme *)reloadDefaultTheme;
-- (PWTheme *)loadThemeNamed:(NSString *)name;
-
-//////////////////////////////////////////////////////////////////////
-
-/**
- * Widget
- **/
-
-// Retrieve active widget
-+ (PWWidget *)activeWidget;
-- (PWWidget *)activeWidget;
-
-// Widget loaders
-- (NSBundle *)_bundleForWidgetNamed:(NSString *)name;
-- (PWWidget *)_createWidgetFromBundle:(NSBundle *)bundle;
-- (PWWidget *)_createWidgetNamed:(NSString *)name;
-
-// Present or dismiss widget
-- (BOOL)_presentWidget:(PWWidget *)widget userInfo:(NSDictionary *)userInfo;
-- (BOOL)_dismissWidget;
-- (BOOL)_dismissMinimizedWidget;
-
-// Minimization
-- (BOOL)_minimizeWidget;
-- (BOOL)_maximizeWidget;
+- (PWTheme *)loadDefaultThemeForWidget:(PWWidget *)widget;
+- (PWTheme *)loadThemeNamed:(NSString *)name forWidget:(PWWidget *)widget;
 
 //////////////////////////////////////////////////////////////////////
 
@@ -218,7 +162,6 @@
  **/
 
 // Widget loaders
-- (NSBundle *)_bundleForScriptNamed:(NSString *)name;
 - (PWScript *)_createScriptFromBundle:(NSBundle *)bundle;
 - (PWScript *)_createScriptNamed:(NSString *)name;
 
@@ -230,16 +173,6 @@
 /**
  * Public API
  **/
-
-// widget
-- (BOOL)presentWidget:(PWWidget *)widget userInfo:(NSDictionary *)userInfo;
-- (BOOL)presentWidgetNamed:(NSString *)name userInfo:(NSDictionary *)userInfo;
-- (BOOL)presentWidgetFromBundle:(NSBundle *)bundle userInfo:(NSDictionary *)userInfo;
-
-- (BOOL)dismissWidget;
-
-- (BOOL)minimizeWidget;
-- (BOOL)maximizeWidget;
 
 // script
 - (BOOL)executeScript:(PWScript *)script userInfo:(NSDictionary *)userInfo;
@@ -260,6 +193,7 @@
 - (NSDictionary *)infoOfThemeInBundle:(NSBundle *)bundle;
 
 // activation method
+- (NSDictionary *)infoOfActivationMethodNamed:(NSString *)name;
 - (NSDictionary *)infoOfActivationMethodInBundle:(NSBundle *)bundle;
 
 - (UIImage *)iconOfWidgetNamed:(NSString *)name;
@@ -286,15 +220,12 @@
 
 + (BOOL)_shouldDisableLockScreenIdleTimer;
 
-- (void)_manuallyDismissWidget;
-- (void)_showProtectedDataUnavailable:(PWWidget *)widget presented:(BOOL)presented;
-
 - (void)_recordInitialTime;
 - (void)_outputDuration;
 
 - (void)_applyParallaxEffect;
 - (void)_removeParallaxEffect;
 
-- (NSArray *)_installedBundlesOfType:(NSString *)type infoSelector:(SEL)infoSelector;
+- (NSArray *)_installedBundlesOfType:(NSString *)type extension:(NSString *)extension infoSelector:(SEL)infoSelector;
 
 @end

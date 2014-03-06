@@ -32,12 +32,13 @@
 
 - (void)willBePresentedInNavigationController:(UINavigationController *)navigationController {
 	
+	PWTheme *theme = self.theme;
 	PWWidgetItemWebView *item = (PWWidgetItemWebView *)[self itemWithKey:@"webView"];
 	NSString *content = nil;
 	
 	// adjust the text and separator color
-	UIColor *textColor = [[PWController activeTheme] cellTitleTextColor];
-	UIColor *separatorColor = [[PWController activeTheme] cellSeparatorColor];
+	UIColor *textColor = [theme cellTitleTextColor];
+	UIColor *separatorColor = [theme cellSeparatorColor];
 	NSString *textRGBA = [PWTheme RGBAFromColor:textColor];
 	NSString *separatorRGBA = [PWTheme RGBAFromColor:separatorColor];
 	if (textRGBA != nil && separatorRGBA != nil) {
@@ -88,7 +89,7 @@
 		NSString *term = value.term;
 		NSString *result = value.longDefinition;
 		if (_resultViewController == nil) {
-			_resultViewController = [PWWidgetDictionaryResultViewController new];
+			_resultViewController = [[PWWidgetDictionaryResultViewController alloc] initForWidget:self];
 		}
 		_resultViewController.title = term;
 		_resultViewController.content = result;

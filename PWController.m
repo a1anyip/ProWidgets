@@ -25,6 +25,8 @@
 #import "PWTheme.h"
 #import "PWThemePlistParser.h"
 
+#import "PWWidgetController.h"
+
 static PWController *sharedInstance = nil;
 
 static inline void reloadPref(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
@@ -62,11 +64,12 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 }
 
 - (void)activeInterfaceOrientationDidChangeToOrientation:(UIInterfaceOrientation)activeInterfaceOrientation willAnimateWithDuration:(double)duration fromOrientation:(UIInterfaceOrientation)orientation {
+	
 	LOG(@"PWController: activeInterfaceOrientationDidChangeToOrientation: %d", (int)activeInterfaceOrientation);
 	
 	if (_interfaceOrientationIsLocked)
 		return;
-	
+	/*
 	void(^completionHandler)(BOOL) = ^(BOOL finished) {
 		
 		LOG(@"PWController: _lastFirstResponder: %@", _lastFirstResponder);
@@ -91,7 +94,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 		} completion:completionHandler];
 	} else {
 		completionHandler(NO);
-	}
+	}*/
 }
 
 - (void)activeInterfaceOrientationWillChangeToOrientation:(UIInterfaceOrientation)activeInterfaceOrientation {
@@ -111,8 +114,67 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 //////////////////////////////////////////////////////////////////////
 
 /**
- * Getters
+ * General bundle loaders
  **/
+
++ (NSBundle *)bundleNamed:(NSString *)name ofType:(NSString *)type extension:(NSString *)extension {
+	
+	// trim the bundle name
+	name = [name stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+	
+	// validate the bundle name (to avoid directory traversal)
+	if ([name isEqualToString:@"."] ||
+		[name rangeOfString:@".."].location != NSNotFound ||
+		[name rangeOfString:@"/"].location != NSNotFound ||
+		[name rangeOfString:@"\\"].location != NSNotFound) {
+		LOG(@"Unable to load %@ (%@). Reason: Invalid bundle name", extension, name);
+		return nil;
+	}
+	
+	// get the full path of widget bundle
+	NSString *path = [NSString stringWithFormat:@"%@/%@/%@.%@/", [self.class basePath], type, name, extension];
+	
+	// check if the folder exists
+	BOOL isDir = NO;
+	if ([[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&isDir] && isDir) {
+		NSBundle *bundle = [NSBundle bundleWithPath:path];
+		if (bundle != nil) {
+			return bundle;
+		} else {
+			LOG(@"Unable to load %@ (%@). Reason: Fail to load its bundle (%@)", extension, name, bundle);
+		}
+	} else {
+		LOG(@"Unable to load %@ (%@). Reason: Bundle path does not exist (%@)", extension, name, path);
+	}
+	
+	return nil;
+}
+
++ (NSBundle *)widgetBundleNamed:(NSString *)name {
+	return [self bundleNamed:name ofType:@"Widgets" extension:@"widget"];
+}
+
++ (NSBundle *)scriptBundleNamed:(NSString *)name {
+	return [self bundleNamed:name ofType:@"Scripts" extension:@"script"];
+}
+
++ (NSBundle *)themeBundleNamed:(NSString *)name {
+	return [self bundleNamed:name ofType:@"Themes" extension:@"theme"];
+}
+
++ (NSBundle *)activationMethodBundleNamed:(NSString *)name {
+	return [self bundleNamed:name ofType:@"ActivationMethods" extension:@"bundle"];
+}
+
+//////////////////////////////////////////////////////////////////////
+
++ (BOOL)supportsDragging {
+	return [self isIPad];
+}
+
++ (BOOL)supportsMultipleWidgetsOnScreen {
+	return [self isIPad];
+}
 
 + (BOOL)protectedDataAvailable {
 	int unlockState = MKBGetDeviceLockState(NULL);
@@ -233,11 +295,11 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 }
 
 - (PWBackgroundView *)backgroundView {
-	return self.mainView.backgroundView;
+	return nil;//self.mainView.backgroundView;
 }
 
 - (PWContainerView *)containerView {
-	return self.mainView.containerView;
+	return nil;//self.mainView.containerView;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -280,7 +342,6 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_keyboardWillHideHandler:) name:UIKeyboardWillHideNotification object:nil];
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_protectedDataWillBecomeUnavailableHandler:) name:UIApplicationProtectedDataWillBecomeUnavailable object:nil];
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_protectedDataDidBecomeAvailableHandler:) name:UIApplicationProtectedDataDidBecomeAvailable object:nil];
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_dismissWidgetHandler:) name:PWDismissWidgetNotification object:nil];
 }
 
 - (void)_constructUI {
@@ -357,11 +418,6 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	} else {
 		[self _removeParallaxEffect];
 	}
-	
-	// clear cached theme (if changed)
-	if (![_defaultThemeName isEqualToString:_cachedDefaultThemeTheme]) {
-		[self reloadDefaultTheme];
-	}
 }
 
 /**
@@ -370,31 +426,36 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 
 - (void)_keyboardWillShowHandler:(NSNotification *)notification {
 	
-	if (!_isPresenting) return;
+	if (![PWWidgetController isPresentingWidget]) return;
 	
 	NSDictionary *userInfo = [notification userInfo];
 	CGRect rect = [userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
 	CGFloat height = [self.class isLandscape] ? rect.size.width : rect.size.height;
-	
 	LOG(@"PWController: _keyboardWillShowHandler <keyboard height: %.2f>", height);
 	
-	[self.mainView keyboardWillShow:height];
+	PWWidgetController *activeController = [PWWidgetController activeController];
+	[activeController keyboardWillShowHandler:height];
 }
 
 - (void)_keyboardWillHideHandler:(NSNotification *)notification {
-	if (!_isPresenting) return;
-	[self.mainView keyboardWillHide];
+	if (![PWWidgetController isPresentingWidget]) return;
+	PWWidgetController *activeController = [PWWidgetController activeController];
+	[activeController keyboardWillHideHandler];
 }
 
 - (void)_protectedDataWillBecomeUnavailableHandler:(NSNotification *)notification {
 	LOG(@"PWController: _protectedDataWillBecomeUnavailableHandler");
-	[self _showProtectedDataUnavailable:[PWController activeWidget] presented:YES];
+	if (![PWWidgetController isPresentingWidget]) return;
+	for (PWWidgetController *controller in [PWWidgetController allControllers]) {
+		[controller protectedDataWillBecomeUnavailableHandler];
+	}
 }
 
 - (void)_protectedDataDidBecomeAvailableHandler:(NSNotification *)notification {
 	LOG(@"PWController: _protectedDataDidBecomeAvailableHandler");
 }
 
+/*
 - (void)_presentWidgetHandler:(NSNotification *)notification {
 	
 	NSObject *object = [notification object];
@@ -406,74 +467,19 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	BOOL isBundle = [object isKindOfClass:[NSBundle class]];
 	BOOL isWidget = [object isKindOfClass:[PWWidget class]];
 	
-	if (object == nil || !(isString || isWidget)) {
+	if (object == nil || !(isString || isBundle || isWidget)) {
 		LOG(@"Unable to present widget through notification. Reason: Invalid notification object, must be any of (string, bundle, PWWidget) (%@)", object);
 		return;
 	}
 	
-	PWWidget *widget = nil;
-	
 	if (isString)
-		widget = [self _createWidgetNamed:(NSString *)object];
+		[PWWidgetController presentWidgetNamed:(NSString *)object userInfo:userInfo];
 	else if (isBundle)
-		widget = [self _createWidgetFromBundle:(NSBundle *)object];
+		[PWWidgetController presentWidgetFromBundle:(NSBundle *)object userInfo:userInfo];
 	else if (isWidget)
-		widget = (PWWidget *)object;
-	
-	// all widget instances above are autoreleased
-	if (widget != nil)
-		[self _presentWidget:widget userInfo:userInfo];
+		[PWWidgetController presentWidget:(PWWidget *)object userInfo:userInfo];
 }
-
-- (void)_dismissWidgetHandler:(NSNotification *)notification {
-	LOG(@"PWController: _dismissWidgetHandler");
-	[self _dismissWidget];
-}
-
-//////////////////////////////////////////////////////////////////////
-
-/**
- * General bundle loaders
- **/
-
-- (NSBundle *)_bundleNamed:(NSString *)name ofType:(NSString *)type {
-	
-#ifdef DEBUG
-	NSString *logType = nil;
-	if ([type isEqualToString:@"Widgets"]) logType = @"widget";
-	else if ([type isEqualToString:@"Themes"]) logType = @"theme";
-#endif
-	
-	// trim the bundle name
-	name = [name stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-	
-	// validate the bundle name (to avoid directory traversal)
-	if ([name isEqualToString:@"."] ||
-		[name rangeOfString:@".."].location != NSNotFound ||
-		[name rangeOfString:@"/"].location != NSNotFound ||
-		[name rangeOfString:@"\\"].location != NSNotFound) {
-		LOG(@"Unable to load %@ (%@). Reason: Invalid bundle name", logType, name);
-		return nil;
-	}
-	
-	// get the full path of widget bundle
-	NSString *path = [NSString stringWithFormat:@"%@/%@/%@.bundle/", [self.class basePath], type, name];
-	
-	// check if the folder exists
-	BOOL isDir = NO;
-	if ([[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&isDir] && isDir) {
-		NSBundle *bundle = [NSBundle bundleWithPath:path];
-		if (bundle != nil) {
-			return bundle;
-		} else {
-			LOG(@"Unable to load %@ (%@). Reason: Fail to load its bundle (%@)", logType, name, bundle);
-		}
-	} else {
-		LOG(@"Unable to load %@ (%@). Reason: Bundle path does not exist (%@)", logType, name, path);
-	}
-	
-	return nil;
-}
+*/
 
 //////////////////////////////////////////////////////////////////////
 
@@ -481,56 +487,18 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
  * Theme
  **/
 
-+ (PWTheme *)activeTheme {
-	return [[self sharedInstance] activeTheme];
-}
-
-- (PWTheme *)activeTheme {
-	
-	// return widget theme, if loaded in widget
-	if (_presentedWidget != nil && [_presentedWidget _hasWidgetTheme]) {
-		return [_presentedWidget _widgetTheme];
-	}
-	
-	// else, then return cached default theme
-	if (_loadedDefaultTheme) {
-		return _cachedDefaultTheme;
-	} else {
-		// load default theme
-		return [self loadDefaultTheme];
-	}
-}
-
 - (NSString *)defaultThemeName {
 	return _defaultThemeName == nil || [_defaultThemeName length] == 0 ? @"Blur" : _defaultThemeName;
 }
 
-- (PWTheme *)loadDefaultTheme {
-	
-	if (_loadedDefaultTheme) return _cachedDefaultTheme;
-	
-	// release previously-saved stuff
-	if (_cachedDefaultThemeTheme != nil) [_cachedDefaultThemeTheme release];
-	if (_cachedDefaultTheme != nil) [_cachedDefaultTheme release];
-	
+- (PWTheme *)loadDefaultThemeForWidget:(PWWidget *)widget {
 	// load default theme
-	PWTheme *theme = [self loadThemeNamed:[self defaultThemeName]];
-	
-	_loadedDefaultTheme = YES;
-	_cachedDefaultThemeTheme = [[self defaultThemeName] copy];
-	_cachedDefaultTheme = [theme retain];
-	
-	return _cachedDefaultTheme;
+	return [self loadThemeNamed:[self defaultThemeName] forWidget:widget];
 }
 
-- (PWTheme *)reloadDefaultTheme {
-	_loadedDefaultTheme = NO;
-	return [self loadDefaultTheme];
-}
-
-- (PWTheme *)loadThemeNamed:(NSString *)name {
+- (PWTheme *)loadThemeNamed:(NSString *)name forWidget:(PWWidget *)widget {
 	
-	LOG(@"PWController: loadThemeNamed: %@", name);
+	LOG(@"PWController: loadThemeNamed: %@ forWidget: %@", name, widget);
 	
 	PWTheme *theme = nil;
 	NSBundle *themeBundle = nil;
@@ -548,7 +516,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	} else {
 		
 		// otherwise, treat name as directory name (Themes/__name__/)
-		NSBundle *bundle = [self _bundleNamed:name ofType:@"Themes"];
+		NSBundle *bundle = [self.class themeBundleNamed:name];
 		
 		// try to load the bundle
 		[bundle load];
@@ -564,7 +532,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 				NSDictionary *plistDict = [NSDictionary dictionaryWithContentsOfFile:plistPath];
 				if (plistPath != nil) {
 					LOG(@"PWController: Loaded theme plist at '%@'", plistPath);
-					theme = [[PWThemePlistParser parse:plistDict inBundle:bundle] retain];
+					theme = [[PWThemePlistParser parse:plistDict inBundle:bundle forWidget:widget] retain];
 					themeBundle = bundle;
 				} else if (principalClass != nil) {
 					LOG(@"PWController: Unable to create theme instance for bundle (%@). Reason: Principal class is not a subclass of PWTheme", [bundle bundleIdentifier]);
@@ -581,6 +549,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	if (theme != nil) {
 		theme.name = name;
 		theme.bundle = themeBundle;
+		theme.widget = widget;
 		return [theme autorelease];
 	}
 	
@@ -590,650 +559,8 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 //////////////////////////////////////////////////////////////////////
 
 /**
- * Widget
- **/
-
-+ (PWWidget *)activeWidget {
-	return [[self sharedInstance] activeWidget];
-}
-
-- (PWWidget *)activeWidget {
-	return _presentedWidget;
-}
-
-- (NSBundle *)_bundleForWidgetNamed:(NSString *)name {
-	
-	NSBundle *bundle = [self _bundleNamed:name ofType:@"Widgets"];
-	if (bundle == nil) return nil;
-	
-	LOG(@"PWController: Loaded widget (%@)", name);
-	
-	return bundle;
-}
-
-- (PWWidget *)_createWidgetFromBundle:(NSBundle *)bundle {
-	
-	PWWidget *widget = nil;
-	NSString *widgetName = [[[bundle bundlePath] lastPathComponent] stringByDeletingPathExtension]; // get "*.bundle", then remove ".bundle"
-	
-	// try to load the bundle
-	[bundle load];
-	
-	// get the principal class
-	Class principalClass = [bundle principalClass];
-	if (principalClass == nil || ![principalClass isSubclassOfClass:[PWWidget class]]) {
-		
-		// try to locate the JS file
-		NSString *JSPath = [NSString stringWithFormat:@"%@/%@.js", [bundle bundlePath], widgetName];
-		if ([[NSFileManager defaultManager] fileExistsAtPath:JSPath]) {
-			LOG(@"PWController: Loaded widget JavaScript file at '%@'.", JSPath);
-			widget = [[[PWWidgetJS alloc] initWithJSFile:[NSString stringWithFormat:@"%@.js", widgetName] withName:widgetName inBundle:bundle] autorelease];
-		} else if (principalClass != nil) {
-			LOG(@"PWController: Unable to create widget instance for bundle (%@). Reason: Principal class is not a subclass of PWWidget", [bundle bundleIdentifier]);
-			return nil;
-		}
-	}
-	
-	if (widget == nil) {
-		widget = [[principalClass new] autorelease];
-		widget.name = widgetName;
-		widget.bundle = bundle;
-	}
-	
-	// set the info of the widget
-	NSDictionary *info = [self infoOfWidgetInBundle:widget.bundle];
-	widget.info = info;
-	
-	LOG(@"PWController: Created widget instance for bundle (%@). Widget named (%@): %@", [bundle bundleIdentifier], widgetName, widget);
-	return widget;
-}
-
-- (PWWidget *)_createWidgetNamed:(NSString *)name {
-	
-	NSBundle *bundle = [self _bundleForWidgetNamed:name];
-	
-	if (bundle != nil) {
-		return [self _createWidgetFromBundle:bundle];
-	}
-	
-	return nil;
-}
-
-- (BOOL)_presentWidget:(PWWidget *)widget userInfo:(NSDictionary *)userInfo {
-	
-	LOG(@"PWController: _presentWidget <widget: %@> <user info: %@>", widget, userInfo);
-	
-	if (_hasPendingWidget) return NO;
-	
-	// auto maximize the widget
-	if (_isPresenting && _presentedWidget != nil && _isMinimized) {
-		
-		BOOL sameWidget = [widget.name isEqualToString:_presentedWidget.name];
-		
-		if (sameWidget) {
-			// maximize the widget
-			[self _maximizeWidget];
-			
-			// notify the widget that user info has changed
-			NSDictionary *oldUserInfo = _presentedWidget.userInfo;
-			if ((oldUserInfo == nil && userInfo != nil) || (oldUserInfo != nil && userInfo == nil) || ![oldUserInfo isEqual:userInfo]) {
-				_presentedWidget.userInfo = userInfo;
-				[_presentedWidget userInfoChanged:userInfo];
-			}
-		} else {
-			// ask the user whether to dismiss the minimized widget, and
-			// then present the new one
-			PWAlertView *alertView = [[PWAlertView alloc] initWithTitle:@"Another widget is minimized" message:@"Do you want to dismiss the minimized widget, and then present the new one?" buttonTitle:@"Yes" defaultValue:nil cancelButtonTitle:@"No" style:UIAlertViewStyleDefault completion:^(BOOL cancelled, NSString *firstValue, NSString *secondValue) {
-				// ensure the status does not change
-				if (!cancelled && !_hasPendingWidget && _isPresenting && _presentedWidget != nil && _isMinimized) {
-					_hasPendingWidget = YES;
-					_pendingWidget = [widget retain];
-					_pendingUserInfo = [userInfo retain];
-					[self _dismissMinimizedWidget];
-				}
-			}];
-			[alertView show];
-			[alertView release];
-		}
-		
-		return YES;
-	}
-	
-	if (_isPresenting || _presentedWidget != nil) {
-		LOG(@"PWController: Unable to present widget (%@). Reason: Another widget is currently being presented. (%@)", widget, _presentedWidget);
-		return NO;
-	}
-	
-	// block orientation change on non-iPad devices
-	if (![self.class isIPad]) {
-		_interfaceOrientationIsLocked = NO;
-		[[objc_getClass("SBUIController") sharedInstance] _lockOrientationForTransition];
-		_lockedInterfaceOrientation = [self currentInterfaceOrientation];
-		_interfaceOrientationIsLocked = YES;
-	}
-	
-	_pendingDismissalRequest = NO;
-	
-	_isPresenting = YES;
-	_isMinimized = NO;
-	_isAnimating = YES;
-	_presentedWidget = [widget retain];
-	
-	// set user info
-	widget.userInfo = userInfo;
-	
-	// configure widget
-	// configure title, widget theme, tint/bar text colors, default item view controller plist
-	[widget configure];
-	
-	// simple check before loading the widget
-	if (widget.requiresProtectedDataAccess && ![self.class protectedDataAvailable]) {
-		[self _showProtectedDataUnavailable:widget presented:NO];
-		[self _manuallyDismissWidget];
-		return NO;
-	}
-	
-	[widget _setConfigured];
-	
-	// create PWContainerView
-	// this will also add navigation controller view as its subview
-	[self.mainView createContainerView];
-	
-	// configure active theme
-	PWTheme *theme = [PWController activeTheme];
-	[theme _setPreferredTintColor:[widget preferredTintColor]];
-	[theme _setPreferredBarTextColor:[widget preferredBarTextColor]];
-	[theme _configureAppearance];
-	[theme setupTheme];
-	
-	// load the widget
-	// e.g. create or push custom view controllers
-	[widget load];
-	
-	// configure for default layout & block further changes
-	[widget preparePresentation];
-	
-	// ensure the widget has already pushed a view controller
-	id topViewController = widget.topViewController;
-	
-	// if the widget does not have a root view controller, or it requests to dismiss in load method, then dismiss it immediately
-	if (_pendingDismissalRequest || topViewController == nil) {
-		
-		// show an error alert
-		if (!_pendingDismissalRequest && topViewController == nil) {
-			UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Unable to present widget" message:[NSString stringWithFormat:@"The widget \"%@\" does not have a root view controller.", widget.displayName] delegate:nil cancelButtonTitle:@"Dismiss" otherButtonTitles:nil];
-			[alertView show];
-			[alertView release];
-		}
-		
-		// manually dismiss it
-		[self _manuallyDismissWidget];
-		return NO;
-	}
-	
-	[widget willPresent];
-	
-	// update the mask in background view
-	[self.backgroundView show:YES];
-	
-	// show PWWindow
-	[_window show];
-	
-	CALayer *layer = self.containerView.layer;
-	
-	[CATransaction begin];
-	[CATransaction setAnimationDuration:PWAnimationDuration];
-	[CATransaction setAnimationTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
-	[CATransaction setCompletionBlock:^{
-		
-		_isAnimating = NO;
-		[widget didPresent];
-		
-		// show test bar
-		if (_testMode) {
-			[[PWTestBar sharedInstance] show];
-		}
-		
-		if (_pendingDismissalRequest) {
-			[self _dismissWidget];
-		}
-	}];
-	
-	CABasicAnimation *fade = [CABasicAnimation animationWithKeyPath:@"opacity"];
-	fade.fromValue = [NSNumber numberWithDouble:0.0];
-	fade.toValue = [NSNumber numberWithDouble:1.0];
-	
-	CABasicAnimation *scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
-	scale.fromValue = [NSNumber numberWithDouble:1.2];
-	scale.toValue = [NSNumber numberWithDouble:1.0];
-	scale.fillMode = kCAFillModeForwards;
-	scale.removedOnCompletion = NO;
-	
-	layer.opacity = 1.0;
-	
-	[layer addAnimation:fade forKey:@"fade"];
-	[layer addAnimation:scale forKey:@"scale"];
-	[CATransaction commit];
-	
-	return YES;
-}
-
-- (BOOL)_dismissWidget {
-	
-	LOG(@"PWController: _dismissWidget: %@", _presentedWidget);
-	
-	// no widget is currently presented, unable to dismiss
-	if (!_isPresenting || _presentedWidget == nil) {
-		LOG(@"PWController: Unable to dismiss widget. Reason: No widget is presented.");
-		return NO;
-	}
-	
-	if (_isAnimating) {
-		LOG(@"PWController: Unable to dismiss widget. Widget is being animated.");
-		return NO;
-	}
-	
-	if (_isMinimized) {
-		LOG(@"PWController: Unable to dismiss widget. Widget is currently minimized.");
-		return NO;
-	}
-	
-	_pendingDismissalRequest = NO;
-	
-	// hide debug bar
-	[[PWTestBar sharedInstance] hide];
-	
-	// update flag
-	_isAnimating = YES;
-	
-	// force hide keyboard
-	[_window endEditing:YES];
-	
-	// notify widget
-	[_presentedWidget willDismiss];
-	
-	// hide background view
-	[self.backgroundView hide];
-	
-	CALayer *layer = self.containerView.layer;
-	
-	[CATransaction begin];
-	[CATransaction setAnimationDuration:PWAnimationDuration];
-	[CATransaction setCompletionBlock:^{
-		
-		[_presentedWidget didDismiss];
-		
-		// remove theme
-		[[PWController activeTheme] removeTheme];
-		
-		// remove container view
-		[self.mainView removeContainerView];
-		
-		// hide window
-		// stop blocking user interaction
-		[_window hide];
-		
-		// this is to force release all the event handlers that may retain widget instance (inside block)
-		// then widget will never get released
-		[_presentedWidget _dealloc];
-		[_presentedWidget release];
-		
-		_isPresenting = NO;
-		_isMinimized = NO;
-		_isAnimating = NO;
-		_presentedWidget = nil;
-		
-		if (![self.class isIPad]) {
-			[[objc_getClass("SBUIController") sharedInstance] _releaseTransitionOrientationLock];
-			_interfaceOrientationIsLocked = NO;
-		}
-		
-		// reset auto dim timer
-		[[objc_getClass("SBBacklightController") sharedInstance] resetLockScreenIdleTimer];
-	}];
-	
-	CABasicAnimation *fade = [CABasicAnimation animationWithKeyPath:@"opacity"];
-	fade.fromValue = [NSNumber numberWithFloat:1.0];
-	fade.toValue = [NSNumber numberWithFloat:0.0];
-	
-	CABasicAnimation *scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
-	scale.fromValue = [NSNumber numberWithFloat:1.0];
-	scale.toValue = [NSNumber numberWithFloat:0.7];
-	scale.fillMode = kCAFillModeForwards;
-	scale.removedOnCompletion = NO;
-	
-	layer.opacity = 0.0;
-	
-	[layer addAnimation:fade forKey:@"fade"];
-	[layer addAnimation:scale forKey:@"scale"];
-	[CATransaction commit];
-	
-	return YES;
-}
-
-- (BOOL)_dismissMinimizedWidget {
-	
-	LOG(@"PWController: _dismissMinimizedWidget: %@", _presentedWidget);
-	
-	// no widget is currently presented, unable to dismiss
-	if (!_isPresenting || _presentedWidget == nil) {
-		LOG(@"PWController: Unable to dismiss widget. Reason: No widget is presented.");
-		return NO;
-	}
-	
-	if (_isAnimating) {
-		LOG(@"PWController: Unable to dismiss widget. Widget is being animated.");
-		return NO;
-	}
-	
-	if (!_isMinimized) {
-		LOG(@"PWController: Unable to dismiss widget. Widget is not minimized.");
-		return NO;
-	}
-	
-	_pendingDismissalRequest = NO;
-	
-	// update flag
-	_isAnimating = YES;
-	
-	// force hide keyboard
-	[_window endEditing:YES];
-	
-	// notify widget
-	[_presentedWidget willDismiss];
-	
-	// remove theme
-	[[PWController activeTheme] removeTheme];
-	
-	// remove container view
-	[self.mainView removeContainerView];
-	
-	// perform animation
-	CALayer *layer = self.window.miniView.layer;
-	CGFloat scaleTo = PWMinimizationScale * 0.8;
-	
-	[CATransaction begin];
-	[CATransaction setAnimationDuration:PWAnimationDuration];
-	[CATransaction setCompletionBlock:^{
-		
-		[_presentedWidget didDismiss];
-		
-		// hide window
-		// stop blocking user interaction
-		[_window hide];
-		
-		// remove mini view
-		[self.window removeMiniView];
-		
-		// show main view
-		self.mainView.hidden = NO;
-		
-		// this is to force release all the event handlers that may retain widget instance (inside block)
-		// then widget will never get released
-		[_presentedWidget _dealloc];
-		[_presentedWidget release];
-		
-		_isPresenting = NO;
-		_isMinimized = NO;
-		_isAnimating = NO;
-		_presentedWidget = nil;
-		
-		if (![self.class isIPad]) {
-			[[objc_getClass("SBUIController") sharedInstance] _releaseTransitionOrientationLock];
-			_interfaceOrientationIsLocked = NO;
-		}
-		
-		// reset auto dim timer
-		[[objc_getClass("SBBacklightController") sharedInstance] resetLockScreenIdleTimer];
-		
-		// check if there is any pending widget
-		if (_hasPendingWidget) {
-			_hasPendingWidget = NO;
-			[self _presentWidget:_pendingWidget userInfo:_pendingUserInfo];
-			RELEASE(_pendingWidget)
-			RELEASE(_pendingUserInfo)
-		}
-	}];
-	
-	CABasicAnimation *fade = [CABasicAnimation animationWithKeyPath:@"opacity"];
-	fade.fromValue = [NSNumber numberWithFloat:1.0];
-	fade.toValue = [NSNumber numberWithFloat:0.0];
-	
-	CABasicAnimation *scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
-	scale.fromValue = [NSNumber numberWithFloat:PWMinimizationScale];
-	scale.toValue = [NSNumber numberWithFloat:scaleTo];
-	scale.fillMode = kCAFillModeForwards;
-	scale.removedOnCompletion = NO;
-	
-	layer.opacity = 0.0;
-	layer.transform = CATransform3DMakeScale(scaleTo, scaleTo, 1.0);
-	
-	[layer addAnimation:fade forKey:@"fade"];
-	[layer addAnimation:scale forKey:@"scale"];
-	[CATransaction commit];
-	
-	return YES;
-}
-
-- (BOOL)_minimizeWidget {
-	
-	LOG(@"PWController: _minimizeWidget: %@", _presentedWidget);
-	
-	// no widget is currently presented, unable to dismiss
-	if (!_isPresenting || _presentedWidget == nil) {
-		LOG(@"PWController: Unable to minimize widget. Reason: No widget is presented.");
-		return NO;
-	}
-	
-	if (_isAnimating) {
-		LOG(@"PWController: Unable to minimize widget. Widget is being animated.");
-		return NO;
-	}
-	
-	if (_isMinimized) {
-		LOG(@"PWController: Unable to minimize widget. Widget is already minimized.");
-		return NO;
-	}
-	
-	_isMinimized = YES;
-	_pendingDismissalRequest = NO;
-	
-	// hide debug bar
-	[[PWTestBar sharedInstance] hide];
-	
-	// update flag
-	_isAnimating = YES;
-	
-	// force hide keyboard
-	[_window endEditing:YES];
-	
-	// generate image for mini view
-	UIGraphicsBeginImageContextWithOptions(self.containerView.bounds.size, NO, 0);
-	
-	PWTheme *theme = [PWController activeTheme];
-	[theme enterSnapshotMode];
-	[self.containerView drawViewHierarchyInRect:self.containerView.bounds afterScreenUpdates:YES];
-	[theme exitSnapshotMode];
-	
-	UIImage *snapshot = UIGraphicsGetImageFromCurrentImageContext();
-	UIGraphicsEndImageContext();
-	
-	// apply gaussian blur to the snapshot
-	/*
-	CIFilter *filter = [CIFilter filterWithName:@"CIGaussianBlur"];
-	[filter setDefaults];
-	[filter setValue:[CIImage imageWithCGImage:[snapshot CGImage]] forKey:kCIInputImageKey];
-	[filter setValue:@(3.0) forKey:kCIInputRadiusKey];
-	CIImage *outputImage = [filter outputImage];
-	snapshot = [UIImage imageWithCIImage:outputImage];
-	*/
-	
-	// hide container view
-	self.containerView.hidden = YES;
-	
-	// hide background view
-	[self.backgroundView hide];
-	
-	// ask window to create a mini view with the snapshot image
-	PWMiniView *miniView = [self.window createMiniViewWithSnapshot:snapshot];
-	
-	// animate the layer
-	CALayer *layer = miniView.layer;
-	CGFloat fadeTo = .9;
-	CGFloat viewScale = PWMinimizationScale;
-	CGFloat initialExtraScale = .92;
-	CGPoint initialPosition = [self.window getInitialPositionOfMiniView];
-	
-	[CATransaction begin];
-	[CATransaction setAnimationDuration:.3];
-	[CATransaction setAnimationTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
-	[CATransaction setCompletionBlock:^{
-		
-		// hide main view
-		self.mainView.hidden = YES;
-		
-		// configure its appearance
-		[layer setCornerRadius:20.0];
-		[layer setBorderColor:[UIColor colorWithWhite:.3 alpha:.8].CGColor];
-		[layer setBorderWidth:3.0];
-		
-		// perform second animation
-		[CATransaction begin];
-		[CATransaction setAnimationDuration:.15];
-		[CATransaction setAnimationTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
-		[CATransaction setCompletionBlock:^{
-			_isAnimating = NO;
-		}];
-		
-		CABasicAnimation *scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
-		scale.fromValue = [NSNumber numberWithFloat:viewScale * initialExtraScale];
-		scale.toValue = [NSNumber numberWithFloat:viewScale];
-		
-		layer.transform = CATransform3DMakeScale(viewScale, viewScale, 1.0);
-		
-		[layer addAnimation:scale forKey:@"scale"];
-		[CATransaction commit];
-	}];
-	
-	CABasicAnimation *fade = [CABasicAnimation animationWithKeyPath:@"opacity"];
-	fade.fromValue = [NSNumber numberWithFloat:1.0];
-	fade.toValue = [NSNumber numberWithFloat:fadeTo];
-	
-	CABasicAnimation *scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
-	scale.fromValue = [NSNumber numberWithFloat:1.0];
-	scale.toValue = [NSNumber numberWithFloat:viewScale * initialExtraScale];
-	
-	CABasicAnimation *position = [CABasicAnimation animationWithKeyPath:@"position"];
-	position.fromValue = [NSValue valueWithCGPoint:layer.position];
-	position.toValue = [NSValue valueWithCGPoint:initialPosition];
-	
-	layer.opacity = fadeTo;
-	layer.transform = CATransform3DMakeScale(viewScale * initialExtraScale, viewScale * initialExtraScale, 1.0);
-	layer.position = initialPosition;
-	
-	[layer addAnimation:fade forKey:@"fade"];
-	[layer addAnimation:scale forKey:@"scale"];
-	[layer addAnimation:position forKey:@"position"];
-	[CATransaction commit];
-	
-	return YES;
-}
-
-- (BOOL)_maximizeWidget {
-	
-	LOG(@"PWController: _maximizeWidget: %@", _presentedWidget);
-	
-	// no widget is currently presented, unable to dismiss
-	if (!_isPresenting || _presentedWidget == nil) {
-		LOG(@"PWController: Unable to maximize widget. Reason: No widget is presented.");
-		return NO;
-	}
-	
-	if (_isAnimating) {
-		LOG(@"PWController: Unable to maximize widget. Widget is being animated.");
-		return NO;
-	}
-	
-	if (!_isMinimized) {
-		LOG(@"PWController: Unable to maximize widget. Widget is already maximized.");
-		return NO;
-	}
-	
-	// update flag
-	_isAnimating = YES;
-	
-	// request key window
-	[self.window show];
-	
-	PWMiniView *miniView = self.window.miniView;
-	CGFloat miniViewScale = PWMinimizationScale;
-	CGPoint miniViewCenter = miniView.center;
-	
-	// show main view and container view
-	self.containerView.hidden = NO;
-	self.mainView.hidden = NO;
-	
-	// remove mini view
-	[self.window removeMiniView];
-	
-	// animate the layer
-	CALayer *layer = self.containerView.layer;
-	CGFloat fadeFrom = .8;
-	
-	[CATransaction begin];
-	[CATransaction setAnimationDuration:.2];
-	[CATransaction setAnimationTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
-	[CATransaction setCompletionBlock:^{
-		
-		// show background view
-		[self.backgroundView show:NO];
-		
-		// force main view to perform layoutSubviews
-		[self.mainView setNeedsLayout];
-		
-		// ask the top view controller to configure first responder (regain keyboard)
-		[_presentedWidget.topViewController configureFirstResponder];
-		
-		// update flags
-		_isAnimating = NO;
-		_isMinimized = NO;
-	}];
-	
-	CABasicAnimation *fade = [CABasicAnimation animationWithKeyPath:@"opacity"];
-	fade.fromValue = @(fadeFrom);
-	fade.toValue = @(1.0);
-	
-	CABasicAnimation *scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
-	scale.fromValue = @(miniViewScale);
-	scale.toValue = @(1.0);
-	
-	CABasicAnimation *position = [CABasicAnimation animationWithKeyPath:@"position"];
-	position.fromValue = [NSValue valueWithCGPoint:miniViewCenter];
-	position.toValue = [NSValue valueWithCGPoint:layer.position];
-	
-	[layer addAnimation:fade forKey:@"fade"];
-	[layer addAnimation:scale forKey:@"scale"];
-	[layer addAnimation:position forKey:@"position"];
-	[CATransaction commit];
-	
-	return YES;
-}
-
-//////////////////////////////////////////////////////////////////////
-
-/**
  * Script
  **/
-
-- (NSBundle *)_bundleForScriptNamed:(NSString *)name {
-	
-	NSBundle *bundle = [self _bundleNamed:name ofType:@"Scripts"];
-	if (bundle == nil) return nil;
-	
-	LOG(@"PWController: Loaded script (%@)", name);
-	
-	return bundle;
-}
 
 - (PWScript *)_createScriptFromBundle:(NSBundle *)bundle {
 	
@@ -1280,7 +607,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 
 - (PWScript *)_createScriptNamed:(NSString *)name {
 	
-	NSBundle *bundle = [self _bundleForScriptNamed:name];
+	NSBundle *bundle = [self.class scriptBundleNamed:name];
 	
 	if (bundle != nil) {
 		return [self _createScriptFromBundle:bundle];
@@ -1310,34 +637,6 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
  * Public API
  **/
 
-- (BOOL)presentWidget:(PWWidget *)widget userInfo:(NSDictionary *)userInfo {
-	return [self _presentWidget:widget userInfo:userInfo];
-}
-
-- (BOOL)presentWidgetNamed:(NSString *)name userInfo:(NSDictionary *)userInfo {
-	PWWidget *widget = [self _createWidgetNamed:name];
-	if (widget == nil) return NO;
-	return [self _presentWidget:widget userInfo:userInfo];
-}
-
-- (BOOL)presentWidgetFromBundle:(NSBundle *)bundle userInfo:(NSDictionary *)userInfo {
-	PWWidget *widget = [self _createWidgetFromBundle:bundle];
-	if (widget == nil) return NO;
-	return [self _presentWidget:widget userInfo:userInfo];
-}
-
-- (BOOL)dismissWidget {
-	return [self _dismissWidget];
-}
-
-- (BOOL)minimizeWidget {
-	return [self _minimizeWidget];
-}
-
-- (BOOL)maximizeWidget {
-	return [self _maximizeWidget];
-}
-
 - (BOOL)executeScript:(PWScript *)script userInfo:(NSDictionary *)userInfo {
 	return [self _executeScript:script userInfo:userInfo];
 }
@@ -1355,7 +654,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 }
 
 - (NSDictionary *)infoOfWidgetNamed:(NSString *)name {
-	NSBundle *bundle = [self _bundleNamed:name ofType:@"Widgets"];
+	NSBundle *bundle = [self.class widgetBundleNamed:name];
 	return [self infoOfWidgetInBundle:bundle];
 }
 
@@ -1443,7 +742,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 }
 
 - (NSDictionary *)infoOfScriptNamed:(NSString *)name {
-	NSBundle *bundle = [self _bundleNamed:name ofType:@"Scripts"];
+	NSBundle *bundle = [self.class scriptBundleNamed:name];
 	return [self infoOfScriptInBundle:bundle];
 }
 
@@ -1505,7 +804,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 }
 
 - (NSDictionary *)infoOfThemeNamed:(NSString *)name {
-	NSBundle *bundle = [self _bundleNamed:name ofType:@"Themes"];
+	NSBundle *bundle = [self.class themeBundleNamed:name];
 	return [self infoOfThemeInBundle:bundle];
 }
 
@@ -1558,6 +857,11 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 			 @"bundle": bundle,
 			 @"installedViaURL": installedViaURL
 			 };
+}
+
+- (NSDictionary *)infoOfActivationMethodNamed:(NSString *)name {
+	NSBundle *bundle = [self.class activationMethodBundleNamed:name];
+	return [self infoOfActivationMethodInBundle:bundle];
 }
 
 - (NSDictionary *)infoOfActivationMethodInBundle:(NSBundle *)bundle {
@@ -1613,7 +917,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 }
 
 - (UIImage *)iconOfWidgetNamed:(NSString *)name {
-	NSBundle *bundle = [self _bundleNamed:name ofType:@"Widgets"];
+	NSBundle *bundle = [self.class widgetBundleNamed:name];
 	return [self iconOfWidgetInBundle:bundle];
 }
 
@@ -1631,7 +935,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 }
 
 - (UIImage *)iconOfThemeNamed:(NSString *)name {
-	NSBundle *bundle = [self _bundleNamed:name ofType:@"Themes"];
+	NSBundle *bundle = [self.class themeBundleNamed:name];
 	return [self iconOfThemeInBundle:bundle];
 }
 
@@ -1649,7 +953,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 }
 
 - (UIImage *)maskOfWidgetNamed:(NSString *)name {
-	NSBundle *bundle = [self _bundleNamed:name ofType:@"Widgets"];
+	NSBundle *bundle = [self.class widgetBundleNamed:name];
 	return [self maskOfWidgetInBundle:bundle];
 }
 
@@ -1667,12 +971,12 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 }
 
 - (NSArray *)installedWidgets {
-	return [self _installedBundlesOfType:@"Widgets" infoSelector:@selector(infoOfWidgetInBundle:)];
+	return [self _installedBundlesOfType:@"Widgets" extension:@"widget" infoSelector:@selector(infoOfWidgetInBundle:)];
 }
 
 - (NSDictionary *)enabledWidgets {
 	
-	NSArray *unsorted = [self _installedBundlesOfType:@"Widgets" infoSelector:@selector(infoOfEnabledWidgetInBundle:)];
+	NSArray *unsorted = [self _installedBundlesOfType:@"Widgets" extension:@"widget" infoSelector:@selector(infoOfEnabledWidgetInBundle:)];
 	NSArray *visibleOrder = self.visibleWidgetOrder;
 	NSArray *hiddenOrder = self.hiddenWidgetOrder;
 	
@@ -1717,15 +1021,15 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 }
 
 - (NSArray *)installedScripts {
-	return [self _installedBundlesOfType:@"Scripts" infoSelector:@selector(infoOfScriptInBundle:)];
+	return [self _installedBundlesOfType:@"Scripts" extension:@"script" infoSelector:@selector(infoOfScriptInBundle:)];
 }
 
 - (NSArray *)installedThemes {
-	return [self _installedBundlesOfType:@"Themes" infoSelector:@selector(infoOfThemeInBundle:)];
+	return [self _installedBundlesOfType:@"Themes" extension:@"theme" infoSelector:@selector(infoOfThemeInBundle:)];
 }
 
 - (NSArray *)activationMethods {
-	return [self _installedBundlesOfType:@"ActivationMethods" infoSelector:@selector(infoOfActivationMethodInBundle:)];
+	return [self _installedBundlesOfType:@"ActivationMethods" extension:@"bundle" infoSelector:@selector(infoOfActivationMethodInBundle:)];
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1735,57 +1039,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
  **/
 
 + (BOOL)_shouldDisableLockScreenIdleTimer {
-	return [PWController sharedInstance].isPresenting;
-}
-
-- (void)_manuallyDismissWidget {
-	
-	_pendingDismissalRequest = NO;
-	_isPresenting = NO;
-	_isAnimating = NO;
-	
-	[_presentedWidget release], _presentedWidget = nil;
-	
-	[self.mainView removeContainerView];
-	
-	if (![self.class isIPad]) {
-		[[objc_getClass("SBUIController") sharedInstance] _releaseTransitionOrientationLock];
-		_interfaceOrientationIsLocked = NO;
-	}
-	
-	// reset auto dim timer
-	[[objc_getClass("SBBacklightController") sharedInstance] resetLockScreenIdleTimer];
-}
-
-- (void)_showProtectedDataUnavailable:(PWWidget *)widget presented:(BOOL)presented {
-	
-	if (widget == nil) return;
-	
-	if (presented) {
-		
-		// not being dismissed or presented
-		if (!_isAnimating) {
-			
-			BOOL requiresProtectedDataAccess = widget.requiresProtectedDataAccess;
-			if (requiresProtectedDataAccess) {
-				
-				// show the message
-				PWAlertView *alertView = [[PWAlertView alloc] initWithTitle:@"Protected Data Unavailable" message:[NSString stringWithFormat:@"As this widget \"%@\" requires access to protected data on your device, it is now dismissed to prevent any data corruption.", widget.displayName] buttonTitle:nil defaultValue:nil cancelButtonTitle:@"Dismiss" style:UIAlertViewStyleDefault completion:nil];
-				[alertView show];
-				[alertView release];
-				
-				// dismiss the widget rightaway
-				[self _dismissWidget];
-			}
-		}
-		
-	} else {
-		
-		// show the message
-		PWAlertView *alertView = [[PWAlertView alloc] initWithTitle:@"Protected Data Unavailable" message:[NSString stringWithFormat:@"Unable to present widget \"%@\" because it requires access to protected data on your device.", widget.displayName] buttonTitle:nil defaultValue:nil cancelButtonTitle:@"Dismiss" style:UIAlertViewStyleDefault completion:nil];
-		[alertView show];
-		[alertView release];
-	}
+	return [PWWidgetController isLocked];
 }
 
 - (void)_recordInitialTime {
@@ -1826,7 +1080,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	}
 }
 
-- (NSArray *)_installedBundlesOfType:(NSString *)type infoSelector:(SEL)infoSelector {
+- (NSArray *)_installedBundlesOfType:(NSString *)type extension:(NSString *)extension infoSelector:(SEL)infoSelector {
 	
 	NSMutableArray *result = [NSMutableArray array];
 	NSFileManager *fm = [NSFileManager defaultManager];
@@ -1851,7 +1105,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 		NSNumber *isDir;
 		[url getResourceValue:&isDir forKey:NSURLIsDirectoryKey error:NULL];
 		
-		if ([isDir boolValue] && [fileName hasSuffix:@".bundle"]) {
+		if ([isDir boolValue] && [fileName hasSuffix:[NSString stringWithFormat:@".%@", extension]]) {
 			NSBundle *bundle = [NSBundle bundleWithURL:url];
 			if (bundle != nil) {
 				NSDictionary *dict = [self performSelector:infoSelector withObject:bundle];

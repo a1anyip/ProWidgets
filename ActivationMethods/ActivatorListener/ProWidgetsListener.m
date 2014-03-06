@@ -11,6 +11,7 @@
 #import "header.h"
 #import "libactivator.h"
 #import "PWController.h"
+#import "PWWidgetController.h"
 
 #define ICON_PATH @"/Library/PreferenceBundles/ProWidgets.bundle/icon@2x.png"
 
@@ -110,12 +111,12 @@ static LAProWidgets *sharedInstance = nil;
 	NSString *widgetName = widgetNameFromListenerName(listenerName);
 	
 	// present the widget
-	PWController *controller = [PWController sharedInstance];
+	//PWController *controller = [PWController sharedInstance];
 	
 	BOOL success = NO;
 	
 	if (isDismissListenerName(listenerName)) {
-		success = [controller dismissWidget];
+		success = NO;//[controller dismissWidget];
 	} else {
 		NSDictionary *userInfo = nil;
 		if (event != nil) {
@@ -123,7 +124,7 @@ static LAProWidgets *sharedInstance = nil;
 		} else {
 			userInfo = @{ @"from": @"activator" };
 		}
-		success = [controller presentWidgetNamed:widgetName userInfo:userInfo];
+		success = [PWWidgetController presentWidgetNamed:widgetName userInfo:userInfo]; //[controller presentWidgetNamed:widgetName userInfo:userInfo];
 	}
 	
 	event.handled = success;

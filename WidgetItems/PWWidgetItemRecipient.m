@@ -30,14 +30,11 @@
 - (void)select {
 	
 	if (_recipientController == nil) {
-		_recipientController = [PWWidgetItemRecipientController new];
-		_recipientController.title = _titleWithoutColon;
-		_recipientController.delegate = self;
-		_recipientController.recipients = self.recipients;
+		_recipientController = [[PWWidgetItemRecipientController alloc] initWithTitle:_titleWithoutColon delegate:self recipients:self.recipients forWidget:self.itemViewController.widget];
 		RELEASE(_titleWithoutColon)
 	}
 	
-	[[PWController activeWidget] pushViewController:_recipientController animated:YES];
+	[self.itemViewController.widget pushViewController:_recipientController animated:YES];
 }
 
 - (void)setTitle:(NSString *)title {
@@ -211,8 +208,9 @@
 
 //////////////////////////////////////////////////////////////////////
 
-- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
-	if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier])) {
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier theme:(PWTheme *)theme {
+	if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier theme:theme])) {
+		
 		self.detailTextLabel.textAlignment = NSTextAlignmentLeft;
 	}
 	return self;

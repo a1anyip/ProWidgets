@@ -11,6 +11,6 @@
 
 @interface PWThemePlistParser : NSObject
 
-+ (PWTheme *)parse:(NSDictionary *)dict inBundle:(NSBundle *)bundle;
++ (PWTheme *)parse:(NSDictionary *)dict inBundle:(NSBundle *)bundle forWidget:(PWWidget *)widget;
 
 @end

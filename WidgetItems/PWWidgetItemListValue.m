@@ -115,7 +115,7 @@
 - (void)select {
 	
 	if (_listViewController == nil) {
-		_listViewController = [[PWContentListViewController alloc] initWithTitle:self.title delegate:self];
+		_listViewController = [[PWContentListViewController alloc] initWithTitle:self.title delegate:self forWidget:self.itemViewController.widget];
 	}
 	
 	BOOL requiresKeyboard = self.itemViewController.requiresKeyboard;
@@ -124,7 +124,7 @@
 	}
 	_listViewController.requiresKeyboard = requiresKeyboard;
 	
-	[[PWController activeWidget] pushViewController:_listViewController animated:YES];
+	[self.itemViewController.widget pushViewController:_listViewController animated:YES];
 }
 
 - (void)setExtraAttributes:(NSDictionary *)attributes {
@@ -227,7 +227,7 @@
 }
 
 - (void)selectedTooManyItems {
-	[[PWController activeWidget] showMessage:[NSString stringWithFormat:@"Only %u items could be selected.", (unsigned int)_maximumNumberOfSelection]];
+	[self.itemViewController.widget showMessage:[NSString stringWithFormat:@"Only %u items could be selected.", (unsigned int)_maximumNumberOfSelection]];
 }
 
 - (void)selectedValuesChanged:(NSArray *)newValues oldValues:(NSArray *)oldValues {
@@ -237,7 +237,7 @@
 	[super setValue:[[newValues mutableCopy] autorelease]];
 	
 	if ([self maximumNumberOfSelection] == 1) {
-		[[PWController activeWidget] popViewController];
+		[self.itemViewController.widget popViewController];
 	}
 	
 	// notify widget

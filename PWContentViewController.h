@@ -12,6 +12,8 @@
 
 @interface PWContentViewController : UIViewController<PWContentViewControllerDelegate> {
 	
+	PWWidget *_widget;
+	
 	BOOL _shouldAutoConfigureStandardButtons;
 	BOOL _shouldMaximizeContentHeight;
 	BOOL _requiresKeyboard;
@@ -39,13 +41,17 @@
 + (NSString *)titleTappedEventName;
 
 // for subclass
-- (instancetype)_init;
+- (instancetype)initForWidget:(PWWidget *)widget;
+- (instancetype)_initForWidget:(PWWidget *)widget; // for subclass
+- (void)_setWidget:(PWWidget *)widget;
+
+- (PWWidget *)widget;
+- (PWTheme *)theme;
 
 - (void)load;
 - (BOOL)loadPlist:(NSString *)filename;
 
 - (BOOL)isTopViewController;
-- (PWWidget *)widget;
 
 // subclasses may override these methods
 - (void)keyboardWillShow:(CGFloat)height;

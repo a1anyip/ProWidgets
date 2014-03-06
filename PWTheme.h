@@ -13,29 +13,23 @@
 	
 	NSString *_name;
 	NSBundle *_bundle;
-	
-	UIColor *_preferredTintColor;
-	UIColor *_preferredBarTextColor;
+	PWWidget *_widget;
 }
 
 @property(nonatomic, copy) NSString *name;
 @property(nonatomic, retain) NSBundle *bundle;
-
-@property(nonatomic, readonly) UIColor *preferredTintColor;
-@property(nonatomic, readonly) UIColor *preferredBarTextColor;
-
-@property(nonatomic, readonly) PWBackgroundView *backgroundView;
-@property(nonatomic, readonly) PWContainerView *containerView;
-@property(nonatomic, readonly) UINavigationController *navigationController;
-@property(nonatomic, readonly) UINavigationBar *navigationBar;
+@property(nonatomic, retain) PWWidget *widget;
 
 //////////////////////////////////////////////////////////////////////
 
-/**
- * Initialization
- **/
+- (instancetype)initWithName:(NSString *)name bundle:(NSBundle *)bundle widget:(PWWidget *)widget;
 
-- (instancetype)initWithName:(NSString *)name bundle:(NSBundle *)bundle;
+- (PWBackgroundView *)backgroundView;
+- (PWContainerView *)containerView;
+- (UINavigationController *)navigationController;
+- (UINavigationBar *)navigationBar;
+- (UIColor *)preferredTintColor;
+- (UIColor *)preferredBarTextColor;
 
 //////////////////////////////////////////////////////////////////////
 
@@ -62,9 +56,6 @@
  * Private methods
  **/
 
-// assign the UI elements to this instance for further theming
-- (void)_setPreferredTintColor:(UIColor *)tintColor;
-- (void)_setPreferredBarTextColor:(UIColor *)tintColor;
 - (void)_configureAppearance;
 
 //////////////////////////////////////////////////////////////////////

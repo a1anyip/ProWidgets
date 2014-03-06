@@ -16,10 +16,10 @@
 
 @implementation PWWidgetItemRecipientView
 
-- (instancetype)init {
+- (instancetype)initWithTheme:(PWTheme *)theme {
 	if ((self = [super init])) {
 		
-		_textField = [PWThemableTextField new];
+		_textField = [[PWThemableTextField alloc] initWithFrame:CGRectZero theme:theme];
 		_textField.placeholder = @"Type recipients here...";
 		[self addSubview:_textField];
 		
@@ -30,15 +30,14 @@
 		_separator = [UIView new];
 		[self addSubview:_separator];
 		
-		_recipientTableView = [[PWThemableTableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain];
+		_recipientTableView = [[PWThemableTableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain theme:theme];
 		[self addSubview:_recipientTableView];
 		
-		_searchResultTableView = [[PWThemableTableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain];
+		_searchResultTableView = [[PWThemableTableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain theme:theme];
 		_searchResultTableView.alpha = 0.0;
 		[self addSubview:_searchResultTableView];
 		
 		// configure colors
-		PWTheme *theme = [PWController activeTheme];
 		self.tintColor = [theme tintColor];
 		_separator.backgroundColor = [theme cellSeparatorColor];
 	}

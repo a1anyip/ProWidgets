@@ -10,6 +10,7 @@
 
 #import "header.h"
 #import "PWController.h"
+#import "PWWidgetController.h"
 #import "PWWebRequest.h"
 #import "preference/PWPrefURLInstallation.h"
 
@@ -35,7 +36,7 @@ static void handleException(NSException *exception) {
 %hook UITextEffectsWindow
 
 - (void)setWindowLevel:(CGFloat)windowLevel {
-	if ([[PWController sharedInstance] isPresenting])
+	if ([PWWidgetController isPresentingWidget])
 		%orig([(UIWindow *)[PWController sharedInstance].window windowLevel] + 1.0);
 	else
 		%orig;
@@ -100,36 +101,49 @@ static void handleException(NSException *exception) {
 		
 		if (callURL != nil && [callURL length] > 0) {
 			
-			NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"^prowidgets://install/(widget|theme)\\?url=(.+)$"
-																				   options:0
-																					 error:nil];
-			
-			NSTextCheckingResult *match = [regex firstMatchInString:callURL
-															options:0
-															  range:NSMakeRange(0, [callURL length])];
-			
-			if (match == nil) return;
-			
-			NSString *installType = nil;
-			NSString *installURL = nil;
-			for (unsigned int i = 0; i < [match numberOfRanges] - 1; i++) {
+			if ([callURL hasPrefix:@"prowidgets://present?name="]) {
 				
-				NSRange range = [match rangeAtIndex:i + 1];
-				if (range.location == NSNotFound) continue;
+				NSString *widgetName = [callURL substringFromIndex:[@"prowidgets://present?name=" length]];
+				widgetName = [PWWebRequest decodeURIComponent:widgetName];
 				
-				NSString *part = [callURL substringWithRange:range];
-				
-				if (i == 0) {
-					installType = part;
-				} else if (i == 1) {
-					installURL = [PWWebRequest decodeURIComponent:part];
+				if (widgetName != nil && [widgetName length] > 0) {
+					NSDictionary *userInfo = @{ @"from": @"url" };
+					[PWWidgetController presentWidgetNamed:widgetName userInfo:userInfo];
 				}
-			}
-			
-			if (installType != nil && installURL != nil && [installURL length] > 0) {
-				NSString *constructedURL = [NSString stringWithFormat:@"prefs:root=cc.tweak.prowidgets&install=%@&url=%@", installType, installURL];
-				LOG(@"PWBootstrap: Opening '%@'", constructedURL);
-				[[UIApplication sharedApplication] openURL:[NSURL URLWithString:constructedURL]];
+				
+			} else if ([callURL hasPrefix:@"prowidgets://install/"]) {
+				
+				NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"^prowidgets://install/(widget|theme)\\?url=(.+)$"
+																					   options:0
+																						 error:nil];
+				
+				NSTextCheckingResult *match = [regex firstMatchInString:callURL
+																options:0
+																  range:NSMakeRange(0, [callURL length])];
+				
+				if (match == nil) return;
+				
+				NSString *installType = nil;
+				NSString *installURL = nil;
+				for (unsigned int i = 0; i < [match numberOfRanges] - 1; i++) {
+					
+					NSRange range = [match rangeAtIndex:i + 1];
+					if (range.location == NSNotFound) continue;
+					
+					NSString *part = [callURL substringWithRange:range];
+					
+					if (i == 0) {
+						installType = part;
+					} else if (i == 1) {
+						installURL = [PWWebRequest decodeURIComponent:part];
+					}
+				}
+				
+				if (installType != nil && installURL != nil && [installURL length] > 0) {
+					NSString *constructedURL = [NSString stringWithFormat:@"prefs:root=cc.tweak.prowidgets&install=%@&url=%@", installType, installURL];
+					LOG(@"PWBootstrap: Opening '%@'", constructedURL);
+					[[UIApplication sharedApplication] openURL:[NSURL URLWithString:constructedURL]];
+				}
 			}
 		}
 	} else {

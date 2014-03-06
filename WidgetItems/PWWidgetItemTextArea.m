@@ -53,8 +53,8 @@
 
 //////////////////////////////////////////////////////////////////////
 
-- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
-	if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier])) {
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier theme:(PWTheme *)theme {
+	if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier theme:theme])) {
 		
 		_textView = [UITextView new];
 		_textView.backgroundColor = [UIColor clearColor];
@@ -63,7 +63,7 @@
 		_textView.font = [UIFont systemFontOfSize:18];
 		_textView.textColor = [UIColor blackColor];
 		_textView.textContainer.lineFragmentPadding = 0;
-		_textView.keyboardAppearance = [PWController activeTheme].wantsDarkKeyboard ? UIKeyboardAppearanceDark : UIKeyboardAppearanceDefault;
+		_textView.keyboardAppearance = self.item.theme.wantsDarkKeyboard ? UIKeyboardAppearanceDark : UIKeyboardAppearanceDefault;
 		
 		// add padding
 		CGFloat padding = PWDefaultItemCellPadding;

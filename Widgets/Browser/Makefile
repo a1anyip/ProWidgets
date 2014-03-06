@@ -6,6 +6,7 @@ Browser_PRIVATE_FRAMEWORKS = WebBookmarks
 Browser_LIBRARIES = prowidgets
 Browser_CFLAGS = -I../../
 Browser_LDFLAGS = -L../../$(THEOS_OBJ_DIR_NAME)
+Browser_BUNDLE_EXTENSION = widget
 
 SUBPROJECTS = Substrate 
 

@@ -30,6 +30,8 @@
 
 + (NSString *)displayTextForRecipients:(NSArray *)recipients maxWidth:(CGFloat)maxWidth font:(UIFont *)font;
 
+- (instancetype)initWithTitle:(NSString *)title delegate:(id<PWWidgetItemRecipientControllerDelegate>)delegate recipients:(NSArray *)recipients forWidget:(PWWidget *)widget;
+
 - (PWWidgetItemRecipientView *)recipientView;
 - (NSString *)displayTextInMaxWidth:(CGFloat)maxWidth font:(UIFont *)font;
 

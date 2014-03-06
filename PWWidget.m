@@ -9,6 +9,7 @@
 
 #import "PWWidget.h"
 #import "PWController.h"
+#import "PWWidgetController.h"
 #import "PWView.h"
 #import "PWContainerView.h"
 #import "PWWidgetPlistParser.h"
@@ -30,11 +31,14 @@
 
 @implementation PWWidget
 
-//////////////////////////////////////////////////////////////////////
++ (instancetype)widget {
+	if ([self.class isMemberOfClass:[PWWidget class]]) return nil;
+	return [PWWidgetController controllerForPresentedWidgetWithPrincipalClass:self.class].widget;
+}
 
-/**
- * Widget initialization
- **/
++ (PWTheme *)theme {
+	return [self.widget theme];
+}
 
 - (instancetype)init {
 	if ((self = [super init])) {
@@ -49,9 +53,7 @@
 	[self loadWidgetPlist:[self name]];
 }
 
-- (void)load {
-	LOG(@"PWWidget: Load widget (%@)", self);
-}
+- (void)load {}
 
 - (void)preparePresentation {
 	
@@ -61,7 +63,7 @@
 	if (_layout == PWWidgetLayoutDefault) {
 		
 		// create a content item view controller
-		PWContentItemViewController *controller = [PWContentItemViewController new];
+		PWContentItemViewController *controller = [[PWContentItemViewController alloc] initForWidget:self];
 		controller.shouldAutoConfigureStandardButtons = YES;
 		
 		// load item view controller plist
@@ -85,9 +87,6 @@
 
 - (void)_setConfigured {
 	
-	// update flag value
-	_configured = YES;
-	
 	// set up navigation controller
 	_navigationController = [UINavigationController new];
 	_navigationController.edgesForExtendedLayout = UIRectEdgeNone;
@@ -101,6 +100,14 @@
 	// retrieve navigation bar
 	UINavigationBar *navigationBar = _navigationController.navigationBar;
 	navigationBar.translucent = NO;
+	
+	// load default theme
+	if (_theme == nil) {
+		_theme = [[[PWController sharedInstance] loadDefaultThemeForWidget:self] retain];
+	}
+	
+	// update flag value
+	_configured = YES;
 }
 
 - (BOOL)_checkConfigured:(SEL)selector {
@@ -113,10 +120,6 @@
 }
 
 //////////////////////////////////////////////////////////////////////
-
-/**
- * Loader
- **/
 
 - (BOOL)loadWidgetPlist:(NSString *)filename {
 	
@@ -137,11 +140,11 @@
 	CHECK_CONFIGURED(NO);
 	
 	// load theme
-	PWTheme *theme = [[PWController sharedInstance] loadThemeNamed:name];
+	PWTheme *theme = [[PWController sharedInstance] loadThemeNamed:name forWidget:self];
 	
 	// update reference
-	[_widgetTheme release];
-	_widgetTheme = [theme retain];
+	[_theme release];
+	_theme = [theme retain];
 	
 	return theme != nil;
 }
@@ -157,12 +160,12 @@
 	if (dict == nil) return NO;
 	
 	// parse and load theme
-	PWTheme *theme = [PWThemePlistParser parse:dict inBundle:_bundle];
+	PWTheme *theme = [PWThemePlistParser parse:dict inBundle:_bundle forWidget:self];
 	theme.name = _name;
 	
 	// update reference
-	[_widgetTheme release];
-	_widgetTheme = [theme retain];
+	[_theme release];
+	_theme = [theme retain];
 	
 	return YES;
 }
@@ -192,10 +195,6 @@
 }
 
 //////////////////////////////////////////////////////////////////////
-
-/**
- * Property Getters and Setters
- **/
 
 - (void)setLayout:(PWWidgetLayout)layout {
 	CHECK_CONFIGURED();
@@ -228,24 +227,20 @@
  **/
 
 - (BOOL)minimize {
-	return [[PWController sharedInstance] _minimizeWidget];
+	return [self.widgetController minimize];
 }
 
 - (BOOL)maximize {
-	return [[PWController sharedInstance] _maximizeWidget];
+	return [self.widgetController maximize];
 }
 
 - (BOOL)dismiss {
-	if ([PWController sharedInstance].isAnimating) {
-		[PWController sharedInstance].pendingDismissalRequest = YES;
+	if (self.widgetController.isAnimating) {
+		self.widgetController.pendingDismissalRequest = YES;
 		return YES;
 	} else {
-		return [[PWController sharedInstance] _dismissWidget];
+		return [self.widgetController dismiss];
 	}
-}
-
-- (PWTheme *)theme {
-	return [PWController activeTheme];
 }
 
 - (UIImage *)imageNamed:(NSString *)name {
@@ -294,8 +289,7 @@
 			return;
 		}
 		
-		PWView *mainView = [PWController sharedInstance].mainView;
-		[mainView _resizeWidgetAnimated:animated];
+		[self.widgetController _resizeAnimated:animated];
 	}
 }
 
@@ -324,14 +318,6 @@
 
 //////////////////////////////////////////////////////////////////////
 
-// Widget theme
-- (BOOL)_hasWidgetTheme {
-	return _widgetTheme != nil;
-}
-
-- (PWTheme *)_widgetTheme {
-	return _widgetTheme;
-}
 
 // helper method to throw an error
 - (void)_throwSetterError:(NSString *)name {
@@ -367,7 +353,7 @@
 		id<PWContentViewControllerDelegate> contentViewController = (id<PWContentViewControllerDelegate>)viewController;
 		
 		// auto resize
-		if (![PWController sharedInstance].isAnimating)
+		if (!self.widgetController.isAnimating)
 			[self resizeWidgetAnimated:YES forContentViewController:contentViewController];
 		
 		// delegate method
@@ -377,7 +363,7 @@
 	
 	// auto set first responder
 	// only set in this method when the widget is opening up
-	if ([PWController sharedInstance].isAnimating && [viewController respondsToSelector:@selector(configureFirstResponder)]) {
+	if (self.widgetController.isAnimating && [viewController respondsToSelector:@selector(configureFirstResponder)]) {
 		[viewController performSelector:@selector(configureFirstResponder)];
 	}
 }
@@ -394,10 +380,17 @@
 	
 	if (!_configuredGestureRecognizers) {
 		
-		UITapGestureRecognizer *singleTap = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(titleSingleTapped:)] autorelease];
+		if ([PWController supportsDragging]) {
+			UIPanGestureRecognizer *pan = [[[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleNavigationBarPan:)] autorelease];
+			[pan setMinimumNumberOfTouches:1];
+			[pan setMaximumNumberOfTouches:1];
+			[navigationBar addGestureRecognizer:pan];
+		}
+		
+		UITapGestureRecognizer *singleTap = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleNavigationBarSingleTap:)] autorelease];
 		singleTap.delegate = self;
 		
-		UITapGestureRecognizer *doubleTap = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(titleDoubleTapped:)] autorelease];
+		UITapGestureRecognizer *doubleTap = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleNavigationBarDoubleTap:)] autorelease];
 		doubleTap.delegate = self;
 		doubleTap.numberOfTapsRequired = 2;
 		
@@ -405,11 +398,6 @@
 		
 		_configuredGestureRecognizers = YES;
 		
-		for (id x in navigationBar.gestureRecognizers) {
-			LOG(@"existing: %@", x);
-		}
-		
-		//navigationBar.gestureRecognizers = @[singleTap, doubleTap];
 		[navigationBar addGestureRecognizer:singleTap];
 		[navigationBar addGestureRecognizer:doubleTap];
 	}
@@ -436,16 +424,19 @@
 	return YES;
 }
 
-- (void)titleSingleTapped:(UIGestureRecognizer *)gestureRecognizer {
+- (void)handleNavigationBarPan:(UIPanGestureRecognizer *)sender {
+	[self.widgetController handleNavigationBarPan:sender];
+}
+
+- (void)handleNavigationBarSingleTap:(UIGestureRecognizer *)sender {
 	if ([self.topViewController isKindOfClass:[PWContentViewController class]]) {
 		PWContentViewController *controller = (PWContentViewController *)self.topViewController;
-		[controller triggerEvent:[PWContentViewController titleTappedEventName] withObject:gestureRecognizer];
+		[controller triggerEvent:[PWContentViewController titleTappedEventName] withObject:sender];
 	}
 }
 
-- (void)titleDoubleTapped:(UIGestureRecognizer *)gestureRecognizer {
-	// minimize widget when double tapped
-	[[PWController sharedInstance] _minimizeWidget];
+- (void)handleNavigationBarDoubleTap:(UIGestureRecognizer *)sender {
+	[self.widgetController minimize];
 }
 
 - (NSString *)description {
@@ -463,13 +454,14 @@
 		}
 	}
 	
+	// release all view controllers on stack
 	_navigationController.viewControllers = nil;
 	
-	// release all navigation controller
+	// release navigation controller
 	RELEASE(_navigationController)
 	
 	// release widget theme
-	RELEASE(_widgetTheme)
+	RELEASE(_theme)
 	
 	// release all configurations
 	RELEASE(_title)

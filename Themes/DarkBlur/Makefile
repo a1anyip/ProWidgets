@@ -5,6 +5,7 @@ DarkBlur_FRAMEWORKS = UIKit CoreGraphics QuartzCore
 DarkBlur_LIBRARIES = prowidgets
 DarkBlur_CFLAGS = -I../../
 DarkBlur_LDFLAGS = -L../../$(THEOS_OBJ_DIR_NAME)
+DarkBlur_BUNDLE_EXTENSION = theme
 
 include theos/makefiles/common.mk
 include $(THEOS_MAKE_PATH)/bundle.mk

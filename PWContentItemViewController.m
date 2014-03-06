@@ -28,8 +28,9 @@ static NSNumberFormatter *numberFormatter = nil;
 	return @"PWContentItemViewControllerSubmitEvent";
 }
 
-- (instancetype)init {
-	if ((self = [super _init])) {
+- (instancetype)initForWidget:(PWWidget *)widget {
+	
+	if ((self = [super _initForWidget:widget])) {
 		
 		if (numberFormatter == nil) {
 			numberFormatter = [NSNumberFormatter new];
@@ -58,7 +59,7 @@ static NSNumberFormatter *numberFormatter = nil;
 }
 
 - (void)loadView {
-	self.view = [[[PWThemableTableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain] autorelease];
+	self.view = [[[PWThemableTableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain theme:self.theme] autorelease];
 }
 
 - (UITableView *)tableView {
@@ -66,7 +67,7 @@ static NSNumberFormatter *numberFormatter = nil;
 }
 
 - (BOOL)loadPlist:(NSString *)filename {
-	PWWidget *widget = [PWController activeWidget];
+	PWWidget *widget = self.widget;
 	NSString *path = [widget _pathOfPlist:filename];
 	NSDictionary *dict = [widget _loadPlistAtPath:path];
 	if (dict == nil) return NO;
@@ -246,7 +247,7 @@ static NSNumberFormatter *numberFormatter = nil;
 		if (originalHeight != newHeight) {
 			LOG(@"reloadCellOfItem: cell height changed from %f to %f", originalHeight, newHeight);
 			// resize widget
-			[[PWController activeWidget] resizeWidgetAnimated:YES forContentViewController:self];
+			[self.widget resizeWidgetAnimated:YES forContentViewController:self];
 		}
 		
 		//[self reload];
@@ -347,7 +348,7 @@ static NSNumberFormatter *numberFormatter = nil;
 	LOG(@"PWContentItemViewController: setItems: %@", _items);
 	
 	// resize widget
-	[[PWController activeWidget] resizeWidgetAnimated:YES forContentViewController:self];
+	[self.widget resizeWidgetAnimated:YES forContentViewController:self];
 	
 	// set new first responder if the items are not set for the first time
 	if (!initialSetting) {
@@ -387,7 +388,7 @@ static NSNumberFormatter *numberFormatter = nil;
 	[tableView reloadData];
 	
 	// resize widget
-	[[PWController activeWidget] resizeWidgetAnimated:animated forContentViewController:self];
+	[self.widget resizeWidgetAnimated:animated forContentViewController:self];
 	
 	[self configureFirstResponder];
 }
@@ -429,7 +430,7 @@ static NSNumberFormatter *numberFormatter = nil;
 	[tableView reloadData];
 	
 	// resize widget
-	[[PWController activeWidget] resizeWidgetAnimated:animated forContentViewController:self];
+	[self.widget resizeWidgetAnimated:animated forContentViewController:self];
 	
 	[self configureFirstResponder];
 }
@@ -498,7 +499,7 @@ static NSNumberFormatter *numberFormatter = nil;
 	[tableView reloadData];
 	
 	// resize widget
-	[[PWController activeWidget] resizeWidgetAnimated:animated forContentViewController:self];
+	[self.widget resizeWidgetAnimated:animated forContentViewController:self];
 	
 	// first responder lost
 	if (isFirstResponder) {
@@ -587,7 +588,7 @@ static NSNumberFormatter *numberFormatter = nil;
 	
 	if (!cell) {
 		
-		cell = [item.class createCell];
+		cell = [item.class createCell:self.theme];
 		
 		// selectable
 		if (![item isSelectable]) {
@@ -661,7 +662,7 @@ static NSNumberFormatter *numberFormatter = nil;
 		}
 		
 		if (orientation == [PWController currentOrientation]) {
-			[[PWController activeWidget] resizeWidgetAnimated:YES forContentViewController:self];
+			[self.widget resizeWidgetAnimated:YES forContentViewController:self];
 		}
 	}
 }
@@ -708,8 +709,8 @@ static NSNumberFormatter *numberFormatter = nil;
 	NSString *expression = orientation == PWWidgetOrientationPortrait ? _overrideContentHeightExpressionForPortrait : _overrideContentHeightExpressionForLandscape;
 	if (expression != nil && [expression length] > 0) {
 		
-		CGFloat normalCellHeight = [[PWController activeTheme] heightOfCellOfType:PWWidgetCellTypeNormal forOrientation:orientation];
-		CGFloat textAreaCellHeight = [[PWController activeTheme] heightOfCellOfType:PWWidgetCellTypeTextArea forOrientation:orientation];
+		CGFloat normalCellHeight = [self.theme heightOfCellOfType:PWWidgetCellTypeNormal forOrientation:orientation];
+		CGFloat textAreaCellHeight = [self.theme heightOfCellOfType:PWWidgetCellTypeTextArea forOrientation:orientation];
 		
 		NSMutableString *_expression = [expression mutableCopy];
 		

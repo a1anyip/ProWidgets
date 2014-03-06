@@ -10,6 +10,7 @@
 #import "header.h"
 #import "PWContentViewController.h"
 #import "PWController.h"
+#import "PWWidgetController.h"
 #import "PWWidget.h"
 #import "PWEventHandler.h"
 #import "PWWidgetPlistParser.h"
@@ -24,14 +25,38 @@
 	return @"PWContentViewControllerTitleTappedEvent";
 }
 
-- (instancetype)_init { return [super init]; }
-
 - (instancetype)init {
-	if ((self = [super init])) {
+	LOG(@"PWContentViewController: Instance must be initialized with initForWidget: method");
+	[self release];
+	return nil;
+}
+
+- (instancetype)initForWidget:(PWWidget *)widget {
+	if ((self = [self _initForWidget:widget])) {
 		self.automaticallyAdjustsScrollViewInsets = NO;
 		[self load];
 	}
 	return self;
+}
+
+- (instancetype)_initForWidget:(PWWidget *)widget {
+	if ((self = [super init])) {
+		[self _setWidget:widget];
+	}
+	return self;
+}
+
+- (void)_setWidget:(PWWidget *)widget {
+	if (_widget != nil) return;
+	_widget = widget;
+}
+
+- (PWWidget *)widget {
+	return _widget;
+}
+
+- (PWTheme *)theme {
+	return _widget.theme;
 }
 
 - (void)load {}
@@ -40,7 +65,7 @@
 	
 	LOG(@"PWContentViewController: Load plist named (%@)", filename);
 	
-	PWWidget *widget = [PWController activeWidget];
+	PWWidget *widget = self.widget;
 	NSString *path = [widget _pathOfPlist:filename];
 	NSDictionary *dict = [widget _loadPlistAtPath:path];
 	if (dict == nil) return NO;
@@ -50,11 +75,7 @@
 }
 
 - (BOOL)isTopViewController {
-	return [PWController activeWidget].topViewController == self;
-}
-
-- (PWWidget *)widget {
-	return [PWController activeWidget];
+	return self.widget.topViewController == self;
 }
 
 - (void)keyboardWillShow:(CGFloat)height {}
@@ -134,7 +155,7 @@
 }
 
 - (void)triggerClose {
-	[[PWController sharedInstance] _dismissWidget];
+	[self.widget dismiss];
 }
 
 - (void)triggerAction {
@@ -190,7 +211,7 @@
 - (void)setShouldMaximizeContentHeight:(BOOL)shouldMaximizeContentHeight {
 	if (_shouldMaximizeContentHeight != shouldMaximizeContentHeight) {
 		_shouldMaximizeContentHeight = shouldMaximizeContentHeight;
-		PWWidget *widget = [PWController activeWidget];
+		PWWidget *widget = self.widget;
 		[widget resizeWidgetAnimated:YES forContentViewController:self];
 	}
 }
@@ -198,7 +219,7 @@
 - (void)setRequiresKeyboard:(BOOL)requiresKeyboard {
 	if (_requiresKeyboard != requiresKeyboard) {
 		_requiresKeyboard = requiresKeyboard;
-		PWWidget *widget = [PWController activeWidget];
+		PWWidget *widget = self.widget;
 		[widget resizeWidgetAnimated:YES forContentViewController:self];
 	}
 }
@@ -206,7 +227,7 @@
 - (void)_willBePresentedInNavigationController:(UINavigationController *)navigationController {
 	
 	// auto update title
-	PWWidget *widget = [PWController activeWidget];
+	PWWidget *widget = self.widget;
 	NSString *title = self.title == nil ? widget.title : self.title;
 	self.navigationItem.title = title;
 	
@@ -224,6 +245,7 @@
 
 - (void)_dealloc {
 	LOG(@"PWContentViewController: _dealloc");
+	_widget = nil;
 	RELEASE(_closeButtonItem)
 	RELEASE(_actionButtonItem)
 	RELEASE(_closeButtonText)

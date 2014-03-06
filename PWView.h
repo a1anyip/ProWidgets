@@ -16,21 +16,10 @@
 @interface PWView : UIView {
 	
 	PWBackgroundView *_backgroundView;
-	PWContainerView *_containerView;
 }
 
 @property(nonatomic, readonly) PWBackgroundView *backgroundView;
-@property(nonatomic, readonly) PWContainerView *containerView;
 
-- (void)createContainerView;
-- (void)removeContainerView;
-
-- (void)keyboardWillShow:(CGFloat)height;
-- (void)keyboardWillHide;
-
-- (CGRect)containerRect;
-
-- (void)_updateBackgroundViewRect:(CGRect)rect animated:(BOOL)animated;
-- (void)_resizeWidgetAnimated:(BOOL)animated;
+- (void)updateBackgroundViewRect:(CGRect)rect cornerRadius:(CGFloat)cornerRadius animated:(BOOL)animated;
 
 @end

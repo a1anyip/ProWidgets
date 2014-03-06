@@ -65,19 +65,24 @@ extern char PWWidgetItemRecipientTableViewCellRecipientKey;
 	}
 }
 
-- (instancetype)init {
-	if ((self = [super init])) {
+- (instancetype)initWithTitle:(NSString *)title delegate:(id<PWWidgetItemRecipientControllerDelegate>)delegate recipients:(NSArray *)recipients forWidget:(PWWidget *)widget {
+	if ((self = [super initForWidget:widget])) {
+		
+		_recipients = [NSMutableArray new];
+		
+		self.title = title;
+		self.delegate = delegate;
+		self.recipients = recipients;
+		
 		self.automaticallyAdjustsScrollViewInsets = NO;
 		self.requiresKeyboard = YES;
 		self.shouldMaximizeContentHeight = YES;
-		
-		_recipients = [NSMutableArray new];
 	}
 	return self;
 }
 
 - (void)loadView {
-	PWWidgetItemRecipientView *view = [[PWWidgetItemRecipientView new] autorelease];
+	PWWidgetItemRecipientView *view = [[[PWWidgetItemRecipientView alloc] initWithTheme:self.theme] autorelease];
 	[view setDelegate:self];
 	self.view = view;
 }
@@ -292,7 +297,7 @@ extern char PWWidgetItemRecipientTableViewCellRecipientKey;
 	
 	if (!cell) {
 		
-		cell = [[[PWWidgetItemRecipientTableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:identifier] autorelease];
+		cell = [[[PWWidgetItemRecipientTableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:identifier theme:self.theme] autorelease];
 		
 		if (isRecipients) {
 			cell.selectionStyle = UITableViewCellSelectionStyleNone;

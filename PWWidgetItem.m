@@ -27,6 +27,14 @@
 
 //////////////////////////////////////////////////////////////////////
 
+- (PWWidget *)widget {
+	return self.itemViewController.widget;
+}
+
+-(PWTheme *)theme {
+	return self.itemViewController.theme;
+}
+
 /**
  * Override this to specify which class the cell should be
  **/
@@ -48,8 +56,8 @@
  * Retrieve the table view cell for a widget item
  **/
 
-+ (PWWidgetItemCell *)createCell {
-	PWWidgetItemCell *cell = (PWWidgetItemCell *)[[self cellClass] create];
++ (PWWidgetItemCell *)createCell:(PWTheme *)theme {
+	PWWidgetItemCell *cell = (PWWidgetItemCell *)[[self cellClass] create:theme];
 	return cell;
 }
 
@@ -192,7 +200,7 @@
 - (void)setExtraAttributes:(NSDictionary *)attributes {}
 
 - (CGFloat)cellHeightForOrientation:(PWWidgetOrientation)orientation {
-	return self.overrideHeight == 0.0 ? [[PWController activeTheme] heightOfCellOfType:_cellType forOrientation:orientation] : self.overrideHeight;
+	return self.overrideHeight == 0.0 ? [self.theme heightOfCellOfType:_cellType forOrientation:orientation] : self.overrideHeight;
 }
 
 //////////////////////////////////////////////////////////////////////

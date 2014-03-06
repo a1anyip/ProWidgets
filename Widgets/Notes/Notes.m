@@ -92,7 +92,7 @@
 	if (_currentInterface == PWWidgetNotesInterfaceAdd) return;
 	
 	if (_addViewControllers == nil) {
-		PWWidgetNotesAddViewController *addViewController = [[PWWidgetNotesAddViewController new] autorelease];
+		PWWidgetNotesAddViewController *addViewController = [[[PWWidgetNotesAddViewController alloc] initForWidget:self] autorelease];
 		_addViewControllers = [@[addViewController] copy];
 	}
 	
@@ -105,7 +105,7 @@
 	if (_currentInterface == PWWidgetNotesInterfaceList) return;
 	
 	if (_listViewControllers == nil) {
-		PWWidgetNotesListViewController *listViewController = [[PWWidgetNotesListViewController new] autorelease];
+		PWWidgetNotesListViewController *listViewController = [[[PWWidgetNotesListViewController alloc] initForWidget:self] autorelease];
 		_listViewControllers = [@[listViewController] copy];
 	}
 	

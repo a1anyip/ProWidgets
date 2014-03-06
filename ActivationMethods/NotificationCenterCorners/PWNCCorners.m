@@ -11,6 +11,7 @@
 #import "interface.h"
 #import "header.h"
 #import "PWController.h"
+#import "PWWidgetController.h"
 
 #define PrefPath @"/var/mobile/Library/Preferences/cc.tweak.prowidgets.nccorners.plist"
 
@@ -226,7 +227,8 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	
 	if (widgetName != nil) {
 		NSDictionary *userInfo = @{ @"from": @"notificationcentercorner" };
-		[[PWController sharedInstance] presentWidgetNamed:widgetName userInfo:userInfo];
+		//[[PWController sharedInstance] presentWidgetNamed:widgetName userInfo:userInfo];
+		[PWWidgetController presentWidgetNamed:widgetName userInfo:userInfo];
 	}
 }
 

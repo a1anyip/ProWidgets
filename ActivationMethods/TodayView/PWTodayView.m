@@ -11,6 +11,7 @@
 #import "interface.h"
 #import "header.h"
 #import "PWController.h"
+#import "PWWidgetController.h"
 
 #define ANIMATION_DURATION 0.1
 #define BTN_TAG 1001
@@ -136,7 +137,8 @@ static char PWTodayViewTomorrowSectionKey;
 	[[objc_getClass("SBNotificationCenterController") sharedInstance] dismissAnimated:YES];
 	
 	// present Calendar widget
-	[[PWController sharedInstance] presentWidgetNamed:@"Calendar" userInfo:userInfo];
+	//[[PWController sharedInstance] presentWidgetNamed:@"Calendar" userInfo:userInfo];
+	[PWWidgetController presentWidgetNamed:@"Calendar" userInfo:userInfo];
 }
 
 %end

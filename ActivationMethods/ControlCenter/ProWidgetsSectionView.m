@@ -9,6 +9,7 @@
 #import "header.h"
 #import "ProWidgetsSectionView.h"
 #import "PWController.h"
+#import "PWWidgetController.h"
 
 NSUInteger iconPerPage = 4; // either 4 or 5
 
@@ -174,7 +175,8 @@ static char SBControlCenterButtonWidgetBundleKey;
 		// dismiss control center
 		[[objc_getClass("SBControlCenterController") sharedInstance] dismissAnimated:YES];
 		// present the widget
-		[[PWController sharedInstance] presentWidgetFromBundle:bundle userInfo:userInfo];
+		//[[PWController sharedInstance] presentWidgetFromBundle:bundle userInfo:userInfo];
+		[PWWidgetController presentWidgetFromBundle:bundle userInfo:userInfo];
 	}
 }
 

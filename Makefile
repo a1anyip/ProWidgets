@@ -16,9 +16,10 @@ export ADDITIONAL_OBJCFLAGS = -fvisibility=default -fvisibility-inlines-hidden -
 
 ### Controller ###
 LIB = PWController.m
+LIB += PWWidgetController.m
 
 ### Core ###
-LIB += PWTestBar.m
+#LIB += PWTestBar.m
 LIB += PWMiniView.m
 LIB += PWBase.m
 LIB += PWWindow.m
@@ -128,7 +129,7 @@ WIDGETS += Widgets/Mail
 ############################################################
 
 # Third-party Widgets
-WIDGETSTP = WidgetsTP/Authenticator
+#WIDGETSTP = WidgetsTP/Authenticator
 
 ############################################################
 

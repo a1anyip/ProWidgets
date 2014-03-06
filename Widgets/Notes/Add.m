@@ -25,13 +25,11 @@
 }
 
 - (NoteContext *)noteContext {
-	PWWidgetNotes *widget = (PWWidgetNotes *)self.widget;
-	return widget.noteContext;
+	return [PWWidgetNotes widget].noteContext;
 }
 
 - (void)titleTapped {
-	PWWidgetNotes *widget = (PWWidgetNotes *)self.widget;
-	[widget switchToListInterface];
+	[[PWWidgetNotes widget] switchToListInterface];
 }
 
 - (void)fetchStores {

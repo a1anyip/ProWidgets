@@ -24,7 +24,7 @@
 	self.tableView.delegate = self;
 	self.tableView.dataSource = self;
 	
-	PWTheme *theme = [PWController activeTheme];
+	PWTheme *theme = self.theme;
 	
 	_noLabel = [UILabel new];
 	_noLabel.text = @"Loading";
@@ -41,7 +41,7 @@
 }
 
 - (void)loadView {
-	self.view = [[[PWThemableTableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain] autorelease];
+	self.view = [[[PWThemableTableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain theme:self.theme] autorelease];
 }
 
 - (UITableView *)tableView {
@@ -75,8 +75,7 @@
 }
 
 - (void)titleTapped {
-	PWWidgetAlarm *widget = (PWWidgetAlarm *)self.widget;
-	[widget switchToAddInterface];
+	[[PWWidgetAlarm widget] switchToAddInterface];
 }
 
 /**
@@ -143,7 +142,7 @@
 	PWWidgetAlarmTableViewCell *cell = (PWWidgetAlarmTableViewCell *)[tableView dequeueReusableCellWithIdentifier:identifier];
 	
 	if (!cell) {
-		cell = [[[PWWidgetAlarmTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier] autorelease];
+		cell = [[[PWWidgetAlarmTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier theme:self.theme] autorelease];
 	}
 	
 	[cell setActive:alarm.active];

@@ -62,7 +62,7 @@
 	// open Google Authenticator app
 	SpringBoard *app = (SpringBoard *)[UIApplication sharedApplication];
 	[app launchApplicationWithIdentifier:AuthenticatorIdentifier suspended:NO];
-	[[PWController activeWidget] dismiss];
+	[self.widget dismiss];
 }
 
 /**
@@ -194,12 +194,12 @@
 		NSArray *records = reply[@"records"];
 		
 		if (!dataAvailable) {
-			[[PWController activeWidget] showMessage:@"You must unlock your device to retrieve records from the app." title:nil handler:^{
-				[[PWController activeWidget] dismiss];
+			[self.widget showMessage:@"You must unlock your device to retrieve records from the app." title:nil handler:^{
+				[self.widget dismiss];
 			}];
 		} else if (records == nil) {
-			[[PWController activeWidget] showMessage:@"Unable to retrieve verification codes from Google Authenticator app." title:nil handler:^{
-				[[PWController activeWidget] dismiss];
+			[self.widget showMessage:@"Unable to retrieve verification codes from Google Authenticator app." title:nil handler:^{
+				[self.widget dismiss];
 			}];
 		} else {
 			
@@ -232,7 +232,7 @@
 	}
 	
 	if (code == nil) {
-		[[PWController activeWidget] showMessage:@"Unable to copy the code."];
+		[self.widget showMessage:@"Unable to copy the code."];
 		return;
 	}
 	
