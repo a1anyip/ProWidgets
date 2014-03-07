@@ -42,12 +42,23 @@
 	//////////////////////
 	///// Preference /////
 	//////////////////////
-	BOOL _enabledParallax;
-	NSUInteger _preferredSource;
-	BOOL _testMode;
+	
 	NSArray *_visibleWidgetOrder;
 	NSArray *_hiddenWidgetOrder;
 	NSString *_defaultThemeName;
+	
+	// General
+	PWLockAction _lockAction;
+	
+	// Effect
+	BOOL _disabledBlur;
+	BOOL _enabledParallax;
+	
+	// Global Preference
+	NSUInteger _preferredSource;
+	
+	// Others
+	BOOL _testMode;
 	
 	// Pending widget
 	BOOL _hasPendingWidget;
@@ -71,12 +82,10 @@
 @property(nonatomic, readonly) PWBackgroundView *backgroundView;
 
 // Preference
-@property(nonatomic, readonly) BOOL enabledParallax;
-@property(nonatomic, readonly) NSUInteger preferredSource; // 0 is iCloud, 1 is Local
-@property(nonatomic, readonly) BOOL testMode;
 @property(nonatomic, readonly) NSArray *visibleWidgetOrder;
 @property(nonatomic, readonly) NSArray *hiddenWidgetOrder;
 @property(nonatomic, readonly) NSString *defaultThemeName;
+@property(nonatomic, readonly) NSUInteger preferredSource; // 0 is iCloud, 1 is Local
 
 //////////////////////////////////////////////////////////////////////
 
@@ -204,7 +213,8 @@
 - (UIImage *)maskOfWidgetInBundle:(NSBundle *)bundle;
 
 - (NSArray *)installedWidgets;
-- (NSDictionary *)enabledWidgets;
+- (NSArray *)enabledWidgets;
+- (NSDictionary *)enabledWidgetsWithCategories;
 - (NSArray *)visibleWidgets; // visible widgets in Activation Methods
 - (NSArray *)hiddenWidgets; // hidden widgets in Activation Methods
 - (NSArray *)installedScripts;

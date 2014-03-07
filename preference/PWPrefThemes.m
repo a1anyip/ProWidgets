@@ -2,6 +2,7 @@
 #import "PWPrefThemesView.h"
 #import "PWController.h"
 #import "PWPrefController.h"
+#import "PWPrefInfoViewController.h"
 
 extern NSBundle *bundle;
 
@@ -58,7 +59,7 @@ extern NSBundle *bundle;
 
 - (NSString *)tableView:(UITableView *)tableView titleForFooterInSection:(NSInteger)section {
 	if (section == 0 && [_installedThemes count] > 0) {
-		return @"You could choose the default theme in this page.";
+		return @"You could choose the default theme in this page.\n\nTap on icons to view details.";
 	} else if (section == 0 && [_installedThemes count] == 0) {
 		return @"You may find some themes in Cydia, or re-install ProWidgets to restore stock themes.";
 	} else if (section == 1) {
@@ -106,6 +107,11 @@ extern NSBundle *bundle;
 		} else if (section == 0) {
 			
 			cell.detailTextLabel.textColor = [UIColor colorWithWhite:.5 alpha:1.0];
+			cell.imageView.userInteractionEnabled = YES;
+			
+			UITapGestureRecognizer *tap = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(_cellImageViewTapHandler:)] autorelease];
+			tap.numberOfTapsRequired = 1;
+			[cell.imageView addGestureRecognizer:tap];
 			
 		} else if (section == 1) {
 			
@@ -124,7 +130,7 @@ extern NSBundle *bundle;
 		NSBundle *themeBundle = info[@"bundle"];
 		NSString *themeName = info[@"name"];
 		NSString *displayName = info[@"displayName"];
-		NSString *description = info[@"description"];
+		NSString *shortDescription = info[@"shortDescription"];
 		NSString *iconFile = info[@"iconFile"];
 		UIImage *iconImage = [iconFile length] > 0 ? [UIImage imageNamed:iconFile inBundle:themeBundle] : nil;
 		
@@ -132,14 +138,14 @@ extern NSBundle *bundle;
 		if ([displayName length] == 0) displayName = @"Unknown";
 		
 		// set default description
-		if ([description length] == 0) description = nil;//@"No description";
+		if ([shortDescription length] == 0) shortDescription = nil;
 		
 		// set default icon image
 		if (iconImage == nil) iconImage = IMAGE(@"icon_themes");
 		
 		// configure cell
 		cell.textLabel.text = displayName;
-		cell.detailTextLabel.text = description;
+		cell.detailTextLabel.text = shortDescription;
 		cell.imageView.image = iconImage;
 		
 		if ([themeName isEqualToString:self.defaultThemeName]) {
@@ -209,8 +215,66 @@ extern NSBundle *bundle;
 	unsigned int row = [indexPath row];
 	
 	if (section != 0 || row >= [_installedThemes count]) return;
+	[self _uninstallThemeAtIndex:row];
+}
+
+- (void)_cellImageViewTapHandler:(UITapGestureRecognizer *)sender {
 	
-	NSDictionary *info = _installedThemes[row];
+	UIView *superview = sender.view;
+	while ((superview = superview.superview) && superview != nil && ![superview isKindOfClass:[UITableViewCell class]]);
+	
+	UITableViewCell *cell = (UITableViewCell *)superview;
+	if ([cell isKindOfClass:[UITableViewCell class]]) {
+		UITableView *tableView = (UITableView *)self.view;
+		NSIndexPath *indexPath = [tableView indexPathForCell:cell];
+		NSUInteger row = [indexPath row];
+		if (row != NSNotFound && [_installedThemes count] > row) {
+			
+			PWPrefInfoViewController *infoViewController = [[PWPrefInfoViewController new] autorelease];
+			
+			NSDictionary *info = _installedThemes[row];
+			NSBundle *themeBundle = info[@"bundle"];
+			
+			// prepare icon
+			NSString *iconFile = info[@"iconFile"];
+			UIImage *iconImage = [iconFile length] > 0 ? [UIImage imageNamed:iconFile inBundle:themeBundle] : nil;
+			if (iconImage == nil) iconImage = IMAGE(@"icon_themes");
+			
+			// configure info view
+			PWPrefInfoView *infoView = infoViewController.infoView;
+			[infoView setIcon:iconImage];
+			[infoView setName:info[@"displayName"]];
+			[infoView setAuthor:info[@"author"]];
+			[infoView setDescription:info[@"description"]];
+			[infoView setConfirmButtonTitle:@"Uninstall"];
+			
+			if ([info[@"installedViaURL"] boolValue]) {
+				[infoView setConfirmButtonType:PWPrefInfoViewConfirmButtonTypeWarning];
+				[infoView setConfirmButtonTarget:self action:@selector(_infoViewConfirmButtonHandler:)];
+				[infoView setConfirmButtonInfo:@{ @"index":@(row) }];
+			} else {
+				[infoView setConfirmButtonType:PWPrefInfoViewConfirmButtonTypeDisabled];
+			}
+			
+			[self presentViewController:infoViewController animated:YES completion:nil];
+		}
+	}
+}
+
+- (void)_infoViewConfirmButtonHandler:(NSDictionary *)info {
+	
+	[self dismissViewControllerAnimated:YES completion:nil];
+	
+	NSNumber *_index = info[@"index"];
+	if (_index != nil) {
+		NSUInteger index = [_index unsignedIntegerValue];
+		[self _uninstallThemeAtIndex:index];
+	}
+}
+
+- (void)_uninstallThemeAtIndex:(NSUInteger)index {
+	
+	NSDictionary *info = _installedThemes[index];
 	BOOL installedViaURL = [info[@"installedViaURL"] boolValue];
 	
 	if (installedViaURL) {
@@ -240,17 +304,8 @@ extern NSBundle *bundle;
 				[(PWPrefController *)self.parentController updateValue:replacedDefaultThemeName forKey:@"defaultThemeName"];
 			}
 			
-			[_installedThemes removeObjectAtIndex:indexPath.row];
-			
-			/*
-			[tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-			
-			// show message of no installed theme
-			if ([_installedThemes count] == 0) {
-				[tableView reloadData];
-			}
-			*/
-			[tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationFade];
+			[_installedThemes removeObjectAtIndex:index];
+			[(UITableView *)self.view reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationFade];
 		}];
 	}
 }

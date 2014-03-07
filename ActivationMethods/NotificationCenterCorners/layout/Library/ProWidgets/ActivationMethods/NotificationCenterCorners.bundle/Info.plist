@@ -12,7 +12,9 @@
 	<string>Alan Yip</string>
 	<key>PWInfoDescription</key>
 	<string>Configure two shortcut buttons in notification center</string>
+	<key>PWInfoPreferenceDefaults</key>
+	<string>cc.tweak.prowidgets.activationmethod.nccorners</string>
 	<key>PWInfoPreferenceFile</key>
-	<string>Preference.plist</string>
+	<string>Preference</string>
 </dict>
 </plist>

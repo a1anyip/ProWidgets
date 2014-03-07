@@ -3,37 +3,35 @@
 <plist version="1.0">
 <dict>
 	<key>title</key>
-	<string>Control Center</string>
+	<string>Reminders</string>
 	<key>items</key>
 	<array>
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
-			<key>footerText</key>
-			<string>Configure the visibility of this section in the preference page of CCLoader</string>
 		</dict>
 		<dict>
 			<key>cell</key>
 			<string>PSLinkListCell</string>
 			<key>defaults</key>
-			<string>cc.tweak.prowidgets.activationmethod.controlcenter</string>
+			<string>cc.tweak.prowidgets.widget.reminders</string>
 			<key>key</key>
-			<string>iconsPerPage</string>
+			<string>defaultInterface</string>
 			<key>label</key>
-			<string>Icons Per Page</string>
+			<string>Default Interface</string>
 			<key>default</key>
-			<integer>4</integer>
+			<integer>0</integer>
 			<key>detail</key>
 			<string>PSListItemsController</string>
 			<key>validTitles</key>
 			<array>
-				<string>4</string>
-				<string>5</string>
+				<string>Add</string>
+				<string>List</string>
 			</array>
 			<key>validValues</key>
 			<array>
-				<integer>4</integer>
-				<integer>5</integer>
+				<integer>0</integer>
+				<integer>1</integer>
 			</array>
 		</dict>
 	</array>

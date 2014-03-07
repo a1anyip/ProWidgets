@@ -125,6 +125,13 @@ typedef enum {
 
 //////////////////////////////////////////////////////////////////////
 
+typedef enum {
+	
+	PWLockActionMinimize = 0,
+	PWLockActionDismiss = 1
+	
+} PWLockAction;
+
 enum  {
 	DeviceLockStateUnlockedWithPasscode = 0,
 	DeviceLockStateLockedWithPasscode = 1,

@@ -213,8 +213,9 @@ static inline UIImage *scaleImage(UIImage *image) {
 		// dismiss notification center
 		[[objc_getClass("SBNotificationCenterController") sharedInstance] dismissAnimated:YES];
 		// present the widget
-		//[[PWController sharedInstance] presentWidgetFromBundle:bundle userInfo:userInfo];
-		[PWWidgetController presentWidgetFromBundle:bundle userInfo:userInfo];
+		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, .2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^(void){
+			[PWWidgetController presentWidgetFromBundle:bundle userInfo:userInfo];
+		});
 	}
 }
 

@@ -12,9 +12,19 @@
 	<string>Browser</string>
 	<key>PWInfoAuthor</key>
 	<string>Alan Yip</string>
-	<key>PWInfoDescription</key>
+	<key>PWInfoShortDescription</key>
 	<string>Open web links in app conveniently</string>
+	<key>PWInfoDescription</key>
+	<string>Browser widget provides a simple interface to browse URLs or bookmarks, and add new bookmarks everywhere. You could also open web links from apps, like Mail, WhatsApp.
+
+Tap on navigation bar once to switch between browser and bookmark interfaces.
+
+Configure the default browser (Safari or Chrome) and other settings in widget preference page.</string>
 	<key>PWInfoIconFile</key>
 	<string>icon.png</string>
+	<key>PWInfoPreferenceDefaults</key>
+	<string>cc.tweak.prowidgets.widget.browser</string>
+	<key>PWInfoPreferenceFile</key>
+	<string>Preference</string>
 </dict>
 </plist>

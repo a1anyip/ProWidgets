@@ -42,12 +42,14 @@
 - (void)layoutSubviews {
 	
 	_containerBackgroundView.frame = self.bounds;
+	[_containerBackgroundView setNeedsLayout];
 	[_containerBackgroundView layoutIfNeeded];
 	
 	_overlayView.frame = self.bounds;
 	[self bringSubviewToFront:_overlayView];
 	
 	_navigationControllerView.frame = self.bounds;
+	[_navigationControllerView setNeedsLayout];
 	[_navigationControllerView layoutIfNeeded];
 	
 	PWTheme *theme = _widgetController.widget.theme;

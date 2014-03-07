@@ -1,9 +1,9 @@
-#import "PWPrefURLInstallationInfoView.h"
+#import "PWPrefInfoView.h"
 #import "../PWTheme.h"
 
 extern NSBundle *bundle;
 
-@implementation PWPrefURLInstallationInfoView
+@implementation PWPrefInfoView
 
 - (instancetype)init {
 	if ((self = [super init])) {
@@ -37,29 +37,26 @@ extern NSBundle *bundle;
 		[self addSubview:_separator];
 		
 		// add description text view
-		CGFloat padding = 15.0;
+		CGFloat padding = 12.0;
 		_descriptionTextView = [UITextView new];
 		_descriptionTextView.editable = NO;
 		_descriptionTextView.selectable = YES;
+		_descriptionTextView.alwaysBounceVertical = YES;
 		_descriptionTextView.backgroundColor = [UIColor colorWithWhite:1.0 alpha:.5];
 		_descriptionTextView.textColor = [UIColor colorWithWhite:.3 alpha:1.0];
 		_descriptionTextView.font = [UIFont systemFontOfSize:16];
 		_descriptionTextView.textContainer.lineFragmentPadding = 0;
 		_descriptionTextView.textContainerInset = UIEdgeInsetsMake(padding, padding, padding, padding);
+		_descriptionTextView.dataDetectorTypes = UIDataDetectorTypeAll;
 		[self addSubview:_descriptionTextView];
 		
 		// add confirm button
 		_confirmButton = [UIButton new];
 		_confirmButton.adjustsImageWhenHighlighted = YES;
-		[_confirmButton setTitle:@"Install" forState:UIControlStateNormal];
-		[_confirmButton setBackgroundImage:[PWTheme imageFromColor:[PWTheme systemBlueColor]] forState:UIControlStateNormal];
+		[_confirmButton addTarget:self action:@selector(_confirmButtonHandler) forControlEvents:UIControlEventTouchUpInside];
 		[self addSubview:_confirmButton];
 	}
 	return self;
-}
-
-- (void)didMoveToSuperview {
-	[_confirmButton addTarget:[self.superview nextResponder] action:@selector(confirmInstallation) forControlEvents:UIControlEventTouchUpInside];
 }
 
 - (void)layoutSubviews {
@@ -71,7 +68,7 @@ extern NSBundle *bundle;
 	CGFloat iconSize = 25.0;
 	CGFloat nameHeight = 40.0;
 	CGFloat authorHeight = 40.0;
-	CGFloat buttonHeight = 60.0;
+	CGFloat buttonHeight = 50.0;
 	
 	CGFloat topMargin = 20.0 + 44.0;
 	CGFloat xMargin = 15.0;
@@ -117,6 +114,51 @@ extern NSBundle *bundle;
 	_descriptionTextView.text = description;
 }
 
+- (void)setConfirmButtonType:(PWPrefInfoViewConfirmButtonType)type {
+	
+	UIColor *color = nil;
+	
+	switch (type) {
+		case PWPrefInfoViewConfirmButtonTypeNormal:
+			_confirmButton.userInteractionEnabled = YES;
+			_confirmButton.alpha = 1.0;
+			color = [PWTheme systemBlueColor];
+			break;
+		case PWPrefInfoViewConfirmButtonTypeWarning:
+			_confirmButton.userInteractionEnabled = YES;
+			_confirmButton.alpha = 1.0;
+			color = [UIColor redColor];
+			break;
+		case PWPrefInfoViewConfirmButtonTypeDisabled:
+			_confirmButton.userInteractionEnabled = NO;
+			_confirmButton.alpha = .5;
+			color = [UIColor colorWithWhite:.5 alpha:1.0];
+			break;
+	}
+	
+	[_confirmButton setBackgroundImage:[PWTheme imageFromColor:color] forState:UIControlStateNormal];
+}
+
+- (void)setConfirmButtonTitle:(NSString *)title {
+	[_confirmButton setTitle:title forState:UIControlStateNormal];
+}
+
+- (void)setConfirmButtonTarget:(id)target action:(SEL)action {
+	_confirmButtonTarget = target;
+	_confirmButtonAction = action;
+}
+
+- (void)setConfirmButtonInfo:(NSDictionary *)info {
+	[_confirmButtonInfo release];
+	_confirmButtonInfo = [info retain];
+}
+
+- (void)_confirmButtonHandler {
+	if (_confirmButtonTarget != nil && _confirmButtonAction != NULL) {
+		[_confirmButtonTarget performSelector:_confirmButtonAction withObject:_confirmButtonInfo];
+	}
+}
+
 - (void)dealloc {
 	RELEASE_VIEW(_iconView)
 	RELEASE_VIEW(_nameLabel)
@@ -124,6 +166,7 @@ extern NSBundle *bundle;
 	RELEASE_VIEW(_separator)
 	RELEASE_VIEW(_descriptionTextView)
 	RELEASE_VIEW(_confirmButton)
+	RELEASE(_confirmButtonInfo)
 	[super dealloc];
 }
 

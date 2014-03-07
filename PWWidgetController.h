@@ -64,11 +64,12 @@
 + (instancetype)controllerForPresentedWidgetWithPrincipalClass:(Class)principalClass;
 
 + (void)adjustLayoutForAllControllers;
++ (void)dismissAllControllers:(BOOL)force;
 + (void)minimizeAllControllers;
 + (void)updateActiveController:(PWWidgetController *)controller;
 
 - (instancetype)initWithWidget:(PWWidget *)widget;
-- (BOOL)_presentWithUserInfo:(NSDictionary *)userInfo;
+- (BOOL)_present;
 
 - (BOOL)dismiss;
 - (BOOL)dismissWhenMinimized;

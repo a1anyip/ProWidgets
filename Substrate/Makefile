@@ -1,6 +1,7 @@
 TWEAK_NAME = ProWidgets
-ProWidgets_FILES = PWBootstrap.x
+ProWidgets_FILES = PWSubstrate.x PWWidgetPickerCell.m PWWidgetPickerController.m
 ProWidgets_FRAMEWORKS = CoreFoundation Foundation UIKit
+ProWidgets_PRIVATE_FRAMEWORKS = Preferences
 ProWidgets_LIBRARIES = prowidgets
 ProWidgets_CFLAGS = -I../
 ProWidgets_LDFLAGS = -L../$(THEOS_OBJ_DIR_NAME)

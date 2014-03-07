@@ -3,97 +3,46 @@
 <plist version="1.0">
 <dict>
 	<key>title</key>
-	<string>Developer Section</string>
+	<string>Preference</string>
 	<key>items</key>
 	<array>
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>footerText</key>
-			<string>Developer mode</string>
+			<string>Choose the widgets to show at the bottom corners of notification center</string>
 		</dict>
 		<dict>
 			<key>cell</key>
-			<string>PSSwitchCell</string>
+			<string>PWWidgetPickerCell</string>
 			<key>defaults</key>
-			<string>cc.tweak.prowidgets</string>
-			<key>PostNotification</key>
-			<string>cc.tweak.prowidgets.preferencechanged</string>
+			<string>cc.tweak.prowidgets.activationmethod.nccorners</string>
 			<key>key</key>
-			<string>enabledDeveloperMode</string>
+			<string>left</string>
 			<key>label</key>
-			<string>Developer Mode</string>
+			<string>Left Corner</string>
+			<key>detail</key>
+			<string>PWWidgetPickerController</string>
 			<key>default</key>
-			<false/>
+			<string>Mail</string>
+			<key>PWShowNone</key>
+			<true/>
 		</dict>
 		<dict>
 			<key>cell</key>
-			<string>PSGroupCell</string>
-			<key>footerText</key>
-			<string>Select your preferred source when creating calendars
-
-Local source might not work for some users.</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSLinkListCell</string>
+			<string>PWWidgetPickerCell</string>
 			<key>defaults</key>
-			<string>cc.tweak.prowidgets.widget.calendar</string>
+			<string>cc.tweak.prowidgets.activationmethod.nccorners</string>
 			<key>key</key>
-			<string>sourcePreference</string>
+			<string>right</string>
 			<key>label</key>
-			<string>Preferred Source</string>
+			<string>Right Corner</string>
+			<key>detail</key>
+			<string>PWWidgetPickerController</string>
 			<key>default</key>
-			<integer>0</integer>
-			<key>detail</key>
-			<string>PSListItemsController</string>
-			<key>validTitles</key>
-			<array>
-				<string>iCloud</string>
-				<string>Local</string>
-			</array>
-			<key>validValues</key>
-			<array>
-				<integer>0</integer>
-				<integer>1</integer>
-			</array>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSGroupCell</string>
-			<key>footerText</key>
-			<string>Developers and themers may find some useful configurations and documentations inside.</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSLinkListCell</string>
-			<key>label</key>
-			<string>Developer Section</string>
-			<key>detail</key>
-			<string>PWPrefDeveloperSection</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSLinkListCell</string>
-			<key>label</key>
-			<string>Themer Section</string>
-			<key>detail</key>
-			<string>PWPrefThemerSection</string>
-		</dict>
-		
-		<dict>
-			<key>cell</key>
-			<string>PSGroupCell</string>
-			<key>footerText</key>
-			<string>Unless specified, respring is not required after changing configurations.</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSButtonCell</string>
-			<key>label</key>
-			<string>Respring</string>
-			<key>action</key>
-			<string>respring</string>
+			<string>Messages</string>
+			<key>PWShowNone</key>
+			<true/>
 		</dict>
 	</array>
 </dict>

@@ -32,7 +32,7 @@
 	}
 	
 	// push a custom view controller
-	_viewController = [PWWidgetGoogleAuthenticatorViewController new];
+	_viewController = [[PWWidgetGoogleAuthenticatorViewController alloc] initForWidget:self];
 	[self pushViewController:_viewController animated:NO];
 }
 

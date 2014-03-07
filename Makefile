@@ -129,7 +129,7 @@ WIDGETS += Widgets/Mail
 ############################################################
 
 # Third-party Widgets
-#WIDGETSTP = WidgetsTP/Authenticator
+WIDGETSTP = WidgetsTP/Authenticator
 
 ############################################################
 
@@ -158,7 +158,7 @@ libprowidgets_PRIVATE_FRAMEWORKS = MobileKeyBag Calculate MobileTimer ToneKit To
 libprowidgets_INSTALL_PATH = /Library/ProWidgets
 libprowidgets_LIBRARIES = substrate objcipc
 
-SUBPROJECTS = Bootstrap $(API_SUBSTRATES) $(ACTIVATION_METHODS) $(WIDGETS) $(WIDGETSTP) $(SCRIPTS) $(THEMES) $(PREFERENCE)
+SUBPROJECTS = Substrate $(API_SUBSTRATES) $(ACTIVATION_METHODS) $(WIDGETS) $(WIDGETSTP) $(SCRIPTS) $(THEMES) $(PREFERENCE)
 
 include theos/makefiles/common.mk
 include $(THEOS_MAKE_PATH)/library.mk

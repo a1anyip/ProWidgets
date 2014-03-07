@@ -9,6 +9,54 @@
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>General</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>defaults</key>
+			<string>cc.tweak.prowidgets</string>
+			<key>PostNotification</key>
+			<string>cc.tweak.prowidgets.preferencechanged</string>
+			<key>key</key>
+			<string>lockAction</string>
+			<key>label</key>
+			<string>Lock Action</string>
+			<key>default</key>
+			<integer>0</integer>
+			<key>detail</key>
+			<string>PSListItemsController</string>
+			<key>validTitles</key>
+			<array>
+				<string>Minimize all widgets</string>
+				<string>Dismiss all widgets</string>
+			</array>
+			<key>validValues</key>
+			<array>
+				<integer>0</integer>
+				<integer>1</integer>
+			</array>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Effect</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>defaults</key>
+			<string>cc.tweak.prowidgets</string>
+			<key>PostNotification</key>
+			<string>cc.tweak.prowidgets.preferencechanged</string>
+			<key>key</key>
+			<string>disabledBlur</string>
+			<key>label</key>
+			<string>Disable Blur Effect</string>
+			<key>default</key>
+			<false/>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -27,10 +75,10 @@
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Global Preference</string>
 			<key>footerText</key>
-			<string>Select your preferred source when creating calendars
-
-Local source might not work for some users.</string>
+			<string>Select your preferred source when creating calendars</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -61,6 +109,8 @@ Local source might not work for some users.</string>
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Third-party Section</string>
 			<key>footerText</key>
 			<string>Developers and themers may find some useful configurations and documentations inside.</string>
 		</dict>
@@ -103,6 +153,8 @@ Local source might not work for some users.</string>
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
+			<key>footerText</key>
+			<string>Reset the main preference file of ProWidgets, not including any widgets, themes, and activation methods.</string>
 		</dict>
 		<dict>
 			<key>cell</key>

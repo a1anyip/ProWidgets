@@ -1,3 +1,4 @@
+@class PSSpecifier;
 
 @interface PSViewController : UIViewController
 
@@ -16,13 +17,27 @@
 
 - (void)setTitle:(id)arg1;
 - (id)loadSpecifiersFromPlistName:(NSString *)name target:(id)target;
-- (id)specifierAtIndex:(int)index;
+- (PSSpecifier *)specifierAtIndex:(int)index;
 - (void)setSpecifiers:(id)arg1;
 - (void)reload;
 
 @end
 
+@interface PSListItemsController : PSListController
+
+- (PSSpecifier *)specifier;
+- (id)itemsFromParent;
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
+
+@end
+
 @interface PSSpecifier : NSObject
+
+@property(retain) id properties;
+@property(retain) NSArray *values;
+@property(retain) NSDictionary *titleDictionary;
+@property(retain) NSDictionary *shortTitleDictionary;
 
 @property(retain, nonatomic) NSString *name;
 @property(nonatomic) SEL buttonAction;
@@ -31,6 +46,17 @@
 - (void)setProperty:(id)arg1 forKey:(id)arg2;
 - (id)propertyForKey:(NSString *)key;
 - (NSDictionary *)properties;
+
+- (void)setValues:(id)arg1 titles:(id)arg2 shortTitles:(id)arg3 usingLocalizedTitleSorting:(BOOL)arg4;
+
+@end
+
+@interface PSTableCell : UITableViewCell
+
+@property(nonatomic, copy) NSString *title;
+@property(nonatomic, copy) NSString *value;
+
+- (void)setSpecifier:(PSSpecifier *)specifier;
 
 @end
 

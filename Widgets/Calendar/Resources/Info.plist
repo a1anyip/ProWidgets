@@ -14,5 +14,9 @@
 	<string>Alan Yip</string>
 	<key>PWInfoDescription</key>
 	<string>View and create events</string>
+	<key>PWInfoPreferenceDefaults</key>
+	<string>cc.tweak.prowidgets.widget.calendar</string>
+	<key>PWInfoPreferenceFile</key>
+	<string>Preference</string>
 </dict>
 </plist>

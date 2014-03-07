@@ -1,6 +1,6 @@
 #import "PWPrefURLInstallationRootController.h"
 #import "PWPrefURLInstallationRootView.h"
-#import "PWPrefURLInstallationInfoView.h"
+#import "PWPrefInfoView.h"
 #import "PWController.h"
 #import "NSTask.h"
 
@@ -339,11 +339,14 @@ extern NSBundle *bundle;
 		}
 	}
 	
-	PWPrefURLInstallationInfoView *infoView = [[PWPrefURLInstallationInfoView new] autorelease];
+	PWPrefInfoView *infoView = [[PWPrefInfoView new] autorelease];
 	[infoView setIcon:icon];
 	[infoView setName:displayName];
 	[infoView setAuthor:author];
 	[infoView setDescription:description];
+	[infoView setConfirmButtonType:PWPrefInfoViewConfirmButtonTypeNormal];
+	[infoView setConfirmButtonTitle:@"Install"];
+	[infoView setConfirmButtonTarget:self action:@selector(confirmInstallation)];
 	
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.0 * NSEC_PER_SEC), dispatch_get_main_queue(), ^(void){
 		[self.rootView switchToInfoView:infoView];

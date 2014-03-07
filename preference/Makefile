@@ -1,5 +1,7 @@
 PREF = PWPrefController.m
 PREF += PWPrefView.m
+PREF += PWPrefInfoViewController.m
+PREF += PWPrefInfoView.m
 
 PREF += PWPrefWidgets.m
 PREF += PWPrefWidgetsView.m
@@ -20,7 +22,6 @@ PREF += PWPrefListController.m
 PREF += PWPrefURLInstallation.m
 PREF += PWPrefURLInstallationRootController.m
 PREF += PWPrefURLInstallationRootView.m
-PREF += PWPrefURLInstallationInfoView.m
 
 BUNDLE_NAME = ProWidgets
 ProWidgets_FILES = $(PREF)

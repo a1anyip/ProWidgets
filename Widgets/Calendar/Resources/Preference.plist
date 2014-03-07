@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>title</key>
+	<string>Calendar</string>
+	<key>items</key>
+	<array>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>defaults</key>
+			<string>cc.tweak.prowidgets.widget.calendar</string>
+			<key>key</key>
+			<string>defaultInterface</string>
+			<key>label</key>
+			<string>Default Interface</string>
+			<key>default</key>
+			<integer>0</integer>
+			<key>detail</key>
+			<string>PSListItemsController</string>
+			<key>validTitles</key>
+			<array>
+				<string>Add</string>
+				<string>List</string>
+			</array>
+			<key>validValues</key>
+			<array>
+				<integer>0</integer>
+				<integer>1</integer>
+			</array>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>List</string>
+			<key>footerText</key>
+			<string>Period of upcoming events in list interface</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>defaults</key>
+			<string>cc.tweak.prowidgets.widget.calendar</string>
+			<key>key</key>
+			<string>period</string>
+			<key>label</key>
+			<string>Period</string>
+			<key>default</key>
+			<integer>7</integer>
+			<key>detail</key>
+			<string>PSListItemsController</string>
+			<key>validTitles</key>
+			<array>
+				<string>1 week</string>
+				<string>2 weeks</string>
+				<string>1 month</string>
+			</array>
+			<key>validValues</key>
+			<array>
+				<integer>7</integer>
+				<integer>14</integer>
+				<integer>31</integer>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

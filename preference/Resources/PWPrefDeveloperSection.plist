@@ -46,7 +46,7 @@ Local source might not work for some users.</string>
 			<key>default</key>
 			<integer>0</integer>
 			<key>detail</key>
-			<string>PSListItemsController</string>
+			<string>PSListItemsXController</string>
 			<key>validTitles</key>
 			<array>
 				<string>iCloud</string>

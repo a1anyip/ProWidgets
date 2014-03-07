@@ -18,10 +18,14 @@
 
 - (instancetype)init {
 	if (self = [super init]) {
-		// Window Level
+		// Window Levels
 		// (Cut/Copy) UITextEffectsWindow	2100
 		// (Undo/Cancel) ~Alert window		1996
-		self.windowLevel = 1995;
+		// Notification Center				1056
+		// Control Center					1056
+		// Lock Alert Window				1050
+		// UIWindowLevelStatusBar			1000
+		self.windowLevel = 1055.0;
 		self.backgroundColor = [UIColor clearColor];
 		self.userInteractionEnabled = YES;
 		self.frame = [[UIScreen mainScreen] bounds];

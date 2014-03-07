@@ -99,7 +99,11 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 		_lastFirstResponder = [[_window firstResponder] retain];
 	}
 	
-	[[objc_getClass("SBUIController") sharedInstance] _hideKeyboard]; // force to hide keyboard
+	[_window endEditing:YES];
+	
+	if (![self.class isIPad]) {
+		[[objc_getClass("SBUIController") sharedInstance] _hideKeyboard]; // force to hide keyboard
+	}
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -158,6 +162,10 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 }
 
 //////////////////////////////////////////////////////////////////////
+
++ (BOOL)requiresBackgroundView {
+	return ![self isIPad];
+}
 
 + (BOOL)supportsDragging {
 	return [self isIPad];
@@ -252,6 +260,9 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	if (isLandscape)
 		margin /= 2;
 	
+	if ([PWController isIPad]) // just to make sure the sheet on iPad is not too large
+		screenHeight /= 2.0;
+	
 	return screenHeight - keyboardHeight - margin;
 }
 
@@ -331,6 +342,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	// add notification observers
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_keyboardWillShowHandler:) name:UIKeyboardWillShowNotification object:nil];
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_keyboardWillHideHandler:) name:UIKeyboardWillHideNotification object:nil];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_lockStateChangedHandler:) name:@"SBDeviceLockStateChangedNotification" object:nil];
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_protectedDataWillBecomeUnavailableHandler:) name:UIApplicationProtectedDataWillBecomeUnavailable object:nil];
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_protectedDataDidBecomeAvailableHandler:) name:UIApplicationProtectedDataDidBecomeAvailable object:nil];
 }
@@ -344,7 +356,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	_mainView = (PWView *)self.view; // +1
 	
 	// add parallax effect
-	if (self.enabledParallax)
+	if (_enabledParallax)
 		[self _applyParallaxEffect];
 	
 	// add main view to window
@@ -369,17 +381,25 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	
 	NSDictionary *dict = [[NSDictionary alloc] initWithContentsOfFile:PWPrefPath];
 	
+	// Lock Action
+	NSNumber *lockAction = dict[@"lockAction"];
+	_lockAction = [lockAction unsignedIntegerValue] == 1 ? PWLockActionDismiss : PWLockActionMinimize;
+	
+	// Disable Blur Effect
+	NSNumber *disabledBlur = dict[@"disabledBlur"];
+	_disabledBlur = disabledBlur == nil || ![disabledBlur isKindOfClass:[NSNumber class]] ? NO : [disabledBlur boolValue];
+	
 	// Parallax Effect
 	NSNumber *enabledParallax = dict[@"enabledParallax"];
-	_enabledParallax = enabledParallax == nil ? YES : [enabledParallax boolValue];
+	_enabledParallax = enabledParallax == nil || ![enabledParallax isKindOfClass:[NSNumber class]] ? YES : [enabledParallax boolValue];
 	
 	// Preferred Source
 	NSNumber *preferredSource = dict[@"preferredSource"];
-	_preferredSource = preferredSource == nil ? 0 : [preferredSource unsignedIntegerValue]; // default is iCloud
+	_preferredSource = preferredSource == nil || ![preferredSource isKindOfClass:[NSNumber class]] ? 0 : [preferredSource unsignedIntegerValue]; // default is iCloud
 	
 	// Test Mode
 	NSNumber *testMode = dict[@"testMode"];
-	_testMode = testMode == nil ? NO : [testMode boolValue];
+	_testMode = testMode == nil || ![testMode isKindOfClass:[NSNumber class]] ? NO : [testMode boolValue];
 	
 	// Visible widget order
 	NSArray *visibleWidgetOrder = dict[@"visibleWidgetOrder"];
@@ -404,7 +424,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	[self _loadPreference];
 	
 	// reset parallax enabled state
-	if (self.enabledParallax) {
+	if (_enabledParallax) {
 		[self _applyParallaxEffect];
 	} else {
 		[self _removeParallaxEffect];
@@ -433,6 +453,28 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	if (![PWWidgetController isPresentingWidget]) return;
 	for (PWWidgetController *controller in [PWWidgetController allControllers]) {
 		[controller _keyboardWillHideHandler];
+	}
+}
+
+- (void)_lockStateChangedHandler:(NSNotification *)notification {
+	
+	NSDictionary *userInfo = [notification userInfo];
+	NSUInteger state = [userInfo[@"kSBNotificationKeyState"] unsignedIntegerValue];
+	
+	LOG(@"PWController: _lockStateChangedHandler <%d>", (int)state);
+	
+	// locked
+	if (state == DeviceLockStateLockedWithPasscode) {
+		
+		if (_lockAction == PWLockActionMinimize) {
+			[PWWidgetController minimizeAllControllers];
+		} else if (_lockAction == PWLockActionDismiss) {
+			[PWWidgetController dismissAllControllers:YES];
+		}
+		
+	} else {
+		// TODO: fix
+		[_window adjustLayout];
 	}
 }
 
@@ -543,6 +585,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 		theme.name = name;
 		theme.bundle = themeBundle;
 		theme.widget = widget;
+		theme.disabledBlur = _disabledBlur;
 		return [theme autorelease];
 	}
 	
@@ -679,6 +722,9 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	NSString *author = info[@"PWInfoAuthor"];
 	if (author == nil) author = @"";
 	
+	// PWInfoShortDescription
+	NSString *shortDescription = info[@"PWInfoShortDescription"];
+	
 	// PWInfoDescription
 	NSString *description = info[@"PWInfoDescription"];
 	if (description == nil) description = @"";
@@ -715,6 +761,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 			 @"name": widgetName,
 			 @"displayName": displayName,
 			 @"author": author,
+			 @"shortDescription": (shortDescription == nil ? description : shortDescription),
 			 @"description": description,
 			 @"enableActivation": enableActivation,
 			 @"iconFile": iconFile,
@@ -767,6 +814,9 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	NSString *author = info[@"PWInfoAuthor"];
 	if (author == nil) author = @"";
 	
+	// PWInfoShortDescription
+	NSString *shortDescription = info[@"PWInfoShortDescription"];
+	
 	// PWInfoDescription
 	NSString *description = info[@"PWInfoDescription"];
 	if (description == nil) description = @"";
@@ -787,6 +837,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 			 @"name": scriptName,
 			 @"displayName": displayName,
 			 @"author": author,
+			 @"shortDescription": (shortDescription == nil ? description : shortDescription),
 			 @"description": description,
 			 @"hasPreference": @([preferenceFile length] > 0),
 			 @"preferenceDefaults": preferenceDefaults,
@@ -829,6 +880,9 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	NSString *author = info[@"PWInfoAuthor"];
 	if (author == nil) author = @"";
 	
+	// PWInfoShortDescription
+	NSString *shortDescription = info[@"PWInfoShortDescription"];
+	
 	// PWInfoDescription
 	NSString *description = info[@"PWInfoDescription"];
 	if (description == nil) description = @"";
@@ -845,6 +899,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 			 @"name": themeName,
 			 @"displayName": displayName,
 			 @"author": author,
+			 @"shortDescription": (shortDescription == nil ? description : shortDescription),
 			 @"description": description,
 			 @"iconFile": iconFile,
 			 @"bundle": bundle,
@@ -885,13 +940,12 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	NSString *author = info[@"PWInfoAuthor"];
 	if (author == nil) author = @"";
 	
+	// PWInfoShortDescription
+	NSString *shortDescription = info[@"PWInfoShortDescription"];
+	
 	// PWInfoDescription
 	NSString *description = info[@"PWInfoDescription"];
 	if (description == nil) description = @"";
-	
-	// PWInfoPreferenceDefaults
-	//NSString *preferenceDefaults = info[@"PWInfoPreferenceDefaults"];
-	//if (preferenceDefaults == nil) preferenceDefaults = @"";
 	
 	// PWInfoPreferenceFile
 	NSString *preferenceFile = info[@"PWInfoPreferenceFile"];
@@ -901,9 +955,9 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 			 @"name": methodName,
 			 @"displayName": displayName,
 			 @"author": author,
+			 @"shortDescription": (shortDescription == nil ? description : shortDescription),
 			 @"description": description,
 			 @"hasPreference": @([preferenceFile length] > 0),
-			 //@"preferenceDefaults": preferenceDefaults,
 			 @"preferenceFile": preferenceFile,
 			 @"bundle": bundle
 			 };
@@ -967,9 +1021,13 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	return [self _installedBundlesOfType:@"Widgets" extension:@"widget" infoSelector:@selector(infoOfWidgetInBundle:)];
 }
 
-- (NSDictionary *)enabledWidgets {
+- (NSArray *)enabledWidgets {
+	return [self _installedBundlesOfType:@"Widgets" extension:@"widget" infoSelector:@selector(infoOfEnabledWidgetInBundle:)];
+}
+
+- (NSDictionary *)enabledWidgetsWithCategories {
 	
-	NSArray *unsorted = [self _installedBundlesOfType:@"Widgets" extension:@"widget" infoSelector:@selector(infoOfEnabledWidgetInBundle:)];
+	NSArray *unsorted = [self enabledWidgets];
 	NSArray *visibleOrder = self.visibleWidgetOrder;
 	NSArray *hiddenOrder = self.hiddenWidgetOrder;
 	
@@ -1006,11 +1064,11 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 }
 
 - (NSArray *)visibleWidgets {
-	return [self enabledWidgets][@"visible"];
+	return [self enabledWidgetsWithCategories][@"visible"];
 }
 
 - (NSArray *)hiddenWidgets {
-	return [self enabledWidgets][@"hidden"];
+	return [self enabledWidgetsWithCategories][@"hidden"];
 }
 
 - (NSArray *)installedScripts {

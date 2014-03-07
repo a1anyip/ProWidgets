@@ -14,5 +14,9 @@
 	<string>Alan Yip</string>
 	<key>PWInfoDescription</key>
 	<string>Manage and create notes</string>
+	<key>PWInfoPreferenceDefaults</key>
+	<string>cc.tweak.prowidgets.widget.notes</string>
+	<key>PWInfoPreferenceFile</key>
+	<string>Preference</string>
 </dict>
 </plist>

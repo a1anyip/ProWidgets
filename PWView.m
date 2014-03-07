@@ -25,9 +25,11 @@
 		self.userInteractionEnabled = YES;
 		
 		// create PWBackgroundView
-		_backgroundView = [PWBackgroundView new];
-		_backgroundView.userInteractionEnabled = YES;
-		[self addSubview:_backgroundView];
+		if (![PWController isIPad]) {
+			_backgroundView = [PWBackgroundView new];
+			_backgroundView.userInteractionEnabled = YES;
+			[self addSubview:_backgroundView];
+		}
 	}
 	return self;
 }

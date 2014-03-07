@@ -57,11 +57,12 @@ static NSDictionary *supportedColorString = nil;
  * Initialization
  **/
 
-- (instancetype)initWithName:(NSString *)name bundle:(NSBundle *)bundle widget:(PWWidget *)widget {
+- (instancetype)initWithName:(NSString *)name bundle:(NSBundle *)bundle widget:(PWWidget *)widget disabledBlur:(BOOL)disabledBlur {
 	if ((self = [super init])) {
 		self.name = name;
 		self.bundle = bundle;
 		self.widget = widget;
+		self.disabledBlur = disabledBlur;
 	}
 	return self;
 }

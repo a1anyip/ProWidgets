@@ -6,6 +6,7 @@
 //  Copyright 2014 Alan Yip. All rights reserved.
 //
 
+#import "PWController.h"
 #import "PWTheme.h"
 #import "PWContainerView.h"
 
@@ -34,8 +35,8 @@
 
 @interface PWWidgetThemeBlur : PWTheme {
 	
-	_UIBackdropView *_barBlurView;
-	_UIBackdropView *_contentBlurView;
+	UIView *_barBlurView;
+	UIView *_contentBlurView;
 }
 
 @end
@@ -48,6 +49,14 @@
 
 - (CGFloat)cornerRadius {
 	return 7.0;
+}
+
+- (UIColor *)tintColor {
+	return [self preferredTintColor] == nil ? [super tintColor] : [self preferredTintColor];
+}
+
+- (UIColor *)sheetForegroundColor {
+	return [UIColor blackColor];
 }
 
 - (UIColor *)sheetBackgroundColor {
@@ -100,19 +109,23 @@
 }
 
 - (void)enterSnapshotMode {
-	UIColor *barTintColor = [self preferredTintColor];
-	BOOL shouldTintBar = barTintColor != nil;
-	if (shouldTintBar) {
-		_barBlurView.backgroundColor = barTintColor;
-	} else {
-		_barBlurView.backgroundColor = [UIColor whiteColor];
+	if (!self.disabledBlur) {
+		UIColor *barTintColor = [self preferredTintColor];
+		BOOL shouldTintBar = barTintColor != nil;
+		if (shouldTintBar) {
+			_barBlurView.backgroundColor = barTintColor;
+		} else {
+			_barBlurView.backgroundColor = [UIColor whiteColor];
+		}
+		_contentBlurView.backgroundColor = [UIColor whiteColor];
 	}
-	_contentBlurView.backgroundColor = [UIColor whiteColor];
 }
 
 - (void)exitSnapshotMode {
-	_barBlurView.backgroundColor = [UIColor clearColor];
-	_contentBlurView.backgroundColor = [UIColor clearColor];
+	if (!self.disabledBlur) {
+		_barBlurView.backgroundColor = [UIColor clearColor];
+		_contentBlurView.backgroundColor = [UIColor clearColor];
+	}
 }
 
 - (void)setupTheme {
@@ -129,24 +142,41 @@
 	UIView *backgroundView = [navigationBar _backgroundView];
 	backgroundView.backgroundColor = [UIColor clearColor]; // remove white background
 	
-	// backdrop view settings
-	_UIBackdropViewSettings *barSettings = nil;
-	_UIBackdropViewSettings *contentSettings = [[[objc_getClass("_UIBackdropViewSettingsUltraLight") alloc] initWithDefaultValues] autorelease];
-	
-	if (shouldTintBar) {
-		barSettings = [[[objc_getClass("_UIBackdropViewSettingsColored") alloc] initWithDefaultValues] autorelease];
-		barSettings.colorTint = barTintColor;
-		barSettings.saturationDeltaFactor = 0.0;
+	if (self.disabledBlur) {
+		
+		CGFloat alpha = .96;
+		
+		_barBlurView = [UIView new];
+		_barBlurView.backgroundColor = barTintColor;
+		_barBlurView.alpha = alpha;
+		[containerView insertSubview:_barBlurView atIndex:0];
+		
+		_contentBlurView = [UIView new];
+		_contentBlurView.backgroundColor = [UIColor whiteColor];
+		_contentBlurView.alpha = alpha;
+		[containerView insertSubview:_contentBlurView atIndex:0];
+		
 	} else {
-		barSettings = [[[objc_getClass("_UIBackdropViewSettingsUltraLight") alloc] initWithDefaultValues] autorelease];
+		
+		// backdrop view settings
+		_UIBackdropViewSettings *barSettings = nil;
+		_UIBackdropViewSettings *contentSettings = [[[objc_getClass("_UIBackdropViewSettingsUltraLight") alloc] initWithDefaultValues] autorelease];
+		
+		if (shouldTintBar) {
+			barSettings = [[[objc_getClass("_UIBackdropViewSettingsColored") alloc] initWithDefaultValues] autorelease];
+			barSettings.colorTint = barTintColor;
+			barSettings.saturationDeltaFactor = 0.0;
+		} else {
+			barSettings = [[[objc_getClass("_UIBackdropViewSettingsUltraLight") alloc] initWithDefaultValues] autorelease];
+		}
+		
+		// add blur view as the background
+		_barBlurView = [[objc_getClass("_UIBackdropView") alloc] initWithSettings:barSettings];
+		[containerView insertSubview:_barBlurView atIndex:0];
+		
+		_contentBlurView = [[objc_getClass("_UIBackdropView") alloc] initWithSettings:contentSettings];
+		[containerView insertSubview:_contentBlurView atIndex:0];
 	}
-	
-	// add blur view as the background
-	_barBlurView = [[objc_getClass("_UIBackdropView") alloc] initWithSettings:barSettings];
-	[containerView insertSubview:_barBlurView atIndex:0];
-	
-	_contentBlurView = [[objc_getClass("_UIBackdropView") alloc] initWithSettings:contentSettings];
-	[containerView insertSubview:_contentBlurView atIndex:0];
 }
 
 - (void)removeTheme {

@@ -4,6 +4,12 @@
 
 - (instancetype)initWithPlist:(NSString *)plist inBundle:(NSBundle *)bundle {
 	if ((self = [super init])) {
+		
+		// in case the plist value contains the path extension
+		if ([plist hasSuffix:@".plist"]) {
+			plist = [plist stringByDeletingPathExtension];
+		}
+		
 		self.plist = plist;
 		self.bundle = bundle;
 	}

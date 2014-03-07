@@ -8,7 +8,7 @@
 
 #import "interface.h"
 
-extern NSUInteger iconPerPage;
+extern NSUInteger iconsPerPage;
 
 %subclass PWButtonLayoutView : SBCCButtonLayoutView
 
@@ -29,9 +29,9 @@ extern NSUInteger iconPerPage;
 	CGFloat width = self.bounds.size.width;
 	CGFloat height = self.bounds.size.height;
 	
-	iconPerPage = MAX(1, iconPerPage);
+	iconsPerPage = MAX(1, iconsPerPage);
 	CGFloat top = (height - buttonHeight) / 2;
-	CGFloat separation = (width - buttonWidth * iconPerPage) / (iconPerPage + 1);
+	CGFloat separation = (width - buttonWidth * iconsPerPage) / (iconsPerPage + 1);
 	
 	NSUInteger i = 0;
 	for (UIView *button in buttons) {

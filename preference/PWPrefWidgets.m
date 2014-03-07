@@ -1,6 +1,7 @@
 #import "PWPrefWidgets.h"
 #import "PWPrefWidgetsView.h"
 #import "PWPrefWidgetPreference.h"
+#import "PWPrefInfoViewController.h"
 #import "PWController.h"
 
 extern NSBundle *bundle;
@@ -56,7 +57,7 @@ extern NSBundle *bundle;
 
 - (NSString *)tableView:(UITableView *)tableView titleForFooterInSection:(NSInteger)section {
 	if (section == 0 && [_installedWidgets count] > 0) {
-		return @"You could configure widgets in this page, and rearrange them in Activation Methods.";
+		return @"You could configure widgets in this page, and rearrange them in Activation Methods.\n\nTap on icons to view details.";
 	} else if (section == 0 && [_installedWidgets count] == 0) {
 		return @"You may find some useful widgets in Cydia, or re-install ProWidgets to restore stock widgets.";
 	} else if (section == 1) {
@@ -101,6 +102,11 @@ extern NSBundle *bundle;
 		} else if (section == 0) {
 			
 			cell.detailTextLabel.textColor = [UIColor colorWithWhite:.5 alpha:1.0];
+			cell.imageView.userInteractionEnabled = YES;
+			
+			UITapGestureRecognizer *tap = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(_cellImageViewTapHandler:)] autorelease];
+			tap.numberOfTapsRequired = 1;
+			[cell.imageView addGestureRecognizer:tap];
 			
 		} else if (section == 1) {
 			
@@ -118,7 +124,7 @@ extern NSBundle *bundle;
 		// extract widget info
 		NSBundle *widgetBundle = info[@"bundle"];
 		NSString *displayName = info[@"displayName"];
-		NSString *description = info[@"description"];
+		NSString *shortDescription = info[@"shortDescription"];
 		NSString *iconFile = info[@"iconFile"];
 		UIImage *iconImage = [iconFile length] > 0 ? [UIImage imageNamed:iconFile inBundle:widgetBundle] : nil;
 		BOOL hasPreference = [info[@"hasPreference"] boolValue];
@@ -127,14 +133,14 @@ extern NSBundle *bundle;
 		if ([displayName length] == 0) displayName = @"Unknown";
 		
 		// set default description
-		if ([description length] == 0) description = nil;//@"No description";
+		if ([shortDescription length] == 0) shortDescription = nil;
 		
 		// set default icon image
 		if (iconImage == nil) iconImage = IMAGE(@"icon_widgets");
 		
 		// configure cell
 		cell.textLabel.text = displayName;
-		cell.detailTextLabel.text = description;
+		cell.detailTextLabel.text = shortDescription;
 		cell.imageView.image = iconImage;
 		
 		if (hasPreference) {
@@ -205,15 +211,72 @@ extern NSBundle *bundle;
 	unsigned int row = [indexPath row];
 	
 	if (section != 0 || row >= [_installedWidgets count]) return;
+	[self _uninstallWidgetAtIndex:row];
+}
+
+- (void)_cellImageViewTapHandler:(UITapGestureRecognizer *)sender {
 	
-	NSDictionary *info = _installedWidgets[row];
+	UIView *superview = sender.view;
+	while ((superview = superview.superview) && superview != nil && ![superview isKindOfClass:[UITableViewCell class]]);
+	
+	UITableViewCell *cell = (UITableViewCell *)superview;
+	if ([cell isKindOfClass:[UITableViewCell class]]) {
+		UITableView *tableView = (UITableView *)self.view;
+		NSIndexPath *indexPath = [tableView indexPathForCell:cell];
+		NSUInteger row = [indexPath row];
+		if (row != NSNotFound && [_installedWidgets count] > row) {
+			
+			PWPrefInfoViewController *infoViewController = [[PWPrefInfoViewController new] autorelease];
+			
+			NSDictionary *info = _installedWidgets[row];
+			NSBundle *widgetBundle = info[@"bundle"];
+			
+			// prepare icon
+			NSString *iconFile = info[@"iconFile"];
+			UIImage *iconImage = [iconFile length] > 0 ? [UIImage imageNamed:iconFile inBundle:widgetBundle] : nil;
+			if (iconImage == nil) iconImage = IMAGE(@"icon_widgets");
+			
+			// configure info view
+			PWPrefInfoView *infoView = infoViewController.infoView;
+			[infoView setIcon:iconImage];
+			[infoView setName:info[@"displayName"]];
+			[infoView setAuthor:info[@"author"]];
+			[infoView setDescription:info[@"description"]];
+			[infoView setConfirmButtonTitle:@"Uninstall"];
+			
+			if ([info[@"installedViaURL"] boolValue]) {
+				[infoView setConfirmButtonType:PWPrefInfoViewConfirmButtonTypeWarning];
+				[infoView setConfirmButtonTarget:self action:@selector(_infoViewConfirmButtonHandler:)];
+				[infoView setConfirmButtonInfo:@{ @"index":@(row) }];
+			} else {
+				[infoView setConfirmButtonType:PWPrefInfoViewConfirmButtonTypeDisabled];
+			}
+			
+			[self presentViewController:infoViewController animated:YES completion:nil];
+		}
+	}
+}
+
+- (void)_infoViewConfirmButtonHandler:(NSDictionary *)info {
+	
+	[self dismissViewControllerAnimated:YES completion:nil];
+	
+	NSNumber *_index = info[@"index"];
+	if (_index != nil) {
+		NSUInteger index = [_index unsignedIntegerValue];
+		[self _uninstallWidgetAtIndex:index];
+	}
+}
+
+- (void)_uninstallWidgetAtIndex:(NSUInteger)index {
+	
+	NSDictionary *info = _installedWidgets[index];
 	BOOL installedViaURL = [info[@"installedViaURL"] boolValue];
 	
 	if (installedViaURL) {
 		[self uninstallPackage:info completionHandler:^{
-			[_installedWidgets removeObjectAtIndex:indexPath.row];
-			//[tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-			[tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationFade];
+			[_installedWidgets removeObjectAtIndex:index];
+			[(UITableView *)self.view reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationFade];
 		}];
 	}
 }

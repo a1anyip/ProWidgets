@@ -1,17 +1,19 @@
 //
 //  ProWidgets
-//  Bootstrap (inject the library into SpringBoard)
-//
-//  1.0.0
+//  Substrate (mainly to inject the library into SpringBoard)
 //
 //  Created by Alan Yip on 18 Jan 2014
 //  Copyright 2014 Alan Yip. All rights reserved.
 //
 
 #import "header.h"
+
+#import "PWWidgetPickerCell.h"
+
 #import "PWController.h"
 #import "PWWidgetController.h"
 #import "PWWebRequest.h"
+
 #import "preference/PWPrefURLInstallation.h"
 
 #define IS_PROWIDGETS(x) [[x scheme] isEqualToString:@"prowidgets"]
@@ -41,23 +43,6 @@ static void handleException(NSException *exception) {
 	else
 		%orig;
 }
-
-/*
-- (int)interfaceOrientation {
-	LOG(@"interfaceOrientation: %d", %orig);
-	return %orig;
-}
-
-- (void)updateForOrientation:(int)arg1 forceResetTransform:(BOOL)arg2 {
-	%log;
-	%orig;
-}
-
-- (void)updateForOrientation:(int)arg1 {
-	%log;
-	%orig;
-}
-*/
 
 %end
 
@@ -98,7 +83,7 @@ static void handleException(NSException *exception) {
 %hook SpringBoard
 
 -(void)_handleMenuButtonEvent {
-	LOG(@"PWBootstrap: _handleMenuButtonEvent");
+	LOG(@"PWSubstrate: _handleMenuButtonEvent");
 	NSTimer *menuButtonTimer = *(NSTimer **)instanceVar(self, "_menuButtonTimer");
 	if (menuButtonTimer == nil) {
 		PWWidgetController *activeController = [PWWidgetController activeController];
@@ -122,7 +107,7 @@ static void handleException(NSException *exception) {
 
 - (void)applicationDidFinishLaunching:(id)application {
 	
-	LOG(@"PWBootstrap: Initializing PWController");
+	LOG(@"PWSubstrate: Initializing PWController");
 	
 	PWController *instance = [PWController sharedInstance];
 	
@@ -141,7 +126,7 @@ static void handleException(NSException *exception) {
 		
 		NSString *callURL = [url absoluteString];
 		
-		LOG(@"PWBootstrap: Received open URL notification (%@).", callURL);
+		LOG(@"PWSubstrate: Received open URL notification (%@).", callURL);
 		
 		if (callURL != nil && [callURL length] > 0) {
 			
@@ -185,7 +170,7 @@ static void handleException(NSException *exception) {
 				
 				if (installType != nil && installURL != nil && [installURL length] > 0) {
 					NSString *constructedURL = [NSString stringWithFormat:@"prefs:root=cc.tweak.prowidgets&install=%@&url=%@", installType, installURL];
-					LOG(@"PWBootstrap: Opening '%@'", constructedURL);
+					LOG(@"PWSubstrate: Opening '%@'", constructedURL);
 					[[UIApplication sharedApplication] openURL:[NSURL URLWithString:constructedURL]];
 				}
 			}
@@ -247,6 +232,96 @@ static void handleException(NSException *exception) {
 			}
 		}
 	}
+}
+
+%end
+
+#define CellClass PWWidgetPickerCell
+#define CellTypeString @"PWWidgetPickerCell"
+#define DetailString @"PWWidgetPicker"
+
+%hook PSTableCell
+
++ (Class)cellClassForSpecifier:(PSSpecifier *)specifier {
+	NSString *cell = [specifier propertyForKey:@"cell"];
+	if ([cell isEqualToString:CellTypeString]) {
+		return [PWWidgetPickerCell class];
+	} else {
+		return %orig;
+	}
+}
+
++ (NSString *)reuseIdentifierForSpecifier:(PSSpecifier *)specifier {
+	NSString *cell = [specifier propertyForKey:@"cell"];
+	if ([cell isEqualToString:CellTypeString]) {
+		return CellTypeString;
+	} else {
+		return %orig;
+	}
+}
+
++ (int)cellTypeFromString:(NSString *)string {
+	if ([string isEqualToString:CellTypeString]) {
+		return 2;
+	} else {
+		return %orig;
+	}
+}
+
+%end
+
+@interface PSSpecifier ()
+
+- (void)_pw_prepareWidgetInfo;
+
+@end
+
+static char PWPreparedWidgetInfoKey;
+
+#define PREPARE NSNumber *o = objc_getAssociatedObject(self, &PWPreparedWidgetInfoKey); if (o == NULL || o == nil || ![o boolValue]) [self _pw_prepareWidgetInfo];
+#define SET_PREPARED objc_setAssociatedObject(self, &PWPreparedWidgetInfoKey, @(1), OBJC_ASSOCIATION_COPY_NONATOMIC);
+
+%hook PSSpecifier
+
+- (NSArray *)titleDictionary {
+	PREPARE;
+	return %orig;
+}
+
+- (NSArray *)values {
+	PREPARE;
+	return %orig;
+}
+
+%new
+- (void)_pw_prepareWidgetInfo {
+	NSString *cell = [self propertyForKey:@"cell"];
+	if ([cell isEqualToString:CellTypeString]) {
+		
+		NSMutableArray *titles = [NSMutableArray array];
+		NSMutableArray *values = [NSMutableArray array];
+		
+		// PWShowNone
+		NSNumber *_showNone = [self propertyForKey:@"PWShowNone"];
+		BOOL showNone = _showNone == nil || ![_showNone isKindOfClass:[NSNumber class]] ? YES : [_showNone boolValue];
+		
+		if (showNone) {
+			[titles addObject:@"None"];
+			[values addObject:@""];
+		}
+		
+		// retrieve widget list
+		NSArray *list = [[PWController sharedInstance] enabledWidgets];
+		for (NSDictionary *widget in list) {
+			NSString *name = widget[@"name"];
+			NSString *displayName = widget[@"displayName"];
+			[titles addObject:displayName];
+			[values addObject:name];
+		}
+		
+		[self setValues:values titles:titles shortTitles:nil usingLocalizedTitleSorting:NO];
+	}
+	SET_PREPARED;
 }
 
 %end

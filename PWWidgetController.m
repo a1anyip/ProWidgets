@@ -62,7 +62,7 @@ static NSMutableSet *_controllers = nil;
 
 + (void)releaseLock {
 	LOG(@"releaseLock: %d", (int)_lockCount - 1);
-	if (--_lockCount == 0) {
+	if (_lockCount == 0 || --_lockCount == 0) {
 		
 		if (![PWController isIPad]) {
 			PWController *controller = [PWController sharedInstance];
@@ -147,7 +147,10 @@ static NSMutableSet *_controllers = nil;
 	PWWidgetController *controller = [[[self alloc] initWithWidget:widget] autorelease];
 	[_controllers addObject:controller];
 	
-	return [controller _presentWithUserInfo:userInfo];
+	// update its user info
+	widget.userInfo = userInfo;
+	
+	return [controller _present];
 }
 
 + (BOOL)presentWidgetNamed:(NSString *)name userInfo:(NSDictionary *)userInfo {
@@ -200,6 +203,16 @@ static NSMutableSet *_controllers = nil;
 	}
 }
 
++ (void)dismissAllControllers:(BOOL)force {
+	for (PWWidgetController *controller in [self allControllers]) {
+		if (force) {
+			[controller _forceDismiss];
+		} else {
+			[controller dismiss];
+		}
+	}
+}
+
 + (void)minimizeAllControllers {
 	for (PWWidgetController *controller in [self allControllers]) {
 		[controller minimize];
@@ -219,7 +232,7 @@ static NSMutableSet *_controllers = nil;
 	return self;
 }
 
-- (BOOL)_presentWithUserInfo:(NSDictionary *)userInfo {
+- (BOOL)_present {
 	
 	if (_isPresented) {
 		LOG(@"PWWidgetController: Unable to present widget. Reason: Widget is already presented.");
@@ -260,6 +273,8 @@ static NSMutableSet *_controllers = nil;
 	
 	// add navigation controller view to it
 	UIView *navigationControllerView = _widget.navigationController.view;
+	//navigationControllerView.frame = _containerView.bounds;
+	//navigationControllerView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	_containerView.navigationControllerView = navigationControllerView;
 	[_containerView addSubview:navigationControllerView];
 	
@@ -486,8 +501,6 @@ static NSMutableSet *_controllers = nil;
 		_isMinimized = NO;
 		_isAnimating = NO;
 		
-		[self.class releaseLock];
-		
 		// release the widget controller (self)
 		[_controllers removeObject:self];
 	}];
@@ -517,8 +530,13 @@ static NSMutableSet *_controllers = nil;
 	PWView *view = controller.mainView;
 	PWBackgroundView *backgroundView = view.backgroundView;
 	
+	if (_isPresented && !_isMinimized) {
+		[self.class releaseLock];
+	}
+	
 	_isAnimating = NO;
 	_isPresented = NO;
+	_isMinimized = NO;
 	_pendingDismissalRequest = NO;
 	
 	[window hide];
@@ -528,7 +546,6 @@ static NSMutableSet *_controllers = nil;
 	[self removeContainerView];
 	
 	[self resignActive:YES];
-	[self.class releaseLock];
 	
 	[_controllers removeObject:self];
 }
@@ -582,7 +599,7 @@ static NSMutableSet *_controllers = nil;
 		// configure its appearance
 		[layer setCornerRadius:20.0];
 		[layer setBorderColor:[UIColor colorWithWhite:.3 alpha:.8].CGColor];
-		[layer setBorderWidth:3.0];
+		[layer setBorderWidth:2.0];
 		
 		// perform second animation
 		[CATransaction begin];
@@ -981,9 +998,19 @@ static NSMutableSet *_controllers = nil;
 	} else {
 		
 		[UIView animateWithDuration:PWAnimationDuration delay:0.0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionTransitionNone animations:^{
+			
+			// must not call layoutIfNeeded here, otherwise the navigation controller view
+			// will animate as well (as a result the navigation bar and cells animate in a weird way)
 			_containerView.center = center;
 			_containerView.bounds = bounds;
 			[_containerView setNeedsLayout];
+			
+			// force the background view to animate
+			UIView *containerBackgroundView = _containerView.containerBackgroundView;
+			containerBackgroundView.frame = bounds;
+			[containerBackgroundView setNeedsLayout];
+			[containerBackgroundView layoutIfNeeded];
+			
 		} completion:nil];
 		
 		CGRect rect = bounds;
@@ -1170,7 +1197,7 @@ static NSMutableSet *_controllers = nil;
 		}];
 	}
 	
-	CGFloat lastPositionX = (center.x - margin) / (viewSize.width - margin * 2);
+	CGFloat lastPositionX = (center.x - miniViewSize.width / 2 - margin) / (viewSize.width - margin * 2);
 	CGFloat lastPositionY = (center.y - margin) / (viewSize.height - margin * 2);
 	
 	_recordedLastPosition = YES;

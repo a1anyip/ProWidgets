@@ -46,7 +46,7 @@ extern NSBundle *bundle;
 	// re-fetch enabled widgets from PWController
 	[_visibleWidgets release];
 	[_hiddenWidgets release];
-	NSDictionary *enabledWidgets = [[PWController sharedInstance] enabledWidgets];
+	NSDictionary *enabledWidgets = [[PWController sharedInstance] enabledWidgetsWithCategories];
 	_visibleWidgets = [enabledWidgets[@"visible"] mutableCopy];
 	_hiddenWidgets = [enabledWidgets[@"hidden"] mutableCopy];
 	// reload table view

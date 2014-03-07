@@ -12,5 +12,7 @@
 	<string>Alan Yip</string>
 	<key>PWInfoDescription</key>
 	<string>Create new event from Today View</string>
+	<key>PWInfoPreferenceFile</key>
+	<string>Preference.plist</string>
 </dict>
 </plist>

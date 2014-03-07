@@ -3,7 +3,7 @@
 @interface PWPrefURLInstallationRootView : UIView {
 	
 	BOOL _exitedDownloadInterface;
-	PWPrefURLInstallationInfoView *_infoView;
+	PWPrefInfoView *_infoView;
 	
 	UILabel *_statusLabel;
 	UILabel *_urlLabel;
@@ -19,7 +19,7 @@
 - (void)showProgressView;
 - (void)exitDownloadInterface;
 
-- (void)switchToInfoView:(PWPrefURLInstallationInfoView *)view;
+- (void)switchToInfoView:(PWPrefInfoView *)view;
 - (void)switchFromInfoView;
 
 - (void)setStatus:(NSString *)status;

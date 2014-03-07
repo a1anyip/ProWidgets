@@ -1,6 +1,6 @@
 #import "PWPrefURLInstallationRootView.h"
 #import "PWPrefURLInstallationRootController.h"
-#import "PWPrefURLInstallationInfoView.h"
+#import "PWPrefInfoView.h"
 #import "../PWTheme.h"
 
 extern NSBundle *bundle;
@@ -122,7 +122,7 @@ extern NSBundle *bundle;
 	}];
 }
 
-- (void)switchToInfoView:(PWPrefURLInstallationInfoView *)view {
+- (void)switchToInfoView:(PWPrefInfoView *)view {
 	
 	if (_infoView != nil) return;
 	

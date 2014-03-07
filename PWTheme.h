@@ -14,15 +14,17 @@
 	NSString *_name;
 	NSBundle *_bundle;
 	PWWidget *_widget;
+	BOOL _disabledBlur;
 }
 
 @property(nonatomic, copy) NSString *name;
 @property(nonatomic, retain) NSBundle *bundle;
 @property(nonatomic, retain) PWWidget *widget;
+@property(nonatomic, assign) BOOL disabledBlur;
 
 //////////////////////////////////////////////////////////////////////
 
-- (instancetype)initWithName:(NSString *)name bundle:(NSBundle *)bundle widget:(PWWidget *)widget;
+- (instancetype)initWithName:(NSString *)name bundle:(NSBundle *)bundle widget:(PWWidget *)widget disabledBlur:(BOOL)disabledBlur;
 
 - (PWBackgroundView *)backgroundView;
 - (PWContainerView *)containerView;

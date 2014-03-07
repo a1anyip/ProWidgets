@@ -29,7 +29,7 @@
 	
 	_noLabel = [UILabel new];
 	_noLabel.text = @"Loading";
-	_noLabel.textColor = [theme sheetForegroundColor];
+	_noLabel.textColor = [PWTheme translucentColor:[theme sheetForegroundColor]];
 	_noLabel.font = [UIFont boldSystemFontOfSize:22.0];
 	_noLabel.textAlignment = NSTextAlignmentCenter;
 	_noLabel.frame = self.view.bounds;

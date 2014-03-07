@@ -13,7 +13,7 @@
 #import "PWController.h"
 #import "PWWidgetController.h"
 
-#define PrefPath @"/var/mobile/Library/Preferences/cc.tweak.prowidgets.nccorners.plist"
+#define PrefPath @"/var/mobile/Library/Preferences/cc.tweak.prowidgets.activationmethod.nccorners.plist"
 
 #define ANIMATION_DURATION 0.1
 #define BTN_TAG 1001
@@ -150,14 +150,16 @@ static inline void loadPreference() {
 	[rightWidgetName release];
 	
 	NSDictionary *dict = [[NSDictionary alloc] initWithContentsOfFile:PrefPath];
-	enabled = [dict[@"enabled"] boolValue];
-	leftWidgetName = [dict[@"leftWidgetName"] copy];
-	rightWidgetName = [dict[@"rightWidgetName"] copy];
+	leftWidgetName = [dict[@"left"] copy];
+	rightWidgetName = [dict[@"right"] copy];
 	[dict release];
 	
-	enabled = YES;
-	leftWidgetName = [@"Mail" copy];
-	rightWidgetName = [@"Messages" copy];
+	if (leftWidgetName == nil && rightWidgetName == nil) {
+		leftWidgetName = [@"Mail" copy];
+		rightWidgetName = [@"Messages" copy];
+	}
+	
+	enabled = !([leftWidgetName length] == 0 && [rightWidgetName length] == 0);
 	
 	updateButtons();
 }
@@ -227,8 +229,10 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	
 	if (widgetName != nil) {
 		NSDictionary *userInfo = @{ @"from": @"notificationcentercorner" };
-		//[[PWController sharedInstance] presentWidgetNamed:widgetName userInfo:userInfo];
-		[PWWidgetController presentWidgetNamed:widgetName userInfo:userInfo];
+		[[objc_getClass("SBNotificationCenterController") sharedInstance] dismissAnimated:YES];
+		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, .2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^(void){
+			[PWWidgetController presentWidgetNamed:widgetName userInfo:userInfo];
+		});
 	}
 }
 

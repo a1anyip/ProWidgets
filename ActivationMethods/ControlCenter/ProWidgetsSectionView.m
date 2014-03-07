@@ -11,7 +11,9 @@
 #import "PWController.h"
 #import "PWWidgetController.h"
 
-NSUInteger iconPerPage = 4; // either 4 or 5
+#define CC_PREF_PATH @"/var/mobile/Library/Preferences/cc.tweak.prowidgets.activationmethod.controlcenter.plist"
+
+NSUInteger iconsPerPage = 4; // either 4 or 5
 
 static char SBControlCenterButtonWidgetBundleKey;
 
@@ -85,13 +87,19 @@ static char SBControlCenterButtonWidgetBundleKey;
 	
 	_pages = [NSMutableArray new];
 	
-	iconPerPage = MAX(1, iconPerPage);
+	NSDictionary *pref = [[NSDictionary alloc] initWithContentsOfFile:CC_PREF_PATH];
+	NSNumber *_iconsPerPageNumber = pref[@"iconsPerPage"];
+	NSUInteger _iconsPerPage = _iconsPerPageNumber == nil || ![_iconsPerPageNumber isKindOfClass:[NSNumber class]] ? 4 : [_iconsPerPageNumber unsignedIntegerValue];
+	
+	iconsPerPage = MAX(1, _iconsPerPage);
+	
+	[pref release];
 	
 	// load all visible widgets
 	PWController *controller = [PWController sharedInstance];
 	NSArray *widgets = [controller visibleWidgets];
 	NSUInteger count = [widgets count];
-	NSUInteger pageCount = ceil(count / (CGFloat)iconPerPage);
+	NSUInteger pageCount = ceil(count / (CGFloat)iconsPerPage);
 	
 	if (pageCount == 0) {
 		_noVisibleWidgetLabel.hidden = NO;
@@ -139,7 +147,7 @@ static char SBControlCenterButtonWidgetBundleKey;
 		
 		objc_setAssociatedObject(button, &SBControlCenterButtonWidgetBundleKey, bundle, OBJC_ASSOCIATION_RETAIN);
 		
-		if (currentIcon == iconPerPage) {
+		if (currentIcon == iconsPerPage) {
 			
 			// reset
 			currentIcon = 0;
@@ -175,8 +183,9 @@ static char SBControlCenterButtonWidgetBundleKey;
 		// dismiss control center
 		[[objc_getClass("SBControlCenterController") sharedInstance] dismissAnimated:YES];
 		// present the widget
-		//[[PWController sharedInstance] presentWidgetFromBundle:bundle userInfo:userInfo];
-		[PWWidgetController presentWidgetFromBundle:bundle userInfo:userInfo];
+		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, .1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^(void){
+			[PWWidgetController presentWidgetFromBundle:bundle userInfo:userInfo];
+		});
 	}
 }
 
