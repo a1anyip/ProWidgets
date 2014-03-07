@@ -16,6 +16,8 @@
 #import "PWMiniView.h"
 #import "PWAlertView.h"
 
+#define IDLETIMER_DISABLED_REASON @"PW_IDLETIMER_DISABLED_REASON"
+
 static NSUInteger _lockCount = 0;
 static PWWidgetController *_activeController;
 static NSMutableSet *_controllers = nil;
@@ -47,8 +49,9 @@ static NSMutableSet *_controllers = nil;
 }
 
 + (void)lock {
-	LOG(@"lock: %d", (int)_lockCount + 1);
+	
 	if (++_lockCount == 1) {
+		
 		// block orientation change on non-iPad devices
 		if (![PWController isIPad]) {
 			PWController *controller = [PWController sharedInstance];
@@ -57,11 +60,15 @@ static NSMutableSet *_controllers = nil;
 			controller.lockedInterfaceOrientation = [controller currentInterfaceOrientation];
 			controller.interfaceOrientationIsLocked = YES;
 		}
+		
+		// lock auto dim timer
+		SBBacklightController *backlightController = [objc_getClass("SBBacklightController") sharedInstance];
+		[backlightController setIdleTimerDisabled:YES forReason:IDLETIMER_DISABLED_REASON];
 	}
 }
 
 + (void)releaseLock {
-	LOG(@"releaseLock: %d", (int)_lockCount - 1);
+	
 	if (_lockCount == 0 || --_lockCount == 0) {
 		
 		if (![PWController isIPad]) {
@@ -72,6 +79,10 @@ static NSMutableSet *_controllers = nil;
 		
 		// reset auto dim timer
 		[[objc_getClass("SBBacklightController") sharedInstance] resetLockScreenIdleTimer];
+		
+		// unlock auto dim timer
+		SBBacklightController *backlightController = [objc_getClass("SBBacklightController") sharedInstance];
+		[backlightController setIdleTimerDisabled:NO forReason:IDLETIMER_DISABLED_REASON];
 	}
 }
 
@@ -1010,6 +1021,10 @@ static NSMutableSet *_controllers = nil;
 			containerBackgroundView.frame = bounds;
 			[containerBackgroundView setNeedsLayout];
 			[containerBackgroundView layoutIfNeeded];
+			
+			// force the theme to adjust layout
+			PWTheme *theme = _widget.theme;
+			[theme adjustLayout];
 			
 		} completion:nil];
 		

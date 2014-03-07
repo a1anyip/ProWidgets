@@ -28,7 +28,7 @@
 
 - (void)load {
 	
-	PWWidgetAlarmInterface defaultInterface = PWWidgetAlarmInterfaceAdd;
+	PWWidgetAlarmInterface defaultInterface = [self intValueForPreferenceKey:@"defaultInterface" defaultValue:0] == 1 ? PWWidgetAlarmInterfaceOverview : PWWidgetAlarmInterfaceAdd;
 	
 	if (defaultInterface == PWWidgetAlarmInterfaceAdd) {
 		[self switchToAddInterface];

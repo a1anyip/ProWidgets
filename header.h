@@ -33,6 +33,8 @@
 
 // Handy marcos
 
+#define IS_IPHONE4 ([[PWController deviceModel] hasPrefix:@"iPhone3,"])
+
 #define RELEASE(x) [x release], x = nil;
 #define RELEASE_VIEW(x) [x removeFromSuperview], [x release], x = nil;
 

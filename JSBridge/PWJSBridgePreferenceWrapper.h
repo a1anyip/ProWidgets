@@ -21,7 +21,7 @@
 - (NSDate *)dateValueForKey:(NSString *)key :(JSValue *)defaultValue;
 
 // primitive types
-- (int)intValueForKey:(NSString *)key :(JSValue *)defaultValue;
+- (NSInteger)intValueForKey:(NSString *)key :(JSValue *)defaultValue;
 - (double)doubleValueForKey:(NSString *)key :(JSValue *)defaultValue;
 - (BOOL)boolValueForKey:(NSString *)key :(JSValue *)defaultValue;
 

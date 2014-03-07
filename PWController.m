@@ -7,6 +7,8 @@
 //  Copyright 2014 Alan Yip. All rights reserved.
 //
 
+#import <sys/utsname.h>
+
 #import "PWController.h"
 #import "PWTestBar.h"
 #import "PWMiniView.h"
@@ -178,6 +180,12 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 + (BOOL)protectedDataAvailable {
 	int unlockState = MKBGetDeviceLockState(NULL);
 	return unlockState == DeviceLockStateUnlockedWithPasscode || unlockState == DeviceLockStateUnlockedWithoutPasscode;
+}
+
++ (NSString *)deviceModel {
+	struct utsname systemInfo;
+	uname(&systemInfo);
+	return [NSString stringWithCString:systemInfo.machine encoding:NSUTF8StringEncoding];
 }
 
 + (int)version {
@@ -388,6 +396,11 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	// Disable Blur Effect
 	NSNumber *disabledBlur = dict[@"disabledBlur"];
 	_disabledBlur = disabledBlur == nil || ![disabledBlur isKindOfClass:[NSNumber class]] ? NO : [disabledBlur boolValue];
+	
+	if (IS_IPHONE4) {
+		// On iPhone 4, all blur effects must be disabled to have better perfomance
+		_disabledBlur = YES;
+	}
 	
 	// Parallax Effect
 	NSNumber *enabledParallax = dict[@"enabledParallax"];

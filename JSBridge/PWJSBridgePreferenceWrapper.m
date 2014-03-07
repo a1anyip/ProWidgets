@@ -46,7 +46,7 @@ PW_IMP_PREF_JSGETTER_OBJECT(dictionary, Dictionary, NSDictionary *)
 PW_IMP_PREF_JSGETTER_OBJECT(date, Date, NSDate *)
 
 // primitive types
-PW_IMP_PREF_JSGETTER_NUMBER(int, Int32, int, 0)
+PW_IMP_PREF_JSGETTER_NUMBER(int, Int32, NSInteger, 0)
 PW_IMP_PREF_JSGETTER_NUMBER(double, Double, double, 0.0)
 PW_IMP_PREF_JSGETTER_NUMBER(bool, Bool, BOOL, NO)
 

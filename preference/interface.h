@@ -18,17 +18,19 @@
 - (void)setTitle:(id)arg1;
 - (id)loadSpecifiersFromPlistName:(NSString *)name target:(id)target;
 - (PSSpecifier *)specifierAtIndex:(int)index;
+- (PSSpecifier *)specifier;
 - (void)setSpecifiers:(id)arg1;
 - (void)reload;
+
+- (id)readPreferenceValue:(PSSpecifier *)specifier;
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
 
 @end
 
 @interface PSListItemsController : PSListController
 
-- (PSSpecifier *)specifier;
 - (id)itemsFromParent;
-
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
 
 @end
 
@@ -56,7 +58,14 @@
 @property(nonatomic, copy) NSString *title;
 @property(nonatomic, copy) NSString *value;
 
+- (PSSpecifier *)specifier;
 - (void)setSpecifier:(PSSpecifier *)specifier;
+
+@end
+
+@interface PSSwitchTableCell : PSTableCell
+
+- (void)setCellEnabled:(BOOL)enabled;
 
 @end
 

@@ -33,7 +33,7 @@ static void handleException(NSException *exception) {
 @end
 
 %group SpringBoard
-
+/*
 // This is to fix the weird window level of keyboard
 %hook UITextEffectsWindow
 
@@ -45,7 +45,7 @@ static void handleException(NSException *exception) {
 }
 
 %end
-
+*/
 %hook SBBacklightController
 
 - (void)_lockScreenDimTimerFired {
@@ -171,11 +171,14 @@ static void handleException(NSException *exception) {
 				if (installType != nil && installURL != nil && [installURL length] > 0) {
 					NSString *constructedURL = [NSString stringWithFormat:@"prefs:root=cc.tweak.prowidgets&install=%@&url=%@", installType, installURL];
 					LOG(@"PWSubstrate: Opening '%@'", constructedURL);
+					[PWWidgetController minimizeAllControllers];
 					[[UIApplication sharedApplication] openURL:[NSURL URLWithString:constructedURL]];
 				}
 			}
 		}
 	} else {
+		// minimize all controllers when a URL is being opened
+		[PWWidgetController minimizeAllControllers];
 		%orig;
 	}
 }

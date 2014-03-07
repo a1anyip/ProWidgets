@@ -62,7 +62,7 @@
 
 - (void)load {
 	
-	PWWidgetNotesInterface defaultInterface = PWWidgetNotesInterfaceAdd;
+	PWWidgetNotesInterface defaultInterface = [self intValueForPreferenceKey:@"defaultInterface" defaultValue:0] == 1 ? PWWidgetNotesInterfaceList : PWWidgetNotesInterfaceAdd;
 	
 	if (defaultInterface == PWWidgetNotesInterfaceAdd) {
 		[self switchToAddInterface];

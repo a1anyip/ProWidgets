@@ -117,6 +117,7 @@
 + (BOOL)supportsMultipleWidgetsOnScreen;
 
 + (BOOL)protectedDataAvailable;
++ (NSString *)deviceModel;
 + (int)version;
 + (NSBundle *)baseBundle;
 + (NSString *)basePath;

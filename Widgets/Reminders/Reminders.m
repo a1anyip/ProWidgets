@@ -91,7 +91,7 @@
 
 - (void)load {
 	
-	PWWidgetRemindersInterface defaultInterface = PWWidgetRemindersInterfaceAdd;
+	PWWidgetRemindersInterface defaultInterface = [self intValueForPreferenceKey:@"defaultInterface" defaultValue:0] == 1 ? PWWidgetRemindersInterfaceOverview : PWWidgetRemindersInterfaceAdd;
 	
 	if (defaultInterface == PWWidgetRemindersInterfaceAdd) {
 		[self switchToAddInterface];

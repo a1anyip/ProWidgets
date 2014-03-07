@@ -1,11 +1,40 @@
+#import "../header.h"
 #import "PWPrefConfiguration.h"
+#import "PWController.h"
 
 extern NSBundle *bundle;
+static BOOL isIPhone4 = NO;
 
 @implementation PWPrefConfiguration
 
++ (void)load {
+	isIPhone4 = IS_IPHONE4;
+}
+
 - (instancetype)init {
 	return [super initWithPlist:@"PWPrefConfiguration" inBundle:bundle];
+}
+
+- (id)readPreferenceValue:(PSSpecifier *)specifier {
+	if (isIPhone4) {
+		NSString *key = [specifier propertyForKey:@"key"];
+		if ([key isEqualToString:@"disabledBlur"]) {
+			return @YES;
+		}
+	}
+	return [super readPreferenceValue:specifier];
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+	PSTableCell *cell = (PSTableCell *)[super tableView:tableView cellForRowAtIndexPath:indexPath];
+	if (isIPhone4 && [cell isKindOfClass:[PSTableCell class]]) {
+		PSSpecifier *specifier = cell.specifier;
+		NSString *key = [specifier propertyForKey:@"key"];
+		if ([key isEqualToString:@"disabledBlur"] && [cell isKindOfClass:[PSSwitchTableCell class]]) {
+			[(PSSwitchTableCell *)cell setCellEnabled:NO];
+		}
+	}
+	return cell;
 }
 
 - (void)resetPreference {

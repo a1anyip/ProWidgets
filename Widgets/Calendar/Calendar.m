@@ -15,7 +15,7 @@
 
 - (void)load {
 	
-	PWWidgetCalendarInterface defaultInterface = PWWidgetCalendarInterfaceAdd;
+	PWWidgetCalendarInterface defaultInterface = [self intValueForPreferenceKey:@"defaultInterface" defaultValue:0] == 1 ? PWWidgetCalendarInterfaceOverview : PWWidgetCalendarInterfaceAdd;
 	
 	if (defaultInterface == PWWidgetCalendarInterfaceAdd) {
 		[self switchToAddInterface];

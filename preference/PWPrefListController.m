@@ -12,6 +12,8 @@
 		
 		self.plist = plist;
 		self.bundle = bundle;
+		
+		LOG(@"PWPrefListController: %@", self);
 	}
 	return self;
 }

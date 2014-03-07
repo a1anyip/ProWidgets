@@ -83,6 +83,8 @@
 - (void)resetLockScreenIdleTimerWithDuration:(double)duration;
 - (void)resetLockScreenIdleTimer;
 
+- (void)setIdleTimerDisabled:(BOOL)disabled forReason:(id)reason;
+
 @end
 
 @interface UIPeripheralHost

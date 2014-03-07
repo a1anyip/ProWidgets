@@ -164,5 +164,9 @@ include theos/makefiles/common.mk
 include $(THEOS_MAKE_PATH)/library.mk
 include $(THEOS_MAKE_PATH)/aggregate.mk
 
+after-stage::
+	$(ECHO_NOTHING)find $(THEOS_STAGING_DIR) -iname '*.psd' -exec rm -rfv {} +$(ECHO_END)
+	$(ECHO_NOTHING)find $(THEOS_STAGING_DIR) -iname '*.bak' -exec rm -rfv {} +$(ECHO_END)
+
 after-install::
 	install.exec "killall -9 backboardd"

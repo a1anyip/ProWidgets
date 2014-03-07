@@ -132,7 +132,7 @@
 
 // header footer view
 - (UIColor *)cellHeaderFooterViewBackgroundColor {
-	return [UIColor colorWithWhite:.05 alpha:1.0];
+	return [UIColor colorWithWhite:.1 alpha:1.0];
 }
 
 - (UIColor *)cellHeaderFooterViewTitleTextColor {
@@ -173,7 +173,7 @@
 		[containerView insertSubview:_barBlurView atIndex:0];
 		
 		_contentBlurView = [UIView new];
-		_contentBlurView.backgroundColor = [UIColor blackColor];
+		_contentBlurView.backgroundColor = [UIColor colorWithWhite:.1 alpha:1.0];
 		_contentBlurView.alpha = alpha;
 		[containerView insertSubview:_contentBlurView atIndex:0];
 		
@@ -183,10 +183,10 @@
 		_UIBackdropViewSettings *barSettings = [[[objc_getClass("_UIBackdropViewSettingsColored") alloc] initWithDefaultValues] autorelease];
 		_UIBackdropViewSettings *contentSettings = [[[objc_getClass("_UIBackdropViewSettingsColored") alloc] initWithDefaultValues] autorelease];
 		
-		barSettings.colorTint = [UIColor blackColor];//barTintColor;
+		barSettings.colorTint = [UIColor blackColor];
 		barSettings.saturationDeltaFactor = 0.0;
 		
-		contentSettings.colorTint = [UIColor blackColor];//barTintColor;
+		contentSettings.colorTint = [UIColor blackColor];
 		contentSettings.saturationDeltaFactor = 0.0;
 		
 		// add blur view as the background
