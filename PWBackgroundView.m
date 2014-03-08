@@ -8,6 +8,7 @@
 //
 
 #import "PWBackgroundView.h"
+#import "PWController.h"
 
 @implementation PWBackgroundView
 
@@ -20,10 +21,9 @@
 	return self;
 }
 
-- (void)show:(BOOL)shouldAnimateTransform {
+- (void)show {
 	
 	[self clearMask];
-	self.shouldAnimateTransform = shouldAnimateTransform;
 	
 	self.alpha = 0.0;
 	[UIView animateWithDuration:PWAnimationDuration animations:^{
@@ -70,9 +70,9 @@
 	_finalPathCount = 0;
 }
 
-- (void)setMaskRect:(CGRect)rect cornerRadius:(CGFloat)cornerRadius animated:(BOOL)animated {
+- (void)setMaskRect:(CGRect)rect fromRect:(CGRect)fromRect cornerRadius:(CGFloat)cornerRadius animationType:(PWBackgroundViewAnimationType)animationType {
 	
-	LOG(@"setMaskRect ***** %@ <animated: %@> <_shouldAnimateTransform: %@>", NSStringFromCGRect(rect), animated ? @"YES" : @"NO", _shouldAnimateTransform ? @"YES" : @"NO");
+	LOG(@"setMaskRect <rect: %@> <fromRect: %@> <animationType: %d>", NSStringFromCGRect(rect), NSStringFromCGRect(fromRect), (int)animationType);
 	
 	// to ensure the mask is created
 	[self createMask];
@@ -96,15 +96,20 @@
 	CGPathRef fromCGPath = NULL;
 	CGPathRef toCGPath = toPath.CGPath;
 	
-	if (_shouldAnimateTransform) {
+	if (animationType == PWBackgroundViewAnimationTypePresentation || animationType == PWBackgroundViewAnimationTypeMaximization) {
 		
-		// from rect
-		CGFloat scale = 1.2;
-		CGRect fromRect = rect;
-		fromRect.size.width *= scale;
-		fromRect.size.height *= scale;
-		fromRect.origin.x -= (fromRect.size.width - rect.size.width) / 2;
-		fromRect.origin.y -= (fromRect.size.height - rect.size.height) / 2;
+		if (animationType == PWBackgroundViewAnimationTypePresentation) {
+			
+			// from rect
+			CGFloat scale = 1.2;
+			
+			fromRect = rect;
+			fromRect.size.width *= scale;
+			fromRect.size.height *= scale;
+			fromRect.origin.x -= (fromRect.size.width - rect.size.width) / 2;
+			fromRect.origin.y -= (fromRect.size.height - rect.size.height) / 2;
+		}
+		
 		fromRect.origin.x += PWSheetMotionEffectDistance; // correct the extra distance due to motion effect
 		fromRect.origin.y += PWSheetMotionEffectDistance;
 		
@@ -114,22 +119,19 @@
 		[fromPath setUsesEvenOddFillRule:YES];
 		
 		fromCGPath = fromPath.CGPath;
-		
-	} else {
-		fromCGPath = mask.path; // current mask path
 	}
 	
-	if (animated || _shouldAnimateTransform) {
+	if (animationType != PWBackgroundViewAnimationTypeNone) {
 		
 		CAMediaTimingFunction *function = nil;
 		
-		if (_shouldAnimateTransform)
+		if (animationType == PWBackgroundViewAnimationTypePresentation || animationType == PWBackgroundViewAnimationTypeMaximization)
 			function = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
 		else
 			function = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
 		
 		[CATransaction begin];
-		[CATransaction setAnimationDuration:PWAnimationDuration];
+		[CATransaction setAnimationDuration:(animationType == PWBackgroundViewAnimationTypeMaximization ? PWMaxMinimizationDuration : PWAnimationDuration)];
 		[CATransaction setAnimationTimingFunction:function];
 		
 		// there is another animation ongoing
@@ -148,16 +150,15 @@
 		}];
 		
 		CABasicAnimation *pathAnimation = [CABasicAnimation animationWithKeyPath:@"path"];
-		if (_shouldAnimateTransform) pathAnimation.fromValue = (id)fromCGPath;
+		if (fromCGPath != NULL) {
+			pathAnimation.fromValue = (id)fromCGPath;
+		}
 		pathAnimation.toValue = (id)toCGPath;
 		pathAnimation.fillMode = kCAFillModeForwards;
 		pathAnimation.removedOnCompletion = NO;
 		
 		[mask addAnimation:pathAnimation forKey:@"path"];
 		[CATransaction commit];
-		
-		// reset flag
-		_shouldAnimateTransform = NO;
 		
 	} else {
 		mask.path = toCGPath;

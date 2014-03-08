@@ -11,6 +11,7 @@
 #import "PWController.h"
 #import "PWWidgetController.h"
 #import "PWView.h"
+#import "PWBackgroundView.h"
 #import "PWContainerView.h"
 #import "PWWidgetPlistParser.h"
 #import "PWTheme.h"

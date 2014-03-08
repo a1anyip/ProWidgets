@@ -172,9 +172,23 @@ PW_IMP_ALARM_WRAPPER(daySetting, DaySetting, NSUInteger, UInt32)
 
 @end
 
+static BOOL _clockPreferencesChanged = NO;
+static NSDictionary *_alarmActiveStates = nil;
 static NSDate *_alarmsLastModified = nil;
 
 @implementation PWAPIAlarmManager
+
++ (void)load {
+	
+	[OBJCIPC registerIncomingMessageHandlerForAppWithIdentifier:TimerIdentifier andMessageName:@"PWAPIAlarm" handler:^NSDictionary *(NSDictionary *dict) {
+		NSString *notification = dict[@"notification"];
+		if ([notification isEqualToString:@"LocalNotificationChanged"]) {
+			LOG(@"PWAPIAlarmManager: Local notification changed");
+			_clockPreferencesChanged = YES;
+		}
+		return nil;
+	}];
+}
 
 + (AlarmSoundType)soundTypeFromInteger:(NSUInteger)number {
 	return number == 2 ? AlarmSoundTypeSong : AlarmSoundTypeRingtone;
@@ -341,6 +355,17 @@ static NSDate *_alarmsLastModified = nil;
 	return manager;
 }
 
++ (void)_updateAlarmActiveStates {
+	
+	NSDictionary *dict = @{ @"action": @"getActiveStates" };
+	NSDictionary *result = [OBJCIPC sendMessageToAppWithIdentifier:TimerIdentifier messageName:@"PWAPIAlarm" dictionary:dict];
+	
+	[_alarmActiveStates release];
+	_alarmActiveStates = [result copy];
+	
+	_clockPreferencesChanged = NO;
+}
+
 @end
 
 @implementation PWAPIAlarm
@@ -367,13 +392,21 @@ static NSDate *_alarmsLastModified = nil;
 }
 
 - (BOOL)active {
-	NSDictionary *dict = @{ @"action": @"getActiveState", @"alarmId":_alarmId };
-	NSDictionary *result = [OBJCIPC sendMessageToAppWithIdentifier:TimerIdentifier messageName:@"PWAPIAlarm" dictionary:dict];
-	return [result[@"active"] boolValue];
+	
+	if (_alarmActiveStates == nil || _clockPreferencesChanged) {
+		[PWAPIAlarmManager _updateAlarmActiveStates];
+	}
+	
+	if (_alarmId != nil) {
+		NSNumber *state = _alarmActiveStates[_alarmId];
+		return [state boolValue];
+	} else {
+		return NO;
+	}
 }
 
 - (void)setActive:(BOOL)active {
-	[self _updateAlarmValue:@(active) forKey:@"active"];\
+	[self _updateAlarmValue:@(active) forKey:@"active"];
 }
 
 PW_IMP_ALARM(hour, Hour, NSUInteger)

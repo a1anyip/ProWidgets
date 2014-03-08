@@ -39,7 +39,12 @@
 	PWView *mainView = [PWController sharedInstance].mainView;
 	
 	UIInterfaceOrientation orientation = [[PWController sharedInstance] currentInterfaceOrientation];
+	
+	
+	
 	CGAffineTransform transform = [self orientationToTransform:orientation];
+	
+	LOG(@"***** adjustLayout: %d", (int)orientation);
 	
 	mainView.transform = CGAffineTransformIdentity;
 	mainView.transform = transform;

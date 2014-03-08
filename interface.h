@@ -61,6 +61,8 @@
 - (UIInterfaceOrientation)activeInterfaceOrientation;
 - (void)addActiveOrientationObserver:(id)observer;
 
+- (void)performWhenMenuButtonIsUpUsingBlock:(id)block;
+
 @end
 
 @interface SBUIController : NSObject

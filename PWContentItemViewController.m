@@ -669,9 +669,6 @@ static NSNumberFormatter *numberFormatter = nil;
 
 - (CGFloat)optimalContentHeightForOrientation:(PWWidgetOrientation)orientation {
 	
-	LOG(@"===== SELF shouldMaximizeContentHeight: %@", (self.shouldMaximizeContentHeight ? @"YES" : @"NO"));
-	LOG(@"========= optimalContentHeightForOrientation ====== <%@> <%@>", self.shouldMaximizeContentHeight ? @"YES" : @"NO", _shouldMaximizeContentHeight ? @"YES" : @"NO");
-	
 	PWController *controller = [PWController sharedInstance];
 	CGFloat maxHeight = [controller availableHeightInOrientation:orientation withKeyboard:self.requiresKeyboard];
 	CGFloat navigationBarHeight = [controller heightOfNavigationBarInOrientation:orientation];

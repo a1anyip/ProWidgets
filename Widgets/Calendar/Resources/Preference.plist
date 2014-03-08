@@ -39,8 +39,6 @@
 			<string>PSGroupCell</string>
 			<key>label</key>
 			<string>List</string>
-			<key>footerText</key>
-			<string>Period of upcoming events in list interface</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -50,7 +48,7 @@
 			<key>key</key>
 			<string>period</string>
 			<key>label</key>
-			<string>Period</string>
+			<string>Upcoming Event Period</string>
 			<key>default</key>
 			<integer>7</integer>
 			<key>detail</key>
@@ -65,7 +63,7 @@
 			<array>
 				<integer>7</integer>
 				<integer>14</integer>
-				<integer>31</integer>
+				<integer>30</integer>
 			</array>
 		</dict>
 	</array>

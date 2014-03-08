@@ -33,19 +33,7 @@ static void handleException(NSException *exception) {
 @end
 
 %group SpringBoard
-/*
-// This is to fix the weird window level of keyboard
-%hook UITextEffectsWindow
 
-- (void)setWindowLevel:(CGFloat)windowLevel {
-	if ([PWWidgetController isPresentingWidget])
-		%orig([(UIWindow *)[PWController sharedInstance].window windowLevel] + 1.0);
-	else
-		%orig;
-}
-
-%end
-*/
 %hook SBBacklightController
 
 - (void)_lockScreenDimTimerFired {
@@ -82,7 +70,7 @@ static void handleException(NSException *exception) {
 
 %hook SpringBoard
 
--(void)_handleMenuButtonEvent {
+- (void)_handleMenuButtonEvent {
 	LOG(@"PWSubstrate: _handleMenuButtonEvent");
 	NSTimer *menuButtonTimer = *(NSTimer **)instanceVar(self, "_menuButtonTimer");
 	if (menuButtonTimer == nil) {

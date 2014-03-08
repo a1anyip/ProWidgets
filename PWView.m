@@ -25,7 +25,7 @@
 		self.userInteractionEnabled = YES;
 		
 		// create PWBackgroundView
-		if (![PWController isIPad]) {
+		if ([PWController shouldShowBackgroundView]) {
 			_backgroundView = [PWBackgroundView new];
 			_backgroundView.userInteractionEnabled = YES;
 			[self addSubview:_backgroundView];
@@ -70,7 +70,9 @@
 }
 
 - (void)updateBackgroundViewRect:(CGRect)rect cornerRadius:(CGFloat)cornerRadius animated:(BOOL)animated {
-	[_backgroundView setMaskRect:rect cornerRadius:cornerRadius animated:animated];
+	if ([PWController shouldShowBackgroundView]) {
+		[_backgroundView setMaskRect:rect cornerRadius:cornerRadius animated:animated];
+	}
 }
 
 @end

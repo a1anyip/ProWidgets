@@ -109,10 +109,8 @@
 
 //////////////////////////////////////////////////////////////////////
 
-/**
- * Getters
- **/
-
++ (BOOL)shouldShowBackgroundView;
++ (BOOL)shouldMaskBackgroundView;
 + (BOOL)supportsDragging;
 + (BOOL)supportsMultipleWidgetsOnScreen;
 

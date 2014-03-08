@@ -18,6 +18,7 @@
 #define PWBackgroundViewAlpha 0.5
 
 #define PWAnimationDuration .28
+#define PWMaxMinimizationDuration .3
 #define PWTransitionAnimationDuration .2
 
 #define PWSheetMotionEffectDistance 10.0
@@ -136,7 +137,7 @@ typedef enum {
 
 enum  {
 	DeviceLockStateUnlockedWithPasscode = 0,
-	DeviceLockStateLockedWithPasscode = 1,
+	DeviceLockStateLocked = 1,
 	DeviceLockStateTemporarilyUnlockedWithPasscode = 2, // still locked technically; will change to 1 soon
 	DeviceLockStateUnlockedWithoutPasscode = 3
 };

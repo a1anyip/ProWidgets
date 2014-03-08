@@ -8,6 +8,7 @@
 //
 
 #import "header.h"
+#import "PWBackgroundView.h"
 
 @interface PWWidgetController : NSObject {
 	
@@ -96,6 +97,8 @@
 - (CGPoint)_containerCenter;
 - (CGRect)_containerBounds;
 - (CGPoint)_miniViewCenter;
+- (void)_updateBackgroundViewMaskForPresentation;
+- (void)_updateBackgroundViewMaskForMaximization;
 - (void)_resizeAnimated:(BOOL)animated;
 - (void)_resetKeyboardHeight;
 - (void)_keyboardWillShowHandler:(CGFloat)height;

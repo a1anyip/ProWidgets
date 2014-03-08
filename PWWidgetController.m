@@ -13,13 +13,14 @@
 #import "PWWidgetJS.h"
 #import "PWTheme.h"
 #import "PWView.h"
+#import "PWBackgroundView.h"
 #import "PWMiniView.h"
 #import "PWAlertView.h"
 
 #define IDLETIMER_DISABLED_REASON @"PW_IDLETIMER_DISABLED_REASON"
 
 static NSUInteger _lockCount = 0;
-static PWWidgetController *_activeController;
+static PWWidgetController *_activeController = nil;
 static NSMutableSet *_controllers = nil;
 
 @implementation PWWidgetController
@@ -250,7 +251,7 @@ static NSMutableSet *_controllers = nil;
 		return NO;
 	}
 	
-	LOG(@"_presentWithUserInfo: %@", _widget);
+	LOG(@"_present");
 	
 	[self.class lock];
 	[self _resetKeyboardHeight];
@@ -284,8 +285,6 @@ static NSMutableSet *_controllers = nil;
 	
 	// add navigation controller view to it
 	UIView *navigationControllerView = _widget.navigationController.view;
-	//navigationControllerView.frame = _containerView.bounds;
-	//navigationControllerView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	_containerView.navigationControllerView = navigationControllerView;
 	[_containerView addSubview:navigationControllerView];
 	
@@ -327,6 +326,14 @@ static NSMutableSet *_controllers = nil;
 	
 	[_widget willPresent];
 	
+	// make myself active
+	[self makeActive:YES];
+	
+	// show window and background view
+	[window show];
+	[backgroundView show];
+	[self _updateBackgroundViewMaskForPresentation];
+	
 	// adjust the center and bounds of container view
 	CGPoint center = [self _containerCenter];
 	CGRect bounds = [self _containerBounds];
@@ -364,14 +371,6 @@ static NSMutableSet *_controllers = nil;
 	[layer addAnimation:scale forKey:@"scale"];
 	[CATransaction commit];
 	
-	// make myself active
-	[self makeActive:YES];
-	
-	// show window and background view
-	[window show];
-	[backgroundView show:YES];
-	[self _resizeAnimated:NO];
-	
 	return YES;
 }
 
@@ -404,8 +403,13 @@ static NSMutableSet *_controllers = nil;
 	// notify widget
 	[_widget willDismiss];
 	
+	// show window and background view
+	[window hide];
+	[backgroundView hide];
+	
 	// begin animation
 	CALayer *layer = _containerView.layer;
+	CGFloat scaleTo = .82;
 	
 	[CATransaction begin];
 	[CATransaction setAnimationDuration:PWAnimationDuration];
@@ -441,18 +445,14 @@ static NSMutableSet *_controllers = nil;
 	
 	CABasicAnimation *scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
 	scale.fromValue = @1.0;
-	scale.toValue = @.75;
+	scale.toValue = @(scaleTo);
 	
 	layer.opacity = 0.0;
-	layer.transform = CATransform3DMakeScale(.75, .75, 1.0);
+	layer.transform = CATransform3DMakeScale(scaleTo, scaleTo, 1.0);
 	
 	[layer addAnimation:fade forKey:@"fade"];
 	[layer addAnimation:scale forKey:@"scale"];
 	[CATransaction commit];
-	
-	// show window and background view
-	[window hide];
-	[backgroundView hide];
 	
 	return YES;
 }
@@ -595,6 +595,10 @@ static NSMutableSet *_controllers = nil;
 	// hide container view
 	_containerView.hidden = YES;
 	
+	// hide window and background view
+	[window hide];
+	[backgroundView hide];
+	
 	// animate the layer
 	CALayer *layer = miniView.layer;
 	CGFloat fadeTo = .9;
@@ -603,7 +607,7 @@ static NSMutableSet *_controllers = nil;
 	CGPoint initialPosition = [self _miniViewCenter];
 	
 	[CATransaction begin];
-	[CATransaction setAnimationDuration:.3];
+	[CATransaction setAnimationDuration:PWMaxMinimizationDuration];
 	[CATransaction setAnimationTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
 	[CATransaction setCompletionBlock:^{
 		
@@ -652,10 +656,6 @@ static NSMutableSet *_controllers = nil;
 	[layer addAnimation:position forKey:@"position"];
 	[CATransaction commit];
 	
-	// hide window and background view
-	[window hide];
-	[backgroundView hide];
-	
 	return YES;
 }
 
@@ -678,6 +678,7 @@ static NSMutableSet *_controllers = nil;
 	
 	[self.class lock];
 	[self _resetKeyboardHeight];
+	[self _resizeAnimated:NO];
 	
 	PWController *controller = [PWController sharedInstance];
 	PWWindow *window = controller.window;
@@ -692,18 +693,24 @@ static NSMutableSet *_controllers = nil;
 	// show main view and container view
 	_containerView.hidden = NO;
 	
+	[self makeActive:NO];
+	
+	// show window and background view
+	[backgroundView show];
+	[window show];
+	
+	// update backgorund view mask
+	[self _updateBackgroundViewMaskForMaximization];
+	
 	// remove mini view
 	[self removeMiniView];
 	
-	// resize and re-position the container view once again
-	[self _resizeAnimated:NO];
-	
 	// animate the layer
 	CALayer *layer = _containerView.layer;
-	CGFloat fadeFrom = .7;
+	CGFloat fadeFrom = .5;
 	
 	[CATransaction begin];
-	[CATransaction setAnimationDuration:.3];
+	[CATransaction setAnimationDuration:PWMaxMinimizationDuration];
 	[CATransaction setAnimationTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
 	[CATransaction setCompletionBlock:^{
 		
@@ -716,9 +723,6 @@ static NSMutableSet *_controllers = nil;
 		// update flags
 		_isAnimating = NO;
 		_isMinimized = NO;
-		
-		[backgroundView show:NO];
-		[self _resizeAnimated:NO];
 	}];
 	
 	CABasicAnimation *fade = [CABasicAnimation animationWithKeyPath:@"opacity"];
@@ -739,11 +743,6 @@ static NSMutableSet *_controllers = nil;
 	[layer addAnimation:scale forKey:@"scale"];
 	[layer addAnimation:position forKey:@"position"];
 	[CATransaction commit];
-	
-	[self makeActive:NO];
-	
-	// show window and background view
-	[window show];
 	
 	return YES;
 }
@@ -770,12 +769,11 @@ static NSMutableSet *_controllers = nil;
 	// make myself active
 	_isActive = YES;
 	[self.class updateActiveController:self];
+	[_containerView hideOverlay];
 	[_containerView.superview bringSubviewToFront:_containerView];
 	if (configureFirstResponder) {
 		[_widget.topViewController configureFirstResponder];
 	}
-	[_containerView hideOverlay];
-	[self _resizeAnimated:YES];
 }
 
 - (void)resignActive:(BOOL)makeActive {
@@ -835,6 +833,7 @@ static NSMutableSet *_controllers = nil;
 	
 	PWController *controller = [PWController sharedInstance];
 	PWView *view = controller.mainView;
+	
 	PWContainerView *containerView = _containerView;
 	CGRect rect = containerView.frame;
 	
@@ -873,14 +872,12 @@ static NSMutableSet *_controllers = nil;
 	
 	if (!_isPresented) return;
 	
-	// resize widget
-	if (!_isMinimized) {
-		[self _resizeAnimated:NO];
-	}
-	
-	// re-position mini view
 	if (_isMinimized) {
+		// re-position mini view
 		_miniView.center = [self _miniViewCenter];
+	} else {
+		// resize widget
+		[self _resizeAnimated:NO];
 	}
 }
 
@@ -981,11 +978,45 @@ static NSMutableSet *_controllers = nil;
 	return center;
 }
 
-- (void)_resizeAnimated:(BOOL)animated {
+- (void)_updateBackgroundViewMaskForPresentation {
 	
-	LOG(@"_resizeAnimated: %@", animated ? @"YES" : @"NO");
+	if (![PWController shouldMaskBackgroundView]) return;
+	
+	LOG(@"_updateBackgroundViewMaskForPresentation");
 	
 	PWView *mainView = [PWController sharedInstance].mainView;
+	PWBackgroundView *backgroundView = mainView.backgroundView;
+	
+	CGFloat cornerRadius = [_widget.theme cornerRadius];
+	
+	[backgroundView setMaskRect:_containerView.frame fromRect:CGRectNull cornerRadius:cornerRadius animationType:PWBackgroundViewAnimationTypePresentation];
+}
+
+- (void)_updateBackgroundViewMaskForMaximization {
+	
+	if (![PWController shouldMaskBackgroundView]) return;
+	
+	LOG(@"_updateBackgroundViewMaskForMaximization");
+	
+	PWView *mainView = [PWController sharedInstance].mainView;
+	PWBackgroundView *backgroundView = mainView.backgroundView;
+	PWMiniView *miniView = _miniView;
+	
+	CGRect fromRect = miniView.frame;
+	CGFloat cornerRadius = [_widget.theme cornerRadius];
+	
+	[backgroundView setMaskRect:_containerView.frame fromRect:fromRect cornerRadius:cornerRadius animationType:PWBackgroundViewAnimationTypeMaximization];
+}
+
+- (void)_resizeAnimated:(BOOL)animated {
+	
+	LOG(@"_resizeAnimated: %d", (int)animated);
+	
+	BOOL shouldUpdateBackgroundViewMask = _isActive && !_isMinimized;
+	
+	PWView *mainView = [PWController sharedInstance].mainView;
+	PWBackgroundView *backgroundView = mainView.backgroundView;
+	
 	CGPoint currentCenter = _containerView.center;
 	CGRect currentBounds = _containerView.bounds;
 	CGPoint center = [self _containerCenter];
@@ -994,18 +1025,23 @@ static NSMutableSet *_controllers = nil;
 	
 	if (CGPointEqualToPoint(currentCenter, center) && CGRectEqualToRect(currentBounds, bounds)) {
 		LOG(@"_resizeAnimated: center and rect remain unchanged");
-		[mainView updateBackgroundViewRect:_containerView.frame cornerRadius:cornerRadius animated:NO];
+		if (shouldUpdateBackgroundViewMask) {
+			[backgroundView setMaskRect:_containerView.frame fromRect:CGRectNull cornerRadius:cornerRadius animationType:PWBackgroundViewAnimationTypeNone];
+		}
 		return;
 	}
 	
-	if (_isAnimating) {
-		animated = NO;
-	}
-	
-	if (!animated) {
+	if (_isAnimating || !animated) {
+		
 		_containerView.center = center;
 		_containerView.bounds = bounds;
-		[mainView updateBackgroundViewRect:_containerView.frame cornerRadius:cornerRadius animated:NO];
+		[_containerView setNeedsLayout];
+		[_containerView layoutIfNeeded];
+		
+		if (shouldUpdateBackgroundViewMask) {
+			[backgroundView setMaskRect:_containerView.frame fromRect:CGRectNull cornerRadius:cornerRadius animationType:PWBackgroundViewAnimationTypeNone];
+		}
+		
 	} else {
 		
 		[UIView animateWithDuration:PWAnimationDuration delay:0.0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionTransitionNone animations:^{
@@ -1031,7 +1067,10 @@ static NSMutableSet *_controllers = nil;
 		CGRect rect = bounds;
 		rect.origin.x = center.x - bounds.size.width / 2;
 		rect.origin.y = center.y - bounds.size.height / 2;
-		[mainView updateBackgroundViewRect:rect cornerRadius:cornerRadius animated:YES];
+		
+		if (shouldUpdateBackgroundViewMask) {
+			[backgroundView setMaskRect:rect fromRect:CGRectNull cornerRadius:cornerRadius animationType:PWBackgroundViewAnimationTypeResize];
+		}
 	}
 }
 
@@ -1045,10 +1084,8 @@ static NSMutableSet *_controllers = nil;
 		
 		_keyboardHeight = height;
 		
-		if (_isActive) {
-			//[self _resizeAnimated:YES];
-		} else if (_isMinimized) {
-			//[self _resizeAnimated:NO];
+		if (!_isAnimating && _isActive) {
+			[self _resizeAnimated:YES];
 		}
 	}
 }
@@ -1062,10 +1099,8 @@ static NSMutableSet *_controllers = nil;
 		
 		_keyboardHeight = keyboardHeight;
 		
-		if (_isActive) {
-			//[self _resizeAnimated:YES];
-		} else if (_isMinimized) {
-			//[self _resizeAnimated:NO];
+		if (!_isAnimating && _isActive) {
+			[self _resizeAnimated:YES];
 		}
 	}
 }

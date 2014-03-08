@@ -56,7 +56,7 @@
 }
 
 - (UIColor *)sheetForegroundColor {
-	return [UIColor blackColor];
+	return [UIColor colorWithWhite:.2 alpha:1.0];
 }
 
 - (UIColor *)sheetBackgroundColor {

@@ -173,13 +173,15 @@
 	
 	dispatch_async(dispatch_get_global_queue(0, 0), ^{
 		
+		PWWidgetCalendar *widget = (PWWidgetCalendar *)self.widget;
 		NSCalendar *calendar = [NSCalendar currentCalendar];
 		
 		// get the date for today (from 12am)
 		NSDate *date = [NSDate date];
 		NSDate *todayDate = [calendar dateFromComponents:[calendar components:NSYearCalendarUnit | NSMonthCalendarUnit | NSDayCalendarUnit fromDate:date]];
 		
-		NSUInteger period = 7; // in days
+		// retrieve the period setting from preference
+		NSUInteger period = MIN(MAX(1, [widget intValueForPreferenceKey:@"period" defaultValue:7]), 60); // in days (min: 1 day / max: 2 months)
 		NSTimeInterval endTime = [todayDate timeIntervalSinceReferenceDate] + period * 24 * 60 * 60;
 		NSDate *endDate = [NSDate dateWithTimeIntervalSinceReferenceDate:endTime];
 		

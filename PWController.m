@@ -7,6 +7,7 @@
 //  Copyright 2014 Alan Yip. All rights reserved.
 //
 
+#import <notify.h>
 #import <sys/utsname.h>
 
 #import "PWController.h"
@@ -38,7 +39,8 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 
 + (void)load {
 	// add observer to reload preference
-	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, &reloadPref, CFSTR("cc.tweak.prowidgets.preferencechanged"), NULL, 0);
+	CFNotificationCenterRef center = CFNotificationCenterGetDarwinNotifyCenter();
+	CFNotificationCenterAddObserver(center, NULL, &reloadPref, CFSTR("cc.tweak.prowidgets.preferencechanged"), NULL, 0);
 }
 
 + (instancetype)sharedInstance {
@@ -165,8 +167,12 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 
 //////////////////////////////////////////////////////////////////////
 
-+ (BOOL)requiresBackgroundView {
++ (BOOL)shouldShowBackgroundView {
 	return ![self isIPad];
+}
+
++ (BOOL)shouldMaskBackgroundView {
+	return !IS_IPHONE4;
 }
 
 + (BOOL)supportsDragging {
@@ -477,7 +483,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	LOG(@"PWController: _lockStateChangedHandler <%d>", (int)state);
 	
 	// locked
-	if (state == DeviceLockStateLockedWithPasscode) {
+	if (state == DeviceLockStateLocked) {
 		
 		if (_lockAction == PWLockActionMinimize) {
 			[PWWidgetController minimizeAllControllers];
@@ -485,8 +491,10 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 			[PWWidgetController dismissAllControllers:YES];
 		}
 		
-	} else {
-		// TODO: fix
+		// unlock the interface orientation immediately
+		self.interfaceOrientationIsLocked = NO;
+		
+		// force window to update orientation
 		[_window adjustLayout];
 	}
 }
