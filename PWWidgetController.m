@@ -339,6 +339,9 @@ static NSMutableSet *_controllers = nil;
 	[window adjustLayout];
 	[window makeKeyAndVisible];
 	
+	// make myself active
+	[self makeActive:YES];
+	
 	// update mask and show background view
 	[self _updateBackgroundViewMaskForPresentation];
 	[backgroundView show];
