@@ -614,7 +614,6 @@ extern NSBundle *bundle;
 	
 	LOG(@"PWPrefURLInstallationRootController: didReceiveData (%lu bytes)", (unsigned long)[data length]);
 	
-	//[_response appendData:data];
 	_receivedDataLength += [data length];
 	[self.rootView setDownloadedBytes:_receivedDataLength];
 	[_fileHandle writeData:data];

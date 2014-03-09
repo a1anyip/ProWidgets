@@ -39,12 +39,8 @@
 	PWView *mainView = [PWController sharedInstance].mainView;
 	
 	UIInterfaceOrientation orientation = [[PWController sharedInstance] currentInterfaceOrientation];
-	
-	
-	
 	CGAffineTransform transform = [self orientationToTransform:orientation];
-	
-	LOG(@"***** adjustLayout: %d", (int)orientation);
+	LOG(@"PWWindow adjustLayout <orientation: %d>", (int)orientation);
 	
 	mainView.transform = CGAffineTransformIdentity;
 	mainView.transform = transform;
@@ -54,17 +50,6 @@
 	[mainView layoutIfNeeded];
 	
 	[PWWidgetController adjustLayoutForAllControllers];
-}
-
-// simply show the window and make it key
-- (void)show {
-	[self adjustLayout];
-	[self makeKeyAndVisible];
-}
-
-// simply hide the window
-- (void)hide {
-	[self resignKeyWindow];
 }
 
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {

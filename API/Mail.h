@@ -13,6 +13,8 @@
 
 @protocol PWAPIMailWrapperExport <JSExport>
 
+- (BOOL)canSendMail;
+
 - (void)send:(JSValue *)htmlContent :(JSValue *)subject :(JSValue *)from :(JSValue *)to :(JSValue *)cc :(JSValue *)bcc;
 
 - (NSDictionary *)defaultSenderAccount;
@@ -26,7 +28,9 @@
 
 @interface PWAPIMail : NSObject
 
-+ (void)sendMailWithHTMLContent:(NSString *)htmlContent subject:(NSString *)subject sender:(NSString *)sender to:(NSString *)to;
++ (BOOL)canSendMail;
+
++ (void)sendMailWithHTMLContent:(NSString *)htmlContent subject:(NSString *)subject sender:(NSString *)sender to:(NSArray *)to;
 + (void)sendMailWithHTMLContent:(NSString *)htmlContent subject:(NSString *)subject sender:(NSString *)sender to:(NSArray *)to cc:(NSArray *)cc bcc:(NSArray *)bcc;
 
 + (NSDictionary *)defaultSenderAccount;

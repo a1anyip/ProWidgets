@@ -15,5 +15,6 @@
 }
 
 - (instancetype)initWithSnapshot:(UIImage *)snapshot;
+- (void)finishAnimation;
 
 @end

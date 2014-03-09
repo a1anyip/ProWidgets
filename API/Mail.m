@@ -15,6 +15,10 @@
 
 @implementation PWAPIMailWrapper
 
+- (BOOL)canSendMail {
+	return [PWAPIMail canSendMail];
+}
+
 - (void)send:(JSValue *)htmlContent :(JSValue *)subject :(JSValue *)sender :(JSValue *)to :(JSValue *)cc :(JSValue *)bcc {
 	
 	if ([sender isUndefined] || [to isUndefined]) {
@@ -69,12 +73,20 @@
 
 @end
 
+@interface MSAccounts : NSObject
+
++ (BOOL)canSendMail;
+
+@end
+
 @implementation PWAPIMail
 
-+ (void)sendMailWithHTMLContent:(NSString *)htmlContent subject:(NSString *)subject sender:(NSString *)sender to:(NSString *)to {
-	if (to == nil)
-		to = @"";
-	[self sendMailWithHTMLContent:htmlContent subject:subject sender:sender to:@[to] cc:nil bcc:nil];
++ (BOOL)canSendMail {
+	return [MSAccounts canSendMail];
+}
+
++ (void)sendMailWithHTMLContent:(NSString *)htmlContent subject:(NSString *)subject sender:(NSString *)sender to:(NSArray *)to {
+	[self sendMailWithHTMLContent:htmlContent subject:subject sender:sender to:to cc:nil bcc:nil];
 }
 
 + (void)sendMailWithHTMLContent:(NSString *)htmlContent subject:(NSString *)subject sender:(NSString *)sender to:(NSArray *)to cc:(NSArray *)cc bcc:(NSArray *)bcc {

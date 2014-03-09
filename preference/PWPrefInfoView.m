@@ -31,11 +31,6 @@ extern NSBundle *bundle;
 		_authorLabel.lineBreakMode = NSLineBreakByTruncatingTail;
 		[self addSubview:_authorLabel];
 		
-		// add separator
-		_separator = [UIView new];
-		_separator.backgroundColor = [UIColor colorWithWhite:.8 alpha:1.0];
-		[self addSubview:_separator];
-		
 		// add description text view
 		CGFloat padding = 12.0;
 		_descriptionTextView = [UITextView new];
@@ -49,6 +44,11 @@ extern NSBundle *bundle;
 		_descriptionTextView.textContainerInset = UIEdgeInsetsMake(padding, padding, padding, padding);
 		_descriptionTextView.dataDetectorTypes = UIDataDetectorTypeAll;
 		[self addSubview:_descriptionTextView];
+		
+		// add separator
+		_separator = [UIView new];
+		_separator.backgroundColor = [UIColor colorWithWhite:.8 alpha:1.0];
+		[self addSubview:_separator];
 		
 		// add confirm button
 		_confirmButton = [UIButton new];
@@ -65,15 +65,19 @@ extern NSBundle *bundle;
 	CGFloat width = self.bounds.size.width;
 	CGFloat height = self.bounds.size.height;
 	
+	UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
+	BOOL isLandscape = UIInterfaceOrientationIsLandscape(orientation);
+	
 	CGFloat iconSize = 25.0;
 	CGFloat nameHeight = 40.0;
 	CGFloat authorHeight = 40.0;
-	CGFloat buttonHeight = 50.0;
+	CGFloat buttonHeight = isLandscape ? 35.0 : 50.0;
+	CGFloat navigationBarHeight = isLandscape ? 32.0 : 44.0;
 	
-	CGFloat topMargin = 20.0 + 44.0;
+	CGFloat topMargin = 20.0 + navigationBarHeight;
 	CGFloat xMargin = 15.0;
-	CGFloat yMargin = 10.0;
-	CGFloat nameLeftPadding = 15.0;
+	CGFloat yMargin = isLandscape ? 6.0 : 8.0;
+	CGFloat nameLeftPadding = 12.0;
 	CGFloat authorPadding = 3.0;
 	
 	CGRect iconRect = CGRectMake(xMargin, yMargin + (nameHeight - iconSize) / 2 + topMargin, iconSize, iconSize);
@@ -83,9 +87,9 @@ extern NSBundle *bundle;
 	
 	CGRect authorRect = CGRectMake(xMargin + authorPadding, iconRect.origin.y + iconRect.size.height, width - xMargin * 2 - authorPadding, authorHeight);
 	
-	CGRect separatorRect = CGRectMake(0, authorRect.origin.y + authorRect.size.height + yMargin - 1.0, width, 1.0);
+	CGRect separatorRect = CGRectMake(0, authorRect.origin.y + authorRect.size.height + yMargin - .5, width, .5);
 	
-	CGRect descriptionRect = CGRectMake(0, separatorRect.origin.y + 1.0, width, 0);
+	CGRect descriptionRect = CGRectMake(0, separatorRect.origin.y + .5, width, 0);
 	descriptionRect.size.height = height - descriptionRect.origin.y - buttonHeight;
 	
 	CGRect buttonRect = CGRectMake(0, height - buttonHeight, width, buttonHeight);

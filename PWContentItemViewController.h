@@ -37,9 +37,9 @@
 - (BOOL)loadPlist:(NSString *)filename;
 
 // helper methods to set handlers
-- (void)setItemValueChangedEventHandler:(id)target selector:(SEL)action;
+- (void)setItemValueChangedEventHandler:(id)target selector:(SEL)selector;
 - (void)setItemValueChangedEventBlockHandler:(void(^)(PWWidgetItem *, id))block;
-- (void)setSubmitEventHandler:(id)target selector:(SEL)action;
+- (void)setSubmitEventHandler:(id)target selector:(SEL)selector;
 - (void)setSubmitEventBlockHandler:(void(^)(id))block;
 
 - (void)reload;

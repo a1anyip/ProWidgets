@@ -15,9 +15,11 @@
 	<key>PWInfoShortDescription</key>
 	<string>Toggle and add alarms</string>
 	<key>PWInfoDescription</key>
-	<string>Alarm widget allows you to quickly add a new alarm or toggle the active state of existing alarms.
+	<string>Alarm widget allows you to quickly add a new alarm and toggle the active state of existing alarms.
 
-Tap on navigation bar once to switch between add and overview interfaces.</string>
+Tap on navigation bar once to switch between add and overview interfaces.
+
+Configure the default interface in the widget preference page.</string>
 	<key>PWInfoPreferenceDefaults</key>
 	<string>cc.tweak.prowidgets.widget.alarm</string>
 	<key>PWInfoPreferenceFile</key>

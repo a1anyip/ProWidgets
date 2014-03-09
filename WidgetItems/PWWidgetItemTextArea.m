@@ -11,14 +11,6 @@
 
 @implementation PWWidgetItemTextArea
 
-+ (Class)valueClass {
-	return [NSString class];
-}
-
-+ (id)defaultValue {
-	return @"";
-}
-
 + (Class)cellClass {
 	return [PWWidgetItemTextAreaCell class];
 }
@@ -59,11 +51,11 @@
 		_textView = [UITextView new];
 		_textView.backgroundColor = [UIColor clearColor];
 		_textView.editable = YES;
+		_textView.alwaysBounceVertical = YES;
 		_textView.dataDetectorTypes = UIDataDetectorTypeNone;
 		_textView.font = [UIFont systemFontOfSize:18];
 		_textView.textColor = [UIColor blackColor];
 		_textView.textContainer.lineFragmentPadding = 0;
-		_textView.keyboardAppearance = self.item.theme.wantsDarkKeyboard ? UIKeyboardAppearanceDark : UIKeyboardAppearanceDefault;
 		
 		// add padding
 		CGFloat padding = PWDefaultItemCellPadding;
@@ -82,7 +74,16 @@
 //////////////////////////////////////////////////////////////////////
 
 - (void)updateItem:(PWWidgetItem *)item {
-	_textView.delegate = (PWWidgetItemTextArea *)item;
+	
+	PWWidgetItemTextArea *textAreaItem = (PWWidgetItemTextArea *)item;
+	
+	_textView.delegate = textAreaItem;
+	_textView.keyboardAppearance = textAreaItem.theme.wantsDarkKeyboard ? UIKeyboardAppearanceDark : UIKeyboardAppearanceDefault;
+	
+	_textView.autocapitalizationType = textAreaItem.autocapitalizationType;
+	_textView.autocorrectionType = textAreaItem.autocorrectionType;
+	_textView.spellCheckingType = textAreaItem.spellCheckingType;
+	_textView.keyboardType = textAreaItem.keyboardType;
 }
 
 //////////////////////////////////////////////////////////////////////

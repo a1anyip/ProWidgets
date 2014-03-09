@@ -20,6 +20,4 @@
 
 @property(nonatomic, readonly) PWBackgroundView *backgroundView;
 
-- (void)updateBackgroundViewRect:(CGRect)rect cornerRadius:(CGFloat)cornerRadius animated:(BOOL)animated;
-
 @end

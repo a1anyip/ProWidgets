@@ -9,7 +9,10 @@
 
 #import "header.h"
 
-@interface PWThemableTextField : UITextField
+@interface PWThemableTextField : UITextField {
+	
+	UIColor *_cachedPlaceholderColor;
+}
 
 - (instancetype)initWithFrame:(CGRect)frame theme:(PWTheme *)theme;
 - (void)_configureAppearance:(PWTheme *)theme;

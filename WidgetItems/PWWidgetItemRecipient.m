@@ -30,11 +30,27 @@
 - (void)select {
 	
 	if (_recipientController == nil) {
-		_recipientController = [[PWWidgetItemRecipientController alloc] initWithTitle:_titleWithoutColon delegate:self recipients:self.recipients forWidget:self.itemViewController.widget];
+		_recipientController = [[PWWidgetItemRecipientController alloc] initWithTitle:_titleWithoutColon delegate:self recipients:self.recipients type:_type forWidget:self.itemViewController.widget];
 		RELEASE(_titleWithoutColon)
 	}
 	
 	[self.itemViewController.widget pushViewController:_recipientController animated:YES];
+}
+
+- (void)setExtraAttributes:(NSDictionary *)attributes {
+	
+	NSString *recipientType = attributes[@"recipientType"];
+	
+	_type = PWWidgetItemRecipientTypePhoneContact; // default is phone contact
+	
+	if (recipientType != nil) {
+		NSString *typeString = [recipientType lowercaseString];
+		if ([typeString isEqualToString:@"phone"]) {
+			_type = PWWidgetItemRecipientTypePhoneContact;
+		} else if ([typeString isEqualToString:@"mail"]) {
+			_type = PWWidgetItemRecipientTypeMailContact;
+		}
+	}
 }
 
 - (void)setTitle:(NSString *)title {
@@ -217,7 +233,9 @@
 }
 
 - (void)layoutSubviews {
+	
 	[super layoutSubviews];
+	
 	UILabel *title = self.textLabel;
 	UILabel *value = self.detailTextLabel;
 	

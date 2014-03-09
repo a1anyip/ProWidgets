@@ -326,12 +326,14 @@ static NSDictionary *supportedColorString = nil;
 	return color;
 }
 
+#define COLOR_ADJUSTMENT_AMOUNT 40.0
+
 + (UIColor *)darkenColor:(UIColor *)color {
-	return [self adjustColorBrightness:color colorAdjustment:-30/255.0 alphaMultiplier:1.0];
+	return [self adjustColorBrightness:color colorAdjustment:-COLOR_ADJUSTMENT_AMOUNT/255.0 alphaMultiplier:1.0];
 }
 
 + (UIColor *)lightenColor:(UIColor *)color {
-	return [self adjustColorBrightness:color colorAdjustment:30/255.0 alphaMultiplier:1.0];
+	return [self adjustColorBrightness:color colorAdjustment:COLOR_ADJUSTMENT_AMOUNT/255.0 alphaMultiplier:1.0];
 }
 
 + (UIColor *)translucentColor:(UIColor *)color {
@@ -703,7 +705,7 @@ static NSDictionary *supportedColorString = nil;
 	
 	RELEASE(_name)
 	RELEASE(_bundle)
-	RELEASE(_widget)
+	_widget = nil;
 	
 	[super dealloc];
 }

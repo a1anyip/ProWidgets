@@ -11,6 +11,13 @@
 #import "../../PWContentViewController.h"
 #import "PWWidgetItemRecipientView.h"
 
+typedef enum {
+	
+	PWWidgetItemRecipientTypePhoneContact,
+	PWWidgetItemRecipientTypeMailContact,
+	
+} PWWidgetItemRecipientType;
+
 @protocol PWWidgetItemRecipientControllerDelegate <NSObject>
 
 @required
@@ -18,19 +25,27 @@
 
 @end
 
-@interface PWWidgetItemRecipientController : PWContentViewController<UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource> {
+@interface PWWidgetItemRecipientController : PWContentViewController<MFMailComposeContactsSearchControllerDelegate, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource> {
 	
 	id<PWWidgetItemRecipientControllerDelegate> _delegate;
+	PWWidgetItemRecipientType _type;
+	
+	// for PWWidgetItemRecipientTypePhoneContact
+	
+	
+	// for PWWidgetItemRecipientTypeMailContact
+	MFMailComposeContactsSearchController *_mailContactSearchController;
 	
 	NSMutableArray *_recipients;
 	NSArray *_searchResults;
 }
 
 @property(nonatomic, assign) id<PWWidgetItemRecipientControllerDelegate> delegate;
+@property(nonatomic, assign) PWWidgetItemRecipientType type;
 
 + (NSString *)displayTextForRecipients:(NSArray *)recipients maxWidth:(CGFloat)maxWidth font:(UIFont *)font;
 
-- (instancetype)initWithTitle:(NSString *)title delegate:(id<PWWidgetItemRecipientControllerDelegate>)delegate recipients:(NSArray *)recipients forWidget:(PWWidget *)widget;
+- (instancetype)initWithTitle:(NSString *)title delegate:(id<PWWidgetItemRecipientControllerDelegate>)delegate recipients:(NSArray *)recipients type:(PWWidgetItemRecipientType)type forWidget:(PWWidget *)widget;
 
 - (PWWidgetItemRecipientView *)recipientView;
 - (NSString *)displayTextInMaxWidth:(CGFloat)maxWidth font:(UIFont *)font;

@@ -45,6 +45,7 @@ LIB += PWWidgetItem.m
 LIB += PWWidgetItemCell.m
 
 ### Widget Items ###
+LIB += WidgetItems/_PWWidgetItemTextInputTraits.m
 LIB += WidgetItems/PWWidgetItemTextArea.m
 LIB += WidgetItems/PWWidgetItemTextField.m
 LIB += WidgetItems/PWWidgetItemListValue.m
@@ -130,6 +131,7 @@ WIDGETS += Widgets/Mail
 
 # Third-party Widgets
 WIDGETSTP = WidgetsTP/Authenticator
+WIDGETSTP += WidgetsTP/Spotify
 
 ############################################################
 
@@ -154,7 +156,7 @@ PREFERENCE = preference
 LIBRARY_NAME = libprowidgets
 libprowidgets_FILES = $(LIB) $(API)
 libprowidgets_FRAMEWORKS = CoreFoundation Foundation UIKit CoreGraphics CoreImage QuartzCore JavaScriptCore EventKit
-libprowidgets_PRIVATE_FRAMEWORKS = MobileKeyBag Calculate MobileTimer ToneKit ToneLibrary AddressBook MessageUI ChatKit
+libprowidgets_PRIVATE_FRAMEWORKS = MobileKeyBag Calculate MobileTimer ToneKit ToneLibrary AddressBook MessageUI ChatKit MailServices
 libprowidgets_INSTALL_PATH = /Library/ProWidgets
 libprowidgets_LIBRARIES = substrate objcipc
 

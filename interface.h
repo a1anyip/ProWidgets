@@ -10,12 +10,36 @@
 
 @end
 
+@class MFMailComposeContactsSearchController;
+
+@protocol MFMailComposeContactsSearchControllerDelegate <NSObject>
+
+- (void)composeContactsSearchController:(MFMailComposeContactsSearchController *)controller didFindCorecipients:(id)arg2;
+- (void)composeContactsSearchController:(MFMailComposeContactsSearchController *)controller finishedWithResults:(BOOL)arg2;
+- (void)composeContactsSearchController:(MFMailComposeContactsSearchController *)controller didSortResults:(id)arg2;
+- (NSString *)sendingAddressForComposeContactsSearchController:(MFMailComposeContactsSearchController *)controller;
+
+@end
+
+@interface MFMailComposeContactsSearchController : NSObject
+
+@property(nonatomic, assign) id<MFMailComposeContactsSearchControllerDelegate> delegate;
+
+- (void)searchWithString:(NSString *)string enteredRecipients:(id)arg2;
+- (void)searchWithString:(NSString *)string;
+
+- (void)cancelSearch;
+
+@end
+
 @interface MFComposeRecipient : NSObject
 
 @property(nonatomic, readonly) NSString *address;
 @property(nonatomic, readonly) NSString *rawAddress;
 @property(nonatomic, readonly) NSString *compositeName;
 @property(nonatomic, readonly) NSString *shortName;
+@property(nonatomic, readonly) NSString *placeholderName;
+@property(nonatomic, readonly) NSString *label;
 
 + (id)recipientWithProperty:(ABPropertyID)property address:(NSString *)address;
 

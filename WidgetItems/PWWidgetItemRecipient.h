@@ -14,6 +14,8 @@
 	
 	PWWidgetItemRecipientController *_recipientController;
 	NSString *_titleWithoutColon;
+	
+	PWWidgetItemRecipientType _type;
 }
 
 - (NSArray *)addresses;

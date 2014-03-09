@@ -69,10 +69,4 @@
 	return nil;
 }
 
-- (void)updateBackgroundViewRect:(CGRect)rect cornerRadius:(CGFloat)cornerRadius animated:(BOOL)animated {
-	if ([PWController shouldShowBackgroundView]) {
-		[_backgroundView setMaskRect:rect cornerRadius:cornerRadius animated:animated];
-	}
-}
-
 @end

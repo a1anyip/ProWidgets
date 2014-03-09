@@ -12,8 +12,8 @@
 	UIView *view = (UIView *)[[self viewClass] new];
 	if ([view isKindOfClass:[UITableView class]]) {
 		UITableView *tableView = (UITableView *)view;
-		tableView.delegate = (id<UITableViewDelegate>)self;
-		tableView.dataSource = (id<UITableViewDataSource>)self;
+		//tableView.delegate = (id<UITableViewDelegate>)self;
+		//tableView.dataSource = (id<UITableViewDataSource>)self;
 		tableView.allowsSelectionDuringEditing = YES;
 	}
 	self.view = view;
@@ -30,6 +30,22 @@
 		UIBarButtonItem *editBtn = [[[UIBarButtonItem alloc] initWithTitle:@"Edit" style:UIBarButtonItemStylePlain target:self action:@selector(toggleEditMode)] autorelease];
 		editBtn.possibleTitles = [NSSet setWithObjects:@"Edit", @"Done", nil];
 		self.navigationItem.rightBarButtonItem = editBtn;
+	}
+	
+	// update delegate
+	UITableView *tableView = (UITableView *)self.view;
+	if ([tableView isKindOfClass:[UITableView class]]) {
+		tableView.delegate = (id<UITableViewDelegate>)self;
+		tableView.dataSource = (id<UITableViewDataSource>)self;
+		[tableView reloadData];
+	}
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+	UITableView *view = (UITableView *)self.view;
+	if ([view isKindOfClass:[UITableView class]]) {
+		view.delegate = nil;
+		view.dataSource = nil;
 	}
 }
 

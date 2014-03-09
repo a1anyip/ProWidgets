@@ -52,7 +52,7 @@
 }
 
 - (UIColor *)tintColor {
-	return [self preferredTintColor] == nil ? [super tintColor] : [self preferredTintColor];
+	return [self preferredTintColor] == nil ? [super tintColor] : [PWTheme darkenColor:[self preferredTintColor]];
 }
 
 - (UIColor *)sheetForegroundColor {
@@ -136,7 +136,6 @@
 	UIColor *barTintColor = [self preferredTintColor];
 	BOOL shouldTintBar = barTintColor != nil;
 	
-	// make the navigation bar transparent
 	navigationBar.translucent = NO;
 	
 	UIView *backgroundView = [navigationBar _backgroundView];
@@ -144,10 +143,10 @@
 	
 	if (self.disabledBlur) {
 		
-		CGFloat alpha = .96;
+		CGFloat alpha = .98;
 		
 		_barBlurView = [UIView new];
-		_barBlurView.backgroundColor = barTintColor;
+		_barBlurView.backgroundColor = [PWTheme darkenColor:barTintColor];
 		_barBlurView.alpha = alpha;
 		[containerView insertSubview:_barBlurView atIndex:0];
 		

@@ -189,6 +189,14 @@
 	_eventHandlers[event] = handler;
 }
 
+- (void)setActionEventHandler:(id)target selector:(SEL)selector {
+	[self setHandlerForEvent:[self.class actionEventName] target:target selector:selector];
+}
+
+- (void)setActionEventBlockHandler:(void(^)(id))block {
+	[self setHandlerForEvent:[self.class actionEventName] block:block];
+}
+
 // content width
 - (CGFloat)contentWidthForOrientation:(PWWidgetOrientation)orientation {
 	return [[PWController sharedInstance] availableWidthInOrientation:orientation];

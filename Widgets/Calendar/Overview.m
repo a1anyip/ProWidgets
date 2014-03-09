@@ -35,6 +35,11 @@
 	_noLabel.frame = self.view.bounds;
 	_noLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	[self.view addSubview:_noLabel];
+	
+	[self setActionEventBlockHandler:^(id object) {
+		NSURL *url = [NSURL URLWithString:@"x-apple-calevent://"];
+		[[UIApplication sharedApplication] openURL:url];
+	}];
 }
 
 - (NSString *)title {

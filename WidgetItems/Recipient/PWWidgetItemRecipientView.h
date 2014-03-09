@@ -11,6 +11,7 @@
 
 @interface PWWidgetItemRecipientView : UIView {
 	
+	CAGradientLayer *_shadow;
 	UITextField *_textField;
 	UIView *_separator;
 	UIButton *_addButton;

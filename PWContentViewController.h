@@ -68,6 +68,9 @@
 - (void)setHandlerForEvent:(NSString *)event target:(id)target selector:(SEL)selector;
 - (void)setHandlerForEvent:(NSString *)event block:(void(^)(id))block;
 
+- (void)setActionEventHandler:(id)target selector:(SEL)selector;
+- (void)setActionEventBlockHandler:(void(^)(id))block;
+
 - (CGFloat)contentWidthForOrientation:(PWWidgetOrientation)orientation;
 - (CGFloat)contentHeightForOrientation:(PWWidgetOrientation)orientation;
 

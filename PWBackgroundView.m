@@ -23,8 +23,6 @@
 
 - (void)show {
 	
-	[self clearMask];
-	
 	self.alpha = 0.0;
 	[UIView animateWithDuration:PWAnimationDuration animations:^{
 		self.alpha = 1.0;

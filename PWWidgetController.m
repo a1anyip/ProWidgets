@@ -216,6 +216,7 @@ static NSMutableSet *_controllers = nil;
 }
 
 + (void)dismissAllControllers:(BOOL)force {
+	
 	for (PWWidgetController *controller in [self allControllers]) {
 		if (force) {
 			[controller _forceDismiss];
@@ -223,6 +224,14 @@ static NSMutableSet *_controllers = nil;
 			[controller dismiss];
 		}
 	}
+	
+	PWController *controller = [PWController sharedInstance];
+	PWWindow *window = controller.window;
+	PWView *view = controller.mainView;
+	PWBackgroundView *backgroundView = view.backgroundView;
+	
+	[backgroundView hide];
+	[window resignKeyWindow];
 }
 
 + (void)minimizeAllControllers {
@@ -326,13 +335,13 @@ static NSMutableSet *_controllers = nil;
 	
 	[_widget willPresent];
 	
-	// make myself active
-	[self makeActive:YES];
+	// show window
+	[window adjustLayout];
+	[window makeKeyAndVisible];
 	
-	// show window and background view
-	[window show];
-	[backgroundView show];
+	// update mask and show background view
 	[self _updateBackgroundViewMaskForPresentation];
+	[backgroundView show];
 	
 	// adjust the center and bounds of container view
 	CGPoint center = [self _containerCenter];
@@ -403,8 +412,8 @@ static NSMutableSet *_controllers = nil;
 	// notify widget
 	[_widget willDismiss];
 	
-	// show window and background view
-	[window hide];
+	// show background view
+	[window resignKeyWindow];
 	[backgroundView hide];
 	
 	// begin animation
@@ -415,10 +424,10 @@ static NSMutableSet *_controllers = nil;
 	[CATransaction setAnimationDuration:PWAnimationDuration];
 	[CATransaction setCompletionBlock:^{
 		
-		[_widget didDismiss];
-		
 		// remove theme
 		[_widget.theme removeTheme];
+		
+		[_widget didDismiss];
 		
 		// remove container view
 		[self removeContainerView];
@@ -426,12 +435,11 @@ static NSMutableSet *_controllers = nil;
 		// this is to force release all the event handlers that may retain widget instance (inside block)
 		// then widget will never get released
 		[_widget _dealloc];
-		[_widget release];
+		[_widget release], _widget = nil;
 		
 		_isPresented = NO;
 		_isMinimized = NO;
 		_isAnimating = NO;
-		_widget = nil;
 		
 		[self.class releaseLock];
 		
@@ -506,7 +514,7 @@ static NSMutableSet *_controllers = nil;
 		// this is to force release all the event handlers that may retain widget instance (inside block)
 		// then widget will never get released
 		[_widget _dealloc];
-		RELEASE(_widget)
+		[_widget release], _widget = nil;
 		
 		_isPresented = NO;
 		_isMinimized = NO;
@@ -536,27 +544,36 @@ static NSMutableSet *_controllers = nil;
 
 - (void)_forceDismiss {
 	
+	BOOL shouldReleaseLock = _isPresented && !_isMinimized;
 	PWController *controller = [PWController sharedInstance];
 	PWWindow *window = controller.window;
 	PWView *view = controller.mainView;
 	PWBackgroundView *backgroundView = view.backgroundView;
 	
-	if (_isPresented && !_isMinimized) {
-		[self.class releaseLock];
+	if (_isPresented && _isActive && !_isMinimized) {
+		[backgroundView hide];
+		[window resignKeyWindow];
+		[self resignActive:YES];
 	}
 	
-	_isAnimating = NO;
-	_isPresented = NO;
-	_isMinimized = NO;
-	_pendingDismissalRequest = NO;
+	// remove theme
+	[_widget.theme removeTheme];
 	
-	[window hide];
-	[backgroundView hide];
-	
-	RELEASE(_widget)
+	// remove container view
 	[self removeContainerView];
 	
-	[self resignActive:YES];
+	// this is to force release all the event handlers that may retain widget instance (inside block)
+	// then widget will never get released
+	[_widget _dealloc];
+	[_widget release], _widget = nil;
+	
+	_isPresented = NO;
+	_isMinimized = NO;
+	_isAnimating = NO;
+	
+	if (shouldReleaseLock) {
+		[self.class releaseLock];
+	}
 	
 	[_controllers removeObject:self];
 }
@@ -595,8 +612,8 @@ static NSMutableSet *_controllers = nil;
 	// hide container view
 	_containerView.hidden = YES;
 	
-	// hide window and background view
-	[window hide];
+	// hide background view
+	[window resignKeyWindow];
 	[backgroundView hide];
 	
 	// animate the layer
@@ -611,10 +628,7 @@ static NSMutableSet *_controllers = nil;
 	[CATransaction setAnimationTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
 	[CATransaction setCompletionBlock:^{
 		
-		// configure its appearance
-		[layer setCornerRadius:20.0];
-		[layer setBorderColor:[UIColor colorWithWhite:.3 alpha:.8].CGColor];
-		[layer setBorderWidth:2.0];
+		[_miniView finishAnimation];
 		
 		// perform second animation
 		[CATransaction begin];
@@ -676,14 +690,18 @@ static NSMutableSet *_controllers = nil;
 		return NO;
 	}
 	
-	[self.class lock];
-	[self _resetKeyboardHeight];
-	[self _resizeAnimated:NO];
-	
 	PWController *controller = [PWController sharedInstance];
 	PWWindow *window = controller.window;
 	PWView *view = controller.mainView;
 	PWBackgroundView *backgroundView = view.backgroundView;
+	
+	[self.class lock];
+	[self _resetKeyboardHeight];
+	
+	//[window adjustLayout];
+	[window makeKeyAndVisible];
+	
+	[self _resizeAnimated:NO];
 	
 	_isAnimating = YES;
 	
@@ -693,21 +711,19 @@ static NSMutableSet *_controllers = nil;
 	// show main view and container view
 	_containerView.hidden = NO;
 	
+	// make myself active
 	[self makeActive:NO];
 	
-	// show window and background view
-	[backgroundView show];
-	[window show];
-	
-	// update backgorund view mask
+	// update mask and show background view
 	[self _updateBackgroundViewMaskForMaximization];
+	[backgroundView show];
 	
 	// remove mini view
 	[self removeMiniView];
 	
 	// animate the layer
 	CALayer *layer = _containerView.layer;
-	CGFloat fadeFrom = .5;
+	CGFloat fadeFrom = .6;
 	
 	[CATransaction begin];
 	[CATransaction setAnimationDuration:PWMaxMinimizationDuration];
@@ -760,7 +776,7 @@ static NSMutableSet *_controllers = nil;
 	// minimize all other widgets
 	if (![PWController supportsMultipleWidgetsOnScreen]) {
 		for (PWWidgetController *controller in [PWWidgetController allControllers]) {
-			if (controller != self) {
+			if (controller != self && !controller.isMinimized) {
 				[controller minimize];
 			}
 		}
@@ -1000,9 +1016,17 @@ static NSMutableSet *_controllers = nil;
 	
 	PWView *mainView = [PWController sharedInstance].mainView;
 	PWBackgroundView *backgroundView = mainView.backgroundView;
-	PWMiniView *miniView = _miniView;
 	
-	CGRect fromRect = miniView.frame;
+	CGRect bounds = _containerView.bounds;
+	CGPoint center = _miniView.center;
+	
+	bounds.size.width *= PWMinimizationScale;
+	bounds.size.height *= PWMinimizationScale;
+	
+	CGRect fromRect = bounds;
+	fromRect.origin.x = center.x - fromRect.size.width / 2;
+	fromRect.origin.y = center.y - fromRect.size.height / 2;
+	
 	CGFloat cornerRadius = [_widget.theme cornerRadius];
 	
 	[backgroundView setMaskRect:_containerView.frame fromRect:fromRect cornerRadius:cornerRadius animationType:PWBackgroundViewAnimationTypeMaximization];

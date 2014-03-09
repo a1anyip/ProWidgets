@@ -19,7 +19,7 @@
 
 @property(nonatomic, copy) NSString *name;
 @property(nonatomic, retain) NSBundle *bundle;
-@property(nonatomic, retain) PWWidget *widget;
+@property(nonatomic, assign) PWWidget *widget;
 @property(nonatomic, assign) BOOL disabledBlur;
 
 //////////////////////////////////////////////////////////////////////

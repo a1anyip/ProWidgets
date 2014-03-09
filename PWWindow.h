@@ -9,14 +9,9 @@
 
 #import "header.h"
 
-@interface PWWindow : UIWindow {
-	
-}
+@interface PWWindow : UIWindow
 
 - (void)adjustLayout;
-
-- (void)show;
-- (void)hide;
 
 - (CGAffineTransform)orientationToTransform:(UIInterfaceOrientation)orientation;
 

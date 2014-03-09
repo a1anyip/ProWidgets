@@ -13,6 +13,8 @@
 			<string>To:</string>
 			<key>type</key>
 			<string>recipient</string>
+			<key>recipientType</key>
+			<string>phone</string>
 		</dict>
 		<dict>
 			<key>key</key>
