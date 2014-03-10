@@ -8,6 +8,7 @@
 //
 
 #import "PWWidgetController.h"
+#import "PWWidgetNavigationController.h"
 #import "PWController.h"
 #import "PWWidget.h"
 #import "PWWidgetJS.h"
@@ -162,7 +163,16 @@ static NSMutableSet *_controllers = nil;
 	// update its user info
 	widget.userInfo = userInfo;
 	
-	return [controller _present];
+	__block BOOL success;
+	if (![NSThread isMainThread]) {
+		dispatch_sync(dispatch_get_main_queue(), ^{
+			success = [controller _present];
+		});
+	} else {
+		success = [controller _present];
+	}
+	
+	return success;
 }
 
 + (BOOL)presentWidgetNamed:(NSString *)name userInfo:(NSDictionary *)userInfo {
@@ -503,7 +513,7 @@ static NSMutableSet *_controllers = nil;
 	
 	// perform animation
 	CALayer *layer = _miniView.layer;
-	CGFloat scaleTo = PWMinimizationScale * 0.8;
+	CGFloat scaleTo = _miniView.scale * 0.8;
 	
 	[CATransaction begin];
 	[CATransaction setAnimationDuration:PWAnimationDuration];
@@ -532,7 +542,7 @@ static NSMutableSet *_controllers = nil;
 	fade.toValue = @0.0;
 	
 	CABasicAnimation *scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
-	scale.fromValue = @(PWMinimizationScale);
+	scale.fromValue = @(_miniView.scale);
 	scale.toValue = @(scaleTo);
 	
 	layer.opacity = 0.0;
@@ -611,6 +621,7 @@ static NSMutableSet *_controllers = nil;
 	
 	// ask window to create a mini view with the snapshot image
 	PWMiniView *miniView = [self createMiniView];
+	miniView.scale = [PWController sharedInstance]._miniViewScale; // retrieve the scale from preference
 	
 	// hide container view
 	_containerView.hidden = YES;
@@ -622,7 +633,7 @@ static NSMutableSet *_controllers = nil;
 	// animate the layer
 	CALayer *layer = miniView.layer;
 	CGFloat fadeTo = .9;
-	CGFloat viewScale = PWMinimizationScale;
+	CGFloat viewScale = miniView.scale;
 	CGFloat initialExtraScale = .95;
 	CGPoint initialPosition = [self _miniViewCenter];
 	
@@ -708,7 +719,7 @@ static NSMutableSet *_controllers = nil;
 	
 	_isAnimating = YES;
 	
-	CGFloat miniViewScale = PWMinimizationScale;
+	CGFloat miniViewScale = _miniView.scale;
 	CGPoint miniViewCenter = _miniView.center;
 	
 	// show main view and container view
@@ -891,6 +902,14 @@ static NSMutableSet *_controllers = nil;
 	
 	if (!_isPresented) return;
 	
+	// force navigation controller to update layout
+	UINavigationController *navigationController = _widget.navigationController;
+	[navigationController _updateLayoutForStatusBarAndInterfaceOrientation];
+	
+	// update theme layout
+	PWTheme *theme = _widget.theme;
+	[theme adjustLayout];
+	
 	if (_isMinimized) {
 		// re-position mini view
 		_miniView.center = [self _miniViewCenter];
@@ -936,21 +955,22 @@ static NSMutableSet *_controllers = nil;
 		return CGRectZero;
 	
 	PWWidgetOrientation orientation = [PWController currentOrientation];
-	BOOL requiresKeyboard = viewController.requiresKeyboard;
+	//BOOL requiresKeyboard = viewController.requiresKeyboard;
 	
 	// view dimensions
 	CGSize size = view.bounds.size;
 	CGFloat width = size.width;
-	CGFloat availableHeight = [controller availableHeightInOrientation:orientation withKeyboard:requiresKeyboard];
+	CGFloat height = size.height;
+	//CGFloat availableHeight = [controller availableHeightInOrientation:orientation withKeyboard:requiresKeyboard];
 	
 	// calculate container width
 	CGFloat contentWidth = [viewController contentWidthForOrientation:orientation];
-	CGFloat containerWidth = MIN(contentWidth, width);
+	CGFloat containerWidth = MIN(MAX(0.0, contentWidth), width);
 	
 	// calculate container height
 	CGFloat contentHeight = [viewController contentHeightForOrientation:orientation];
 	CGFloat navigationBarHeight = [controller heightOfNavigationBarInOrientation:orientation];
-	CGFloat containerHeight = MIN(MAX(0.0, contentHeight + navigationBarHeight), availableHeight);
+	CGFloat containerHeight = MIN(MAX(0.0, contentHeight + navigationBarHeight), height);
 	
 	// container's rect
 	return CGRectMake(0, 0, containerWidth, containerHeight);
@@ -965,8 +985,8 @@ static NSMutableSet *_controllers = nil;
 	CGSize viewSize = view.bounds.size;
 	
 	CGSize miniViewSize = _miniView.bounds.size;
-	miniViewSize.width *= PWMinimizationScale;
-	miniViewSize.height *= PWMinimizationScale;
+	miniViewSize.width *= _miniView.scale;
+	miniViewSize.height *= _miniView.scale;
 	
 	CGFloat originX;
 	CGFloat originY;
@@ -1023,8 +1043,8 @@ static NSMutableSet *_controllers = nil;
 	CGRect bounds = _containerView.bounds;
 	CGPoint center = _miniView.center;
 	
-	bounds.size.width *= PWMinimizationScale;
-	bounds.size.height *= PWMinimizationScale;
+	bounds.size.width *= _miniView.scale;
+	bounds.size.height *= _miniView.scale;
 	
 	CGRect fromRect = bounds;
 	fromRect.origin.x = center.x - fromRect.size.width / 2;
@@ -1039,7 +1059,7 @@ static NSMutableSet *_controllers = nil;
 	
 	LOG(@"_resizeAnimated: %d", (int)animated);
 	
-	BOOL shouldUpdateBackgroundViewMask = _isActive && !_isMinimized;
+	BOOL shouldUpdateBackgroundViewMask = _isActive && !_isMinimized && [PWController shouldMaskBackgroundView];
 	
 	PWView *mainView = [PWController sharedInstance].mainView;
 	PWBackgroundView *backgroundView = mainView.backgroundView;
@@ -1149,7 +1169,7 @@ static NSMutableSet *_controllers = nil;
 			if (requiresProtectedDataAccess) {
 				
 				// show the message
-				PWAlertView *alertView = [[PWAlertView alloc] initWithTitle:@"Protected Data Unavailable" message:[NSString stringWithFormat:@"As this widget \"%@\" requires access to protected data on your device, it is now dismissed to prevent any data corruption.", _widget.displayName] buttonTitle:nil defaultValue:nil cancelButtonTitle:@"Dismiss" style:UIAlertViewStyleDefault completion:nil];
+				PWAlertView *alertView = [[PWAlertView alloc] initWithTitle:@"Protected Data Unavailable" message:[NSString stringWithFormat:@"As this widget \"%@\" requires access to protected data on your device, it is now dismissed to prevent any data corruption.", _widget.displayName] buttonTitle:nil cancelButtonTitle:@"Dismiss" defaultValue:nil style:UIAlertViewStyleDefault completion:nil];
 				[alertView show];
 				[alertView release];
 			}
@@ -1158,7 +1178,7 @@ static NSMutableSet *_controllers = nil;
 	} else {
 		
 		// show the message
-		PWAlertView *alertView = [[PWAlertView alloc] initWithTitle:@"Protected Data Unavailable" message:[NSString stringWithFormat:@"Unable to present widget \"%@\" because it requires access to protected data on your device.", _widget.displayName] buttonTitle:nil defaultValue:nil cancelButtonTitle:@"Dismiss" style:UIAlertViewStyleDefault completion:nil];
+		PWAlertView *alertView = [[PWAlertView alloc] initWithTitle:@"Protected Data Unavailable" message:[NSString stringWithFormat:@"Unable to present widget \"%@\" because it requires access to protected data on your device.", _widget.displayName] buttonTitle:nil cancelButtonTitle:@"Dismiss" defaultValue:nil style:UIAlertViewStyleDefault completion:nil];
 		[alertView show];
 		[alertView release];
 	}
@@ -1221,8 +1241,8 @@ static NSMutableSet *_controllers = nil;
 	CGSize viewSize = view.bounds.size;
 	CGSize miniViewSize = _miniView.bounds.size;
 	
-	miniViewSize.width *= PWMinimizationScale;
-	miniViewSize.height *= PWMinimizationScale;
+	miniViewSize.width *= _miniView.scale;
+	miniViewSize.height *= _miniView.scale;
 	
 	CGFloat margin = 2.0;
 	CGFloat midX = viewSize.width / 2;

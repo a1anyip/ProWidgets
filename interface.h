@@ -150,6 +150,20 @@
 
 @end
 
+@interface UINavigationController ()
+
+- (CGPoint)_computeTopBarCenter:(id)arg hidden:(BOOL)hidden edge:(NSInteger)edge center:(CGPoint)center offset:(CGFloat)offset;
+- (void)_updateLayoutForStatusBarAndInterfaceOrientation;
+
+@end
+
+@interface UINavigationBar (Private)
+
+- (id)backButtonViewAtPoint:(CGPoint)point;
+- (CGSize)defaultSizeForOrientation:(UIInterfaceOrientation)orientation;
+
+@end
+
 @interface UITableViewCell (Private)
 
 - (void)setSeparatorColor:(id)arg1;

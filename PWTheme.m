@@ -13,6 +13,7 @@
 #import "PWContainerView.h"
 #import "PWThemableTableViewCell.h"
 #import "PWWidget.h"
+#import "PWWidgetNavigationController.h"
 
 static NSDictionary *supportedColorString = nil;
 
@@ -326,7 +327,7 @@ static NSDictionary *supportedColorString = nil;
 	return color;
 }
 
-#define COLOR_ADJUSTMENT_AMOUNT 40.0
+#define COLOR_ADJUSTMENT_AMOUNT 30.0
 
 + (UIColor *)darkenColor:(UIColor *)color {
 	return [self adjustColorBrightness:color colorAdjustment:-COLOR_ADJUSTMENT_AMOUNT/255.0 alphaMultiplier:1.0];
@@ -678,12 +679,21 @@ static NSDictionary *supportedColorString = nil;
 }
 
 + (CGFloat)defaultHeightOfCellOfType:(PWWidgetCellType)type forOrientation:(PWWidgetOrientation)orientation {
+	
+	CGFloat baseHeight;
+	
+	if (orientation == PWWidgetOrientationLandscape && ![PWController isIPad]) {
+		baseHeight = 36.0;
+	} else {
+		baseHeight = 44.0;
+	}
+	
 	switch (type) {
 		case PWWidgetCellTypeNormal:
 		default:
-			return 44.0;
+			return baseHeight;
 		case PWWidgetCellTypeTextArea:
-			return 44.0 * 3;
+			return baseHeight * 3;
 	}
 }
 

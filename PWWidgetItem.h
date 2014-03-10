@@ -88,6 +88,7 @@
  **/
 
 + (PWWidgetItem *)createItemNamed:(NSString *)name forItemViewController:(PWContentItemViewController *)itemViewController;
++ (instancetype)createItemForItemViewController:(PWContentItemViewController *)itemViewController;
 
 //////////////////////////////////////////////////////////////////////
 

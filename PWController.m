@@ -9,6 +9,7 @@
 
 #import <notify.h>
 #import <sys/utsname.h>
+#import <OBJCIPC/IPC.h>
 
 #import "PWController.h"
 #import "PWTestBar.h"
@@ -29,6 +30,7 @@
 
 #import "PWWidgetController.h"
 
+static BOOL configured = NO;
 static PWController *sharedInstance = nil;
 
 static inline void reloadPref(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
@@ -172,7 +174,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 }
 
 + (BOOL)shouldMaskBackgroundView {
-	return !IS_IPHONE4;
+	return !IS_IPHONE4 && ![PWController sharedInstance]._disabledMask;
 }
 
 + (BOOL)supportsDragging {
@@ -344,8 +346,8 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 		return;
 	}
 	
-	if (_configured) return;
-	_configured = YES;
+	if (configured) return;
+	configured = YES;
 	
 	// construct UI
 	[self _constructUI];
@@ -359,6 +361,15 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_lockStateChangedHandler:) name:@"SBDeviceLockStateChangedNotification" object:nil];
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_protectedDataWillBecomeUnavailableHandler:) name:UIApplicationProtectedDataWillBecomeUnavailable object:nil];
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_protectedDataDidBecomeAvailableHandler:) name:UIApplicationProtectedDataDidBecomeAvailable object:nil];
+	
+	[OBJCIPC registerIncomingMessageFromAppHandlerForMessageName:@"prowidgets.presentwidget" handler:^NSDictionary *(NSDictionary *dict) {
+		NSString *name = dict[@"name"];
+		NSDictionary *userInfo = dict[@"userInfo"];
+		if (name != nil) {
+			[PWWidgetController presentWidgetNamed:name userInfo:userInfo];
+		}
+		return nil;
+	}];
 }
 
 - (void)_constructUI {
@@ -399,6 +410,17 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	NSNumber *lockAction = dict[@"lockAction"];
 	_lockAction = [lockAction unsignedIntegerValue] == 1 ? PWLockActionDismiss : PWLockActionMinimize;
 	
+	// Minimization View Size (miniViewScale)
+	NSNumber *miniViewScale = dict[@"miniViewScale"];
+	_miniViewScale = miniViewScale == nil || ![miniViewScale isKindOfClass:[NSNumber class]] ? .3 : [miniViewScale doubleValue];
+	
+	// limit the scale (acceptable range: 0.2 to 0.5)
+	_miniViewScale = MAX(.2, MIN(_miniViewScale, .5));
+	
+	// Parallax Effect
+	NSNumber *enabledParallax = dict[@"enabledParallax"];
+	_enabledParallax = enabledParallax == nil || ![enabledParallax isKindOfClass:[NSNumber class]] ? YES : [enabledParallax boolValue];
+	
 	// Disable Blur Effect
 	NSNumber *disabledBlur = dict[@"disabledBlur"];
 	_disabledBlur = disabledBlur == nil || ![disabledBlur isKindOfClass:[NSNumber class]] ? NO : [disabledBlur boolValue];
@@ -408,9 +430,9 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 		_disabledBlur = YES;
 	}
 	
-	// Parallax Effect
-	NSNumber *enabledParallax = dict[@"enabledParallax"];
-	_enabledParallax = enabledParallax == nil || ![enabledParallax isKindOfClass:[NSNumber class]] ? YES : [enabledParallax boolValue];
+	// Better Blur Quality (disabledMask)
+	NSNumber *disabledMask = dict[@"disabledMask"];
+	_disabledMask = disabledMask == nil || ![disabledMask isKindOfClass:[NSNumber class]] ? NO : [disabledMask boolValue];
 	
 	// Preferred Source
 	NSNumber *preferredSource = dict[@"preferredSource"];
@@ -424,6 +446,11 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	NSArray *visibleWidgetOrder = dict[@"visibleWidgetOrder"];
 	[_visibleWidgetOrder release];
 	_visibleWidgetOrder = [visibleWidgetOrder copy];
+	
+	if (visibleWidgetOrder == nil) {
+		// default set of built-in widgets
+		_visibleWidgetOrder = [@[@"Calendar", @"Reminders", @"Notes", @"Browser", @"Messages", @"Mail", @"Dictionary", @"Alarm"] copy];
+	}
 	
 	// Hidden widget order
 	NSArray *hiddenWidgetOrder = dict[@"hiddenWidgetOrder"];
@@ -1110,6 +1137,16 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
  * Private methods
  **/
 
++ (BOOL)_checkAPIEnvironment {
+	static BOOL checked = NO;
+	static BOOL result = NO;
+	if (!checked) {
+		checked = YES;
+		result = objc_getClass("SpringBoard") != nil;
+	}
+	return result;
+}
+
 - (void)_recordInitialTime {
 	_initialTime = [[NSDate date] retain];
 }
@@ -1185,6 +1222,14 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	}
 	
 	return [[result copy] autorelease];
+}
+
+- (BOOL)_disabledMask {
+	return _disabledMask;
+}
+
+- (CGFloat)_miniViewScale {
+	return _miniViewScale;
 }
 
 //////////////////////////////////////////////////////////////////////

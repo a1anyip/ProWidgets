@@ -37,8 +37,6 @@ static NSNumberFormatter *numberFormatter = nil;
 			[numberFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
 		}
 		
-		self.automaticallyAdjustsScrollViewInsets = NO;
-		
 		// configure table view
 		self.tableView.alwaysBounceVertical = NO;
 		
@@ -637,7 +635,11 @@ static NSNumberFormatter *numberFormatter = nil;
 }
 
 - (CGFloat)contentHeightForOrientation:(PWWidgetOrientation)orientation {
-	return [self optimalContentHeightForOrientation:orientation];
+	if (self.wantsFullscreen) {
+		return [super contentHeightForOrientation:orientation];
+	} else {
+		return [self optimalContentHeightForOrientation:orientation];
+	}
 }
 
 - (NSString *)overrideContentHeightExpressionForOrientation:(PWWidgetOrientation)orientation {

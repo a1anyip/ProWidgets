@@ -11,11 +11,12 @@
 #import "PWBase.h"
 #import "PWAlertView.h"
 #import "PWContentViewControllerDelegate.h"
+#import "PWWidgetNavigationController.h"
 
 @interface PWWidget : PWBase<UINavigationControllerDelegate, UIGestureRecognizerDelegate> {
 	
 	PWWidgetController *_widgetController;
-	UINavigationController *_navigationController;
+	PWWidgetNavigationController *_navigationController;
 	PWTheme *_theme;
 	
 	BOOL _configured;
@@ -34,7 +35,7 @@
 }
 
 @property(nonatomic, assign) PWWidgetController *widgetController;
-@property(nonatomic, readonly) UINavigationController *navigationController;
+@property(nonatomic, readonly) PWWidgetNavigationController *navigationController;
 @property(nonatomic, readonly) PWTheme *theme;
 
 // inherit from PWBase
@@ -98,6 +99,7 @@
 - (UIImage *)imageNamed:(NSString *)name;
 
 // modify navigation stack
+- (void)setViewControllers:(NSArray *)viewControllers;
 - (void)setViewControllers:(NSArray *)viewControllers animated:(BOOL)animated;
 
 - (void)pushViewController:(UIViewController *)viewController;

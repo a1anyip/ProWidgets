@@ -172,7 +172,7 @@ static inline UIImage *scaleImage(UIImage *image) {
 		PWNCButton *button = [objc_getClass("PWNCButton") circularButtonWithGlyphImage:image];
 		[button setHighlighted:NO];
 		button.delegate = self;
-		button.sortKey = @(currentIcon);
+		//button.sortKey = @(currentIcon);
 		[currentPage addButton:button];
 		
 		objc_setAssociatedObject(button, &SBControlCenterButtonWidgetBundleKey, bundle, OBJC_ASSOCIATION_RETAIN);

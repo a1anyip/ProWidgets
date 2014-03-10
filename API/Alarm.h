@@ -32,6 +32,9 @@
 // add a new alarm
 - (PWAPIAlarmWrapper *)add:(JSValue *)title :(JSValue *)active :(JSValue *)hour :(JSValue *)minute :(JSValue *)daySetting :(JSValue *)allowsSnooze :(JSValue *)sound :(JSValue *)soundType;
 
+// remove alarms
+- (void)remove:(JSValue *)alarm;
+
 // change default sound
 - (void)setDefaultSound:(JSValue *)identifier :(JSValue *)type;
 
@@ -62,7 +65,9 @@
 }
 
 + (instancetype)wrapperOfAlarm:(PWAPIAlarm *)alarm;
-- (void)setAlarm:(PWAPIAlarm *)alarm;
+
+- (PWAPIAlarm *)_alarm;
+- (void)_setAlarm:(PWAPIAlarm *)alarm;
 
 @end
 
@@ -74,11 +79,13 @@
 // retrieve alarm objects
 + (NSArray *)allAlarms;
 + (PWAPIAlarm *)alarmWithId:(NSString *)alarmId;
-+ (void)removeAlarmWithId:(NSString *)alarmId;
-+ (void)removeAlarm:(PWAPIAlarm *)alarm;
 
 // add a new alarm
 + (PWAPIAlarm *)addAlarmWithTitle:(NSString *)title active:(BOOL)active hour:(NSUInteger)hour minute:(NSUInteger)minute daySetting:(NSUInteger)daySetting allowsSnooze:(BOOL)allowsSnooze sound:(NSString *)sound soundType:(AlarmSoundType)soundType;
+
+// remove alarms
++ (void)removeAlarmWithId:(NSString *)alarmId;
++ (void)removeAlarm:(PWAPIAlarm *)alarm;
 
 // default sound
 + (NSString *)defaultSound;
@@ -110,7 +117,9 @@
 + (instancetype)alarmWithId:(NSString *)alarmId;
 - (void)setSound:(NSString *)sound ofType:(NSInteger)type;
 
+- (NSString *)_alarmId;
 - (void)_setAlarmId:(NSString *)alarmId;
+
 - (Alarm *)_alarmInstance;
 - (void)_updateAlarmValue:(id)value forKey:(NSString *)key;
 

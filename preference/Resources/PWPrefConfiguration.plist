@@ -40,9 +40,53 @@
 		</dict>
 		<dict>
 			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>defaults</key>
+			<string>cc.tweak.prowidgets</string>
+			<key>PostNotification</key>
+			<string>cc.tweak.prowidgets.preferencechanged</string>
+			<key>key</key>
+			<string>miniViewScale</string>
+			<key>label</key>
+			<string>Minimization View Size</string>
+			<key>default</key>
+			<real>0.3</real>
+			<key>detail</key>
+			<string>PSListItemsController</string>
+			<key>validTitles</key>
+			<array>
+				<string>Small</string>
+				<string>Normal</string>
+				<string>Big</string>
+				<string>Large</string>
+			</array>
+			<key>validValues</key>
+			<array>
+				<real>0.2</real>
+				<real>0.3</real>
+				<real>0.4</real>
+				<real>0.5</real>
+			</array>
+		</dict>
+		<dict>
+			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
 			<string>Effect</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>defaults</key>
+			<string>cc.tweak.prowidgets</string>
+			<key>PostNotification</key>
+			<string>cc.tweak.prowidgets.preferencechanged</string>
+			<key>key</key>
+			<string>enabledParallax</string>
+			<key>label</key>
+			<string>Parallax Effect</string>
+			<key>default</key>
+			<true/>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -66,10 +110,12 @@
 			<key>PostNotification</key>
 			<string>cc.tweak.prowidgets.preferencechanged</string>
 			<key>key</key>
-			<string>enabledParallax</string>
+			<string>disabledMask</string>
 			<key>label</key>
-			<string>Parallax Effect</string>
+			<string>Better Blur Quality</string>
 			<key>default</key>
+			<false/>
+			<key>negate</key>
 			<true/>
 		</dict>
 		<dict>
@@ -154,13 +200,27 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>footerText</key>
+			<string>Show the welcome screen that was presented after you installed ProWidgets again.</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSButtonCell</string>
+			<key>label</key>
+			<string>Show Welcome Screen</string>
+			<key>action</key>
+			<string>showWelcomeScreen</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>footerText</key>
 			<string>Reset the main preference file of ProWidgets, not including any widgets, themes, and activation methods.</string>
 		</dict>
 		<dict>
 			<key>cell</key>
 			<string>PSButtonCell</string>
 			<key>label</key>
-			<string>Reset Preference</string>
+			<string>Reset Core Settings</string>
 			<key>action</key>
 			<string>resetPreference</string>
 		</dict>

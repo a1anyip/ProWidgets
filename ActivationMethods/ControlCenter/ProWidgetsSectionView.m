@@ -142,7 +142,7 @@ static char SBControlCenterButtonWidgetBundleKey;
 		// create a button
 		SBControlCenterButton *button = [objc_getClass("SBControlCenterButton") roundRectButtonWithGlyphImage:image];
 		button.delegate = self;
-		button.sortKey = @(++currentIcon);
+		//button.sortKey = @(++currentIcon);
 		[currentPage addButton:button];
 		
 		objc_setAssociatedObject(button, &SBControlCenterButtonWidgetBundleKey, bundle, OBJC_ASSOCIATION_RETAIN);

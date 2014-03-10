@@ -10,7 +10,6 @@
 #import "Add.h"
 #import "Browser.h"
 #import "PWContentViewController.h"
-#import "PWThemableTableView.h"
 
 @implementation PWWidgetBrowserAddBookmarkViewController
 
@@ -19,31 +18,49 @@
 	self.actionButtonText = @"Add";
 		
 	self.shouldAutoConfigureStandardButtons = NO;
-	self.shouldMaximizeContentHeight = YES;
+	self.wantsFullscreen = YES;
 	
-	//self.tableView.delegate = self;
-	//self.tableView.dataSource = self;
+	_titleItem = [[PWWidgetItemTextField createItemForItemViewController:self] retain];
+	_titleItem.key = @"title";
+	_titleItem.title = @"Title";
+	
+	_addressItem = [[PWWidgetItemTextField createItemForItemViewController:self] retain];
+	_addressItem.key = @"address";
+	_addressItem.title = @"Address";
+	
+	[self addItem:_titleItem];
+	[self addItem:_addressItem];
+	
+	[self setSubmitEventHandler:self selector:@selector(submitEventHandler:)];
+	[self setHandlerForEvent:[PWContentViewController titleTappedEventName] target:self selector:@selector(titleTapped)];
 }
 
 - (NSString *)title {
 	return @"Add Bookmark";
 }
 
-- (void)loadView {
-	self.view = [[[PWThemableTableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain] autorelease];
-}
-
-- (UITableView *)tableView {
-	return (UITableView *)self.view;
-}
-
 - (void)willBePresentedInNavigationController:(UINavigationController *)navigationController {
 	[self configureActionButton];
 }
 
+- (void)titleTapped {
+	[[PWWidgetBrowser widget] switchToWebInterface];
+}
+
+- (void)updatePrefillTitle:(NSString *)title andAddress:(NSString *)address {
+	[_titleItem setValue:title];
+	[_addressItem setValue:address];
+}
+
+- (void)submitEventHandler:(NSDictionary *)values {
+	NSString *title = values[@"title"];
+	NSString *address = values[@"address"];
+	[self.widget showMessage:address title:title];
+}
+
 - (void)dealloc {
-	RELEASE(_bookmarkTitle)
-	RELEASE(_bookmarkURL)
+	RELEASE(_titleItem)
+	RELEASE(_addressItem)
 	[super dealloc];
 }
 

@@ -23,6 +23,7 @@
 		// (Undo/Cancel) ~Alert window		1996
 		// Notification Center				1056
 		// Control Center					1056
+		// === PWWindow ===					1055
 		// Lock Alert Window				1050
 		// UIWindowLevelStatusBar			1000
 		self.windowLevel = 1055.0;

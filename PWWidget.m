@@ -18,17 +18,11 @@
 #import "PWThemePlistParser.h"
 #import "PWWidgetItem.h"
 #import "PWWidgetItemCell.h"
-#import "PWAlertView.h"
 #import "PWContentItemViewController.h"
 #import "PWContentViewControllerDelegate.h"
+#import "PWWidgetNavigationController.h"
 
 #define CHECK_CONFIGURED(x) if (![self _checkConfigured:_cmd]) return x;
-
-@interface UINavigationBar (Private)
-
-- (id)backButtonViewAtPoint:(CGPoint)point;
-
-@end
 
 @implementation PWWidget
 
@@ -89,9 +83,17 @@
 - (void)_setConfigured {
 	
 	// set up navigation controller
-	_navigationController = [UINavigationController new];
-	_navigationController.edgesForExtendedLayout = UIRectEdgeNone;
+	_navigationController = [PWWidgetNavigationController new];
+	//_navigationController = [[PWWidgetNavigationController alloc] initWithNavigationBarClass:[PWWidgetNavigationBar class] toolbarClass:nil];
+	
+	//_navigationController.view.backgroundColor = [UIColor yellowColor];
+	
+	LOG(@"_navigationController: %@", _navigationController);
+	
 	_navigationController.automaticallyAdjustsScrollViewInsets = NO;
+	_navigationController.edgesForExtendedLayout = UIRectEdgeNone;
+	_navigationController.extendedLayoutIncludesOpaqueBars = NO;
+	
 	_navigationController.delegate = self;
 	_navigationController.builtinTransitionStyle = 1; // set this to non-zero to avoid "layers" in transition
 	_navigationController.builtinTransitionGap = 0.0;
@@ -248,34 +250,24 @@
 	return [UIImage imageNamed:name inBundle:_bundle];
 }
 
+- (void)setViewControllers:(NSArray *)viewControllers {
+	[_navigationController setViewControllers:viewControllers];
+}
+
 - (void)setViewControllers:(NSArray *)viewControllers animated:(BOOL)animated {
-	
-	if (self.topViewController == nil) animated = NO;
-	
-	if (animated) {
-		applyFadeTransition(_navigationController.view, .2);
-	}
-	
-	[_navigationController setViewControllers:viewControllers animated:NO];
+	[_navigationController setViewControllers:viewControllers animated:animated];
 }
 
 - (void)pushViewController:(UIViewController *)viewController {
-	[self pushViewController:viewController animated:YES];
+	[_navigationController pushViewController:viewController];
 }
 
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated {
-	
-	if (![viewController.class conformsToProtocol:@protocol(PWContentViewControllerDelegate)]) {
-		LOG(@"PWWidget: Unable to push view controller (%@). Reason: view controller must conform to PWContentViewControllerDelegate protocol.", viewController);
-		return;
-	}
-	
-	if (self.topViewController == nil) animated = NO;
 	[_navigationController pushViewController:viewController animated:animated];
 }
 
 - (void)popViewController {
-	[self popViewControllerAnimated:YES];
+	[_navigationController popViewController];
 }
 
 - (void)popViewControllerAnimated:(BOOL)animated {

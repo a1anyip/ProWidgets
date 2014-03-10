@@ -35,6 +35,19 @@
 
 @end
 
+@interface PWUITextView : UITextView
+
+@end
+
+@implementation PWUITextView
+
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
+	LOG(@"touchesBegan:%@ / %@", touches, event);
+	[super touchesBegan:touches withEvent:event];
+}
+
+@end
+
 @implementation PWWidgetItemTextAreaCell
 
 //////////////////////////////////////////////////////////////////////
@@ -48,7 +61,7 @@
 - (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier theme:(PWTheme *)theme {
 	if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier theme:theme])) {
 		
-		_textView = [UITextView new];
+		_textView = [PWUITextView new];
 		_textView.backgroundColor = [UIColor clearColor];
 		_textView.editable = YES;
 		_textView.alwaysBounceVertical = YES;
@@ -69,6 +82,19 @@
 - (void)layoutSubviews {
 	[super layoutSubviews];
 	_textView.frame = self.contentView.bounds;
+}
+
+- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
+	
+	UIView *result = [super hitTest:point withEvent:event];
+	
+	if (_textView != nil && [result isDescendantOfView:_textView]) {
+		if (point.x > _textView.bounds.size.width * .8) {
+			return self;
+		}
+	}
+	
+	return result;
 }
 
 //////////////////////////////////////////////////////////////////////

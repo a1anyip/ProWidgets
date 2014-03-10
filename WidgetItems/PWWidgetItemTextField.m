@@ -82,7 +82,7 @@
 		_textField = [UITextField new];
 		_textField.textColor = [UIColor blackColor];
 		_textField.borderStyle = UITextBorderStyleNone;
-		_textField.clearButtonMode = UITextFieldViewModeAlways;
+		_textField.clearButtonMode = UITextFieldViewModeWhileEditing;
 		
 		_iconView = [UIImageView new];
 		_iconView.backgroundColor = [UIColor clearColor];

@@ -22,8 +22,6 @@
 		self.title = title;
 		_delegate = delegate;
 		
-		self.automaticallyAdjustsScrollViewInsets = NO;
-		
 		self.tableView.delegate = self;
 		self.tableView.dataSource = self;
 		

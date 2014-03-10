@@ -17,7 +17,6 @@
 	
 	BOOL _interfaceOrientationIsLocked;
 	UIInterfaceOrientation _lockedInterfaceOrientation;
-	BOOL _configured;
 	BOOL _pendingDismissalRequest;
 	
 	// Base Bundle
@@ -49,10 +48,12 @@
 	
 	// General
 	PWLockAction _lockAction;
+	CGFloat _miniViewScale;
 	
 	// Effect
-	BOOL _disabledBlur;
 	BOOL _enabledParallax;
+	BOOL _disabledBlur;
+	BOOL _disabledMask;
 	
 	// Global Preference
 	NSUInteger _preferredSource;
@@ -226,6 +227,8 @@
  * Private methods
  **/
 
++ (BOOL)_checkAPIEnvironment;
+
 - (void)_recordInitialTime;
 - (void)_outputDuration;
 
@@ -233,5 +236,8 @@
 - (void)_removeParallaxEffect;
 
 - (NSArray *)_installedBundlesOfType:(NSString *)type extension:(NSString *)extension infoSelector:(SEL)infoSelector;
+
+- (BOOL)_disabledMask;
+- (CGFloat)_miniViewScale;
 
 @end

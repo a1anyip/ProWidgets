@@ -8,6 +8,7 @@
 //
 
 #import "Calendar.h"
+#import "../PWController.h"
 #import "../JSBridge/PWJSBridgeWrapper.h"
 
 @implementation PWAPICalendarWrapper

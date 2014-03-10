@@ -23,6 +23,11 @@
 		PWTheme *theme = [PWWidgetBrowser theme];
 		
 		_textField = [[PWThemableTextField alloc] initWithFrame:CGRectZero theme:theme];
+		_textField.keyboardType = UIKeyboardTypeURL;
+		_textField.returnKeyType = UIReturnKeyGo;
+		_textField.autocorrectionType = UITextAutocorrectionTypeNo;
+		_textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
+		_textField.spellCheckingType = UITextSpellCheckingTypeNo;
 		_textField.backgroundColor = [UIColor clearColor];
 		_textField.clearButtonMode = UITextFieldViewModeWhileEditing;
 		_textField.font = [UIFont systemFontOfSize:14.0];
@@ -147,7 +152,7 @@
 - (void)load {
 	
 	self.shouldAutoConfigureStandardButtons = NO;
-	self.shouldMaximizeContentHeight = YES;
+	self.wantsFullscreen = YES;
 	
 	[self setHandlerForEvent:[PWContentViewController titleTappedEventName] target:self selector:@selector(titleTapped)];
 }
@@ -373,7 +378,9 @@
 		case 0:
 			{
 				UIApplication *app = [UIApplication sharedApplication];
-				NSURL *url = [NSURL URLWithString:_lastURLString];
+				NSString *urlString = _lastURLString;
+				urlString = [urlString stringByAppendingString:@"***PWBROWSERWIDGET"];
+				NSURL *url = [NSURL URLWithString:urlString];
 				if ([app canOpenURL:url]) {
 					[app openURL:url];
 					[self.widget dismiss];

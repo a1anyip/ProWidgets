@@ -12,7 +12,10 @@
 @interface PWMiniView : UIImageView {
 	
 	UIView *_overlayView;
+	CGFloat _scale;
 }
+
+@property(nonatomic, assign) CGFloat scale;
 
 - (instancetype)initWithSnapshot:(UIImage *)snapshot;
 - (void)finishAnimation;

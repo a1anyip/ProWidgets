@@ -9,13 +9,12 @@
 
 #import "header.h"
 
-@interface PWWidgetBrowserAddBookmarkViewController : PWContentViewController {
+@interface PWWidgetBrowserAddBookmarkViewController : PWContentItemViewController {
 	
-	NSString *_bookmarkTitle;
-	NSString *_bookmarkURL;
+	PWWidgetItemTextField *_titleItem;
+	PWWidgetItemTextField *_addressItem;
 }
 
-@property(nonatomic, copy) NSString *bookmarkTitle;
-@property(nonatomic, copy) NSString *bookmarkURL;
+- (void)updatePrefillTitle:(NSString *)title andAddress:(NSString *)address;
 
 @end

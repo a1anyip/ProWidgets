@@ -17,6 +17,7 @@ export ADDITIONAL_OBJCFLAGS = -fvisibility=default -fvisibility-inlines-hidden -
 ### Controller ###
 LIB = PWController.m
 LIB += PWWidgetController.m
+LIB += PWWidgetNavigationController.m
 
 ### Core ###
 #LIB += PWTestBar.m
@@ -88,11 +89,22 @@ LIB += JSBridge/PWJSBridgePreferenceWrapper.m
 
 ############################################################
 
+# Activation
+#ACTIVATION_METHODS = ActivationMethods/LockScreen
+ACTIVATION_METHODS += ActivationMethods/TodayView
+ACTIVATION_METHODS += ActivationMethods/NotificationCenter
+ACTIVATION_METHODS += ActivationMethods/NotificationCenterCorners
+ACTIVATION_METHODS += ActivationMethods/ActivatorListener
+ACTIVATION_METHODS += ActivationMethods/ControlCenter
+
+############################################################
+
 # API
 API = API/Message.m
 API += API/Mail.m
 API += API/Alarm.m
 API += API/Calendar.m
+API += API/Note.m
 #API += API/Contact.m
 
 ############################################################
@@ -101,16 +113,6 @@ API += API/Calendar.m
 API_SUBSTRATES = API/MessageSubstrate
 API_SUBSTRATES += API/MailSubstrate
 API_SUBSTRATES += API/AlarmSubstrate
-
-############################################################
-
-# Activation
-#ACTIVATION_METHODS = ActivationMethods/LockScreen
-ACTIVATION_METHODS += ActivationMethods/TodayView
-ACTIVATION_METHODS += ActivationMethods/NotificationCenter
-ACTIVATION_METHODS += ActivationMethods/NotificationCenterCorners
-ACTIVATION_METHODS += ActivationMethods/ActivatorListener
-ACTIVATION_METHODS += ActivationMethods/ControlCenter
 
 ############################################################
 
@@ -154,10 +156,10 @@ PREFERENCE = preference
 ############################################################
 
 LIBRARY_NAME = libprowidgets
-libprowidgets_FILES = $(LIB) $(API)
+libprowidgets_FILES = function.m $(LIB) $(API)
 libprowidgets_FRAMEWORKS = CoreFoundation Foundation UIKit CoreGraphics CoreImage QuartzCore JavaScriptCore EventKit
-libprowidgets_PRIVATE_FRAMEWORKS = MobileKeyBag Calculate MobileTimer ToneKit ToneLibrary AddressBook MessageUI ChatKit MailServices
-libprowidgets_INSTALL_PATH = /Library/ProWidgets
+libprowidgets_PRIVATE_FRAMEWORKS = MobileKeyBag Calculate MobileTimer ToneKit ToneLibrary AddressBook MessageUI ChatKit MailServices Notes
+libprowidgets_INSTALL_PATH = /Library/ProWidgets/
 libprowidgets_LIBRARIES = substrate objcipc
 
 SUBPROJECTS = Substrate $(API_SUBSTRATES) $(ACTIVATION_METHODS) $(WIDGETS) $(WIDGETSTP) $(SCRIPTS) $(THEMES) $(PREFERENCE)

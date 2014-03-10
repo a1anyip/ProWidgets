@@ -8,8 +8,8 @@
 //
 
 #import "Alarm.h"
-#import "../JSBridge/PWJSBridgeWrapper.h"
 #import "../PWController.h"
+#import "../JSBridge/PWJSBridgeWrapper.h"
 #import <objcipc/objcipc.h>
 
 #define TimerIdentifier @"com.apple.mobiletimer"
@@ -98,6 +98,23 @@ PW_IMP_DAYSETTING(Sunday)
 	return [PWAPIAlarmWrapper wrapperOfAlarm:alarm];
 }
 
+- (void)remove:(JSValue *)alarm {
+	
+	if ([alarm isUndefined]) {
+		[_bridge throwException:@"remove: requires argument 1 (alarm ID or object)"];
+		return;
+	}
+	
+	PWAPIAlarmWrapper *wrapper = (PWAPIAlarmWrapper *)[alarm toObjectOfClass:[PWAPIAlarmWrapper class]];
+	
+	if (wrapper != nil) {
+		[PWAPIAlarmManager removeAlarm:wrapper._alarm];
+	} else {
+		NSString *alarmId = [alarm toString];
+		[PWAPIAlarmManager removeAlarmWithId:alarmId];
+	}
+}
+
 - (void)setDefaultSound:(JSValue *)identifier :(JSValue *)type {
 	
 	if ([identifier isUndefined] || [type isUndefined]) {
@@ -123,13 +140,8 @@ PW_IMP_DAYSETTING(Sunday)
 + (instancetype)wrapperOfAlarm:(PWAPIAlarm *)alarm {
 	if (alarm == nil) return nil;
 	PWAPIAlarmWrapper *wrapper = [self new];
-	[wrapper setAlarm:alarm];
+	[wrapper _setAlarm:alarm];
 	return [wrapper autorelease];
-}
-
-- (void)setAlarm:(PWAPIAlarm *)alarm {
-	if (_alarm != nil) return;
-	_alarm = [alarm retain];
 }
 
 - (NSString *)alarmId {
@@ -164,6 +176,15 @@ PW_IMP_ALARM_WRAPPER(daySetting, DaySetting, NSUInteger, UInt32)
 	[_alarm setSound:_sound ofType:_soundType];
 }
 
+- (PWAPIAlarm *)_alarm {
+	return _alarm;
+}
+
+- (void)_setAlarm:(PWAPIAlarm *)alarm {
+	if (_alarm != nil) return;
+	_alarm = [alarm retain];
+}
+
 - (void)dealloc {
 	DEALLOCLOG;
 	RELEASE(_alarm)
@@ -179,6 +200,8 @@ static NSDate *_alarmsLastModified = nil;
 @implementation PWAPIAlarmManager
 
 + (void)load {
+	
+	CHECK_API();
 	
 	[OBJCIPC registerIncomingMessageHandlerForAppWithIdentifier:TimerIdentifier andMessageName:@"PWAPIAlarm" handler:^NSDictionary *(NSDictionary *dict) {
 		NSString *notification = dict[@"notification"];
@@ -216,6 +239,8 @@ static NSDate *_alarmsLastModified = nil;
 
 + (PWAPIAlarm *)addAlarmWithTitle:(NSString *)title active:(BOOL)active hour:(NSUInteger)hour minute:(NSUInteger)minute daySetting:(NSUInteger)daySetting allowsSnooze:(BOOL)allowsSnooze sound:(NSString *)sound soundType:(AlarmSoundType)soundType {
 	
+	CHECK_API(nil);
+	
 	if (title == nil) {
 		title = @"";
 	}
@@ -248,6 +273,8 @@ static NSDate *_alarmsLastModified = nil;
 
 + (void)removeAlarmWithId:(NSString *)alarmId {
 	
+	CHECK_API();
+	
 	if (alarmId == nil) return;
 	
 	NSDictionary *dict = @{
@@ -278,6 +305,8 @@ static NSDate *_alarmsLastModified = nil;
 
 + (void)setDefaultSound:(NSString *)identifier ofType:(AlarmSoundType)type {
 	
+	CHECK_API();
+	
 	if (identifier == nil) return;
 	
 	NSDictionary *dict = @{
@@ -291,6 +320,8 @@ static NSDate *_alarmsLastModified = nil;
 }
 
 + (AlarmManager *)_alarmManager {
+	
+	CHECK_API(nil);
 	
 	// retrieve the alarm instance
 	AlarmManager *manager = [AlarmManager sharedManager];
@@ -356,6 +387,8 @@ static NSDate *_alarmsLastModified = nil;
 }
 
 + (void)_updateAlarmActiveStates {
+	
+	CHECK_API();
 	
 	NSDictionary *dict = @{ @"action": @"getActiveStates" };
 	NSDictionary *result = [OBJCIPC sendMessageToAppWithIdentifier:TimerIdentifier messageName:@"PWAPIAlarm" dictionary:dict];
@@ -428,6 +461,10 @@ PW_IMP_ALARM(daySetting, DaySetting, NSUInteger)
 	[self _updateAlarmValue:@{ @"sound":sound, @"type":@(type) } forKey:@"sound"];
 }
 
+- (NSString *)_alarmId {
+	return _alarmId;
+}
+
 - (void)_setAlarmId:(NSString *)alarmId {
 	if (_alarmId != nil) return; // only can change once
 	_alarmId = [alarmId copy];
@@ -439,6 +476,8 @@ PW_IMP_ALARM(daySetting, DaySetting, NSUInteger)
 }
 
 - (void)_updateAlarmValue:(id)value forKey:(NSString *)key {
+	
+	CHECK_API();
 	
 	if (_alarmId == nil || key == nil || value == nil) return;
 	

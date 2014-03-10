@@ -18,6 +18,6 @@ typedef void(^PWAlertViewCompletionHandler)(BOOL cancelled, NSString *firstValue
 
 @property(nonatomic, copy) PWAlertViewCompletionHandler completionHandler;
 
-- (instancetype)initWithTitle:(NSString *)title message:(NSString *)message buttonTitle:(NSString *)buttonTitle defaultValue:(NSString *)defaultValue cancelButtonTitle:(NSString *)cancelButtonTitle style:(UIAlertViewStyle)style completion:(PWAlertViewCompletionHandler)completion;
+- (instancetype)initWithTitle:(NSString *)title message:(NSString *)message buttonTitle:(NSString *)buttonTitle cancelButtonTitle:(NSString *)cancelButtonTitle defaultValue:(NSString *)defaultValue style:(UIAlertViewStyle)style completion:(PWAlertViewCompletionHandler)completion ;
 
 @end

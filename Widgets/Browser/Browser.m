@@ -77,14 +77,16 @@ ICON_GETTER(folderIcon, @"BookmarksListFolder")
 	bookmarkViewController.isRoot = YES;
 	
 	PWWidgetBrowserAddBookmarkViewController *addViewController = [[[PWWidgetBrowserAddBookmarkViewController alloc] initForWidget:self] autorelease];
-	addViewController.bookmarkTitle = title;
-	addViewController.bookmarkURL = url;
+	[addViewController updatePrefillTitle:title andAddress:url];
 	
-	[_bookmarkViewControllers release];
-	_bookmarkViewControllers = [@[bookmarkViewController, addViewController] copy];
+	//[_bookmarkViewControllers release];
+	//_bookmarkViewControllers = [@[bookmarkViewController, addViewController] copy];
 	
-	[self setViewControllers:_bookmarkViewControllers animated:YES];
-	_currentInterface = PWWidgetBrowserInterfaceBookmark;
+	//[bookmarkViewController configureBackButton];
+	
+	//[self setViewControllers:@[_webViewControllers[0], addViewController] animated:YES];
+	[self pushViewController:addViewController animated:YES];
+	//_currentInterface = PWWidgetBrowserInterfaceBookmark;
 }
 
 - (void)switchToWebInterface {

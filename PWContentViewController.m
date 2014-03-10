@@ -25,6 +25,14 @@
 	return @"PWContentViewControllerTitleTappedEvent";
 }
 
+- (BOOL)_viewControllerUnderlapsStatusBar {
+	return NO;
+}
+
+- (float)_statusBarHeightAdjustmentForCurrentOrientation {
+	return 0.0;
+}
+
 - (instancetype)init {
 	LOG(@"PWContentViewController: Instance must be initialized with initForWidget: method");
 	[self release];
@@ -33,7 +41,6 @@
 
 - (instancetype)initForWidget:(PWWidget *)widget {
 	if ((self = [self _initForWidget:widget])) {
-		self.automaticallyAdjustsScrollViewInsets = NO;
 		[self load];
 	}
 	return self;
@@ -41,6 +48,9 @@
 
 - (instancetype)_initForWidget:(PWWidget *)widget {
 	if ((self = [super init])) {
+		self.automaticallyAdjustsScrollViewInsets = NO;
+		self.edgesForExtendedLayout = UIRectEdgeNone;
+		self.extendedLayoutIncludesOpaqueBars = NO;
 		[self _setWidget:widget];
 	}
 	return self;
@@ -149,6 +159,12 @@
 	self.navigationItem.rightBarButtonItems = @[spacing, _actionButtonItem];
 }
 
+- (void)configureBackButton {
+	if (self.navigationItem.backBarButtonItem == nil) {
+		self.navigationItem.backBarButtonItem = [[[UIBarButtonItem alloc] initWithTitle:@"Back" style:UIBarButtonItemStylePlain target:nil action:nil] autorelease];
+	}
+}
+
 - (void)configureStandardButtons {
 	[self configureCloseButton];
 	[self configureActionButton];
@@ -199,13 +215,21 @@
 
 // content width
 - (CGFloat)contentWidthForOrientation:(PWWidgetOrientation)orientation {
-	return [[PWController sharedInstance] availableWidthInOrientation:orientation];
+	if (self.wantsFullscreen) {
+		CGRect screenRect = [[UIScreen mainScreen] bounds];
+		return orientation == PWWidgetOrientationLandscape ? screenRect.size.height : screenRect.size.width;
+	} else {
+		return [[PWController sharedInstance] availableWidthInOrientation:orientation];
+	}
 }
 
 // content height
 // any sub class of PWContentViewController must override this method to return its content height
 - (CGFloat)contentHeightForOrientation:(PWWidgetOrientation)orientation {
-	if (self.shouldMaximizeContentHeight) {
+	if (self.wantsFullscreen) {
+		CGRect screenRect = [[UIScreen mainScreen] bounds];
+		return orientation == PWWidgetOrientationLandscape ? screenRect.size.width : screenRect.size.height;
+	} else if (self.shouldMaximizeContentHeight) {
 		PWController *controller = [PWController sharedInstance];
 		CGFloat maxHeight = [controller availableHeightInOrientation:orientation withKeyboard:self.requiresKeyboard];
 		CGFloat navigationBarHeight = [controller heightOfNavigationBarInOrientation:orientation];
@@ -216,12 +240,24 @@
 	}
 }
 
+- (void)setWantsFullscreen:(BOOL)wantsFullscreen {
+	if (_wantsFullscreen != wantsFullscreen) {
+		_wantsFullscreen = wantsFullscreen;
+		PWWidget *widget = self.widget;
+		[widget resizeWidgetAnimated:YES forContentViewController:self];
+	}
+}
+
 - (void)setShouldMaximizeContentHeight:(BOOL)shouldMaximizeContentHeight {
 	if (_shouldMaximizeContentHeight != shouldMaximizeContentHeight) {
 		_shouldMaximizeContentHeight = shouldMaximizeContentHeight;
 		PWWidget *widget = self.widget;
 		[widget resizeWidgetAnimated:YES forContentViewController:self];
 	}
+}
+
+- (BOOL)requiresKeyboard {
+	return _requiresKeyboard && !_wantsFullscreen;
 }
 
 - (void)setRequiresKeyboard:(BOOL)requiresKeyboard {
@@ -245,8 +281,7 @@
 	}
 	
 	// configure back button
-	if (self.navigationItem.backBarButtonItem == nil)
-		self.navigationItem.backBarButtonItem = [[[UIBarButtonItem alloc] initWithTitle:@"Back" style:UIBarButtonItemStylePlain target:nil action:nil] autorelease];
+	[self configureBackButton];
 }
 
 - (void)_presentedInNavigationController:(UINavigationController *)navigationController {}

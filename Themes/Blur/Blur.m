@@ -27,7 +27,7 @@
 
 @end
 
-@interface UINavigationBar (Private)
+@interface UINavigationBar (backgroundView)
 
 - (UIView *)_backgroundView;
 

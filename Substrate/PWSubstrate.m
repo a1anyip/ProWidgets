@@ -12,6 +12,7 @@
 
 #import "PWController.h"
 #import "PWWidgetController.h"
+#import "PWWindow.h"
 #import "PWWebRequest.h"
 
 #import "preference/PWPrefURLInstallation.h"
@@ -70,6 +71,15 @@ static void handleException(NSException *exception) {
 
 %hook SpringBoard
 
+// this is to correct the interface orientation in my own window
+- (UIInterfaceOrientation)_statusBarOrientationForWindow:(UIWindow *)window {
+	if ([window isKindOfClass:[PWWindow class]]) {
+		return [PWController currentInterfaceOrientation];
+	} else {
+		return %orig;
+	}
+}
+
 - (void)_handleMenuButtonEvent {
 	LOG(@"PWSubstrate: _handleMenuButtonEvent");
 	NSTimer *menuButtonTimer = *(NSTimer **)instanceVar(self, "_menuButtonTimer");
@@ -88,7 +98,9 @@ static void handleException(NSException *exception) {
 }
 
 - (void)handleMenuDoubleTap {
-	if (![PWWidgetController isPresentingMaximizedWidget]) {
+	if ([PWWidgetController isPresentingMaximizedWidget]) {
+		[PWWidgetController minimizeAllControllers];
+	} else {
 		%orig;
 	}
 }

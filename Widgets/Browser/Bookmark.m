@@ -19,10 +19,12 @@
 	self.actionButtonText = @"Add";
 		
 	self.shouldAutoConfigureStandardButtons = NO;
-	self.shouldMaximizeContentHeight = YES;
+	self.wantsFullscreen = YES;
 	
 	self.tableView.delegate = self;
 	self.tableView.dataSource = self;
+	
+	[self setHandlerForEvent:[PWContentViewController titleTappedEventName] target:self selector:@selector(titleTapped)];
 }
 
 - (NSString *)title {
@@ -42,7 +44,6 @@
 		[self configureCloseButton];
 	}
 	[self configureActionButton];
-	[self setHandlerForEvent:[PWContentViewController titleTappedEventName] target:self selector:@selector(titleTapped)];
 	[self loadBookmarkItems];
 }
 

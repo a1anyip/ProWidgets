@@ -193,11 +193,7 @@
 		BOOL dataAvailable = [reply[@"dataAvailable"] boolValue];
 		NSArray *records = reply[@"records"];
 		
-		if (!dataAvailable) {
-			[self.widget showMessage:@"You must unlock your device to retrieve records from the app." title:nil handler:^{
-				[self.widget dismiss];
-			}];
-		} else if (records == nil) {
+		if (!dataAvailable || records == nil) {
 			[self.widget showMessage:@"Unable to retrieve verification codes from Google Authenticator app." title:nil handler:^{
 				[self.widget dismiss];
 			}];

@@ -1,7 +1,6 @@
 TWEAK_NAME = PWBrowserSubstrate
 PWBrowserSubstrate_FILES = PWBrowserSubstrate.x
-PWBrowserSubstrate_FRAMEWORKS = CoreFoundation Foundation UIKit
-PWBrowserSubstrate_LIBRARIES = prowidgets
+PWBrowserSubstrate_FRAMEWORKS = CoreFoundation Foundation UIKit SafariServices
 PWBrowserSubstrate_CFLAGS = -I../../../
 PWBrowserSubstrate_LDFLAGS = -L../../../$(THEOS_OBJ_DIR_NAME)
 

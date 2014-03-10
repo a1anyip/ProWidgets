@@ -8,6 +8,7 @@
 //
 
 #import "Mail.h"
+#import "../PWController.h"
 #import "../JSBridge/PWJSBridgeWrapper.h"
 #import <objcipc/objcipc.h>
 
@@ -91,6 +92,8 @@
 
 + (void)sendMailWithHTMLContent:(NSString *)htmlContent subject:(NSString *)subject sender:(NSString *)sender to:(NSArray *)to cc:(NSArray *)cc bcc:(NSArray *)bcc {
 	
+	CHECK_API();
+	
 	if (htmlContent == nil)
 		htmlContent = @"";
 	
@@ -163,6 +166,8 @@ else if (!validateRecipients(recipients)) return;
 
 + (NSDictionary *)defaultSenderAccount {
 	
+	CHECK_API(nil);
+	
 	MFMailAccountProxyGenerator *generator = [objc_getClass("MFMailAccountProxyGenerator") new];
 	MFMailAccountProxy *accountProxy = [generator defaultMailAccountProxyForDeliveryOriginatingBundleID:nil sourceAccountManagement:0];
 	
@@ -170,6 +175,8 @@ else if (!validateRecipients(recipients)) return;
 }
 
 + (NSArray *)availableSenderAccounts {
+	
+	CHECK_API(nil);
 	
 	NSMutableArray *accounts = [NSMutableArray array];
 	MFMailAccountProxyGenerator *generator = [objc_getClass("MFMailAccountProxyGenerator") new];
@@ -186,6 +193,8 @@ else if (!validateRecipients(recipients)) return;
 }
 
 + (NSString *)fullNameForSenderAddress:(NSString *)address {
+	
+	CHECK_API(nil);
 	
 	MFMailAccountProxyGenerator *generator = [objc_getClass("MFMailAccountProxyGenerator") new];
 	MFMailAccountProxy *accountProxy = [generator accountProxyContainingEmailAddress:address includingInactive:NO];

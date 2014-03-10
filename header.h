@@ -1,6 +1,7 @@
 #import "objc/objc.h"
 #import "objc/runtime.h"
 #import "interface.h"
+#import "function.h"
 
 //////////////////////////////////////////////////////////////////////
 
@@ -35,6 +36,7 @@
 // Handy marcos
 
 #define IS_IPHONE4 ([[PWController deviceModel] hasPrefix:@"iPhone3,"])
+#define CHECK_API(x) if (![PWController _checkAPIEnvironment]) return x;
 
 #define RELEASE(x) [x release], x = nil;
 #define RELEASE_VIEW(x) [x removeFromSuperview], [x release], x = nil;
@@ -72,7 +74,7 @@
 //////////////////////////////////////////////////////////////////////
 
 // Controller
-@class PWController, PWWidgetController;
+@class PWController, PWWidgetController, PWWidgetNavigationController;
 
 // Core
 @class PWTestBar, PWMiniView, PWBase, PWWindow, PWBackgroundView, PWView, PWContainerView, PWContentViewController, PWContentItemViewController, PWContentListViewController, PWEventHandler, PWThemableTableView, PWThemableTableViewCell, PWAlertView;

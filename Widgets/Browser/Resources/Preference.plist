@@ -9,6 +9,8 @@
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>General</string>
 			<key>footerText</key>
 			<string>Bookmarks, search and browsing history are retrieved from this browser.</string>
 		</dict>
@@ -20,7 +22,7 @@
 			<key>key</key>
 			<string>browser</string>
 			<key>label</key>
-			<string>Browser</string>
+			<string>Default Browser</string>
 			<key>default</key>
 			<integer>0</integer>
 			<key>detail</key>
@@ -35,6 +37,64 @@
 				<integer>0</integer>
 				<integer>1</integer>
 			</array>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Integration</string>
+			<key>footerText</key>
+			<string>Redirect web links from various sources to Browser widget.</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>defaults</key>
+			<string>cc.tweak.prowidgets.widget.browser</string>
+			<key>PostNotification</key>
+			<string>cc.tweak.prowidgets.widget.browser.preferencechanged</string>
+			<key>key</key>
+			<string>enabledOpenInApp</string>
+			<key>label</key>
+			<string>Open in App</string>
+			<key>default</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>defaults</key>
+			<string>cc.tweak.prowidgets.widget.browser</string>
+			<key>PostNotification</key>
+			<string>cc.tweak.prowidgets.widget.browser.preferencechanged</string>
+			<key>key</key>
+			<string>enabledOpenFromIcon</string>
+			<key>label</key>
+			<string>Open from Home Screen Icon</string>
+			<key>default</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Modification</string>
+			<key>footerText</key>
+			<string>Replace all "Add to Reading List" buttons to "Add to Bookmark" function</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>defaults</key>
+			<string>cc.tweak.prowidgets.widget.browser</string>
+			<key>PostNotification</key>
+			<string>cc.tweak.prowidgets.widget.browser.preferencechanged</string>
+			<key>key</key>
+			<string>enabledAddToBookmark</string>
+			<key>label</key>
+			<string>Add to Bookmark</string>
+			<key>default</key>
+			<true/>
 		</dict>
 	</array>
 </dict>

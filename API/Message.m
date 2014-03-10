@@ -8,6 +8,7 @@
 //
 
 #import "Message.h"
+#import "../PWController.h"
 #import "../JSBridge/PWJSBridgeWrapper.h"
 #import <objcipc/objcipc.h>
 
@@ -39,6 +40,8 @@
 @implementation PWAPIMessage
 
 + (void)sendMessage:(NSString *)content recipients:(NSArray *)recipients {
+	
+	CHECK_API();
 	
 	if (content == nil)
 		content = @"";

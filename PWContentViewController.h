@@ -30,6 +30,7 @@
 @property(nonatomic) BOOL shouldAutoConfigureStandardButtons;
 
 // these two variables determine the content size and position
+@property(nonatomic) BOOL wantsFullscreen;
 @property(nonatomic) BOOL shouldMaximizeContentHeight;
 @property(nonatomic) BOOL requiresKeyboard;
 
@@ -60,6 +61,7 @@
 
 - (void)configureCloseButton;
 - (void)configureActionButton;
+- (void)configureBackButton;
 - (void)configureStandardButtons;
 - (void)triggerClose;
 - (void)triggerAction;

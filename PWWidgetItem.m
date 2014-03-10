@@ -70,6 +70,31 @@
 // shortcut to create item with the given type
 + (PWWidgetItem *)createItemNamed:(NSString *)name forItemViewController:(PWContentItemViewController *)itemViewController {
 	
+	if (name == nil || itemViewController == nil) return nil;
+	
+	static NSDictionary *predefinedTypes = nil;
+	
+	if (predefinedTypes == nil) {
+		predefinedTypes = [@{
+							 @"textarea": @"PWWidgetItemTextArea",
+							 @"textfield": @"PWWidgetItemTextField",
+							 @"listvalue": @"PWWidgetItemListValue",
+							 @"datevalue": @"PWWidgetItemDateValue",
+							 @"tonevalue": @"PWWidgetItemToneValue",
+							 @"switch": @"PWWidgetItemSwitch",
+							 @"text": @"PWWidgetItemText",
+							 @"button": @"PWWidgetItemButton",
+							 @"webview": @"PWWidgetItemWebView",
+							 @"recipient": @"PWWidgetItemRecipient"
+							 } retain];
+	}
+	
+	// convert the given item name to the predefined class name
+	NSString *predefinedClassName = predefinedTypes[[name lowercaseString]];
+	if (predefinedClassName != nil) {
+		name = predefinedClassName;
+	}
+	
 	Class itemClass = NSClassFromString(name);
 	
 	if (itemClass == nil || ![itemClass isSubclassOfClass:[PWWidgetItem class]]) {
@@ -81,6 +106,16 @@
 	item.itemViewController = itemViewController;
 	
 	return [item autorelease];
+}
+
++ (instancetype)createItemForItemViewController:(PWContentItemViewController *)itemViewController {
+	if (itemViewController != nil && [self isSubclassOfClass:[PWWidgetItem class]] && ![self isEqual:[PWWidgetItem class]]) {
+		PWWidgetItem *item = [self new];
+		item.itemViewController = itemViewController;
+		return [item autorelease];
+	} else {
+		return nil;
+	}
 }
 
 //////////////////////////////////////////////////////////////////////

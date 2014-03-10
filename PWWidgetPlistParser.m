@@ -16,27 +16,7 @@
 #import "PWContentViewController.h"
 #import "PWContentItemViewController.h"
 
-static NSDictionary *predefinedTypes = nil;
-
 @implementation PWWidgetPlistParser
-
-+ (void)load {
-	
-	if (predefinedTypes != nil);
-	
-	predefinedTypes = [@{
-		@"textarea": @"PWWidgetItemTextArea",
-		@"textfield": @"PWWidgetItemTextField",
-		@"listvalue": @"PWWidgetItemListValue",
-		@"datevalue": @"PWWidgetItemDateValue",
-		@"tonevalue": @"PWWidgetItemToneValue",
-		@"switch": @"PWWidgetItemSwitch",
-		@"text": @"PWWidgetItemText",
-		@"button": @"PWWidgetItemButton",
-		@"webview": @"PWWidgetItemWebView",
-		@"recipient": @"PWWidgetItemRecipient"
-	} retain];
-}
 
 + (void)parse:(NSDictionary *)dict forWidget:(PWWidget *)widget {
 	
@@ -118,6 +98,12 @@ static NSDictionary *predefinedTypes = nil;
 	NSNumber *shouldAutoConfigureStandardButtons = dict[@"shouldAutoConfigureStandardButtons"];
 	if (shouldAutoConfigureStandardButtons != nil) {
 		[viewController setShouldAutoConfigureStandardButtons:[shouldAutoConfigureStandardButtons boolValue]];
+	}
+	
+	// wantsFullscreen
+	NSNumber *wantsFullscreen = dict[@"wantsFullscreen"];
+	if (wantsFullscreen != nil) {
+		[viewController setWantsFullscreen:[wantsFullscreen boolValue]];
 	}
 	
 	// shouldMaximizeContentHeight
@@ -219,13 +205,6 @@ NSString *expression = [NSString stringWithFormat:@"%f", [expressionNumber doubl
 			
 			// type
 			NSString *type = item[@"type"];
-			
-			// if the type is predefined, convert it to full class name
-			if (type != nil) {
-				NSString *predefinedClassName = [predefinedTypes objectForKey:[type lowercaseString]];
-				if (predefinedClassName != nil)
-					type = predefinedClassName;
-			}
 			
 			// create the widget item
 			PWWidgetItem *widgetItem = [PWWidgetItem createItemNamed:type forItemViewController:itemViewController]; // auto release
