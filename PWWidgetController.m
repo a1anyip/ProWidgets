@@ -7,6 +7,8 @@
 //  Copyright 2014 Alan Yip. All rights reserved.
 //
 
+#import "tgmath.h"
+
 #import "PWWidgetController.h"
 #import "PWWidgetNavigationController.h"
 #import "PWController.h"
@@ -20,14 +22,113 @@
 
 #define IDLETIMER_DISABLED_REASON @"PW_IDLETIMER_DISABLED_REASON"
 
+static BOOL _isDragging = NO;
 static NSUInteger _lockCount = 0;
 static PWWidgetController *_activeController = nil;
 static NSMutableSet *_controllers = nil;
+
+static inline ReferencePoint ReferencePointMake(ReferenceLine refLine, CGFloat refValue) {
+	ReferencePoint point;
+	point.referenceLine = refLine;
+	point.referenceValue = refValue;
+	return point;
+}
+
+static inline ReferenceLocation ReferenceLocationMake(ReferencePoint x, ReferencePoint y) {
+	ReferenceLocation location;
+	location.x = x;
+	location.y = y;
+	return location;
+}
+
+static inline ReferencePoint ReferencePointFromMagnitude(CGFloat magnitude, CGFloat containerMagnitude, CGFloat center) {
+	
+	CGFloat containerMid = containerMagnitude / 2.0;
+	
+	CGFloat leftDelta = center - magnitude / 2.0;
+	CGFloat middleDelta = center - containerMid;
+	CGFloat rightDelta = -(containerMagnitude - center - magnitude / 2.0);
+	
+	CGFloat leftDeltaAbs = fabs(leftDelta);
+	CGFloat middleDeltaAbs = fabs(middleDelta);
+	CGFloat rightDeltaAbs = fabs(rightDelta);
+	
+	ReferenceLine refLine;
+	CGFloat refValue;
+	
+	if (leftDeltaAbs < middleDeltaAbs && leftDeltaAbs < rightDeltaAbs) {
+		refLine = ReferenceLineLeft;
+		refValue = leftDelta / containerMid;
+	} else if (rightDeltaAbs < leftDeltaAbs && rightDeltaAbs < middleDeltaAbs) {
+		refLine = ReferenceLineRight;
+		refValue = rightDelta / containerMid;
+	} else {
+		refLine = ReferenceLineMiddle;
+		refValue = middleDelta / containerMid;
+	}
+	
+	return ReferencePointMake(refLine, refValue);
+}
+
+static inline ReferenceLocation ReferenceLocationFromSizeAndCenter(CGSize size, CGPoint center, CGSize containerSize) {
+	
+	ReferencePoint x = ReferencePointFromMagnitude(size.width, containerSize.width, center.x);
+	ReferencePoint y = ReferencePointFromMagnitude(size.height, containerSize.height, center.y);
+	
+	return ReferenceLocationMake(x, y);
+}
+
+static inline CGFloat CenterPointFromReferencePoint(ReferencePoint point, CGFloat magnitude, CGFloat containerMagnitude) {
+	
+	CGFloat containerMid = containerMagnitude / 2.0;
+	
+	ReferenceLine refLine = point.referenceLine;
+	CGFloat refValue = point.referenceValue;
+	CGFloat refMagnitude = refValue * containerMid;
+	
+	if (refLine == ReferenceLineLeft) {
+		return refMagnitude + magnitude / 2.0;
+	} else if (refLine == ReferenceLineMiddle) {
+		return containerMid + refMagnitude;
+	} else {
+		return containerMagnitude + refMagnitude - magnitude / 2.0;
+	}
+}
+
+static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CGSize size, CGSize containerSize) {
+	CGFloat x = CenterPointFromReferencePoint(location.x, size.width, containerSize.width);
+	CGFloat y = CenterPointFromReferencePoint(location.y, size.height, containerSize.height);
+	return CGPointMake(x, y);
+}
 
 @implementation PWWidgetController
 
 + (void)load {
 	_controllers = [NSMutableSet new];
+}
+
++ (BOOL)shouldDisableNotificationCenterPresentation {
+	
+	if (![PWController supportsDragging]) {
+		return NO;
+	}
+	
+	CGFloat thresholdY = 30.0;
+	for (PWWidgetController *controller in _controllers) {
+		if (controller.isPresented && !controller.isMinimized) {
+			// check if the container view falls into the region above threshold Y
+			CGFloat originY = controller.containerView.frame.origin.y;
+			if (originY <= thresholdY) {
+				return YES;
+			}
+		}
+	}
+	
+	return NO;
+}
+
++ (BOOL)isDragging {
+	return _isDragging;
 }
 
 + (BOOL)isPresentingWidget {
@@ -352,15 +453,15 @@ static NSMutableSet *_controllers = nil;
 	// make myself active
 	[self makeActive:YES];
 	
+	// adjust the center and bounds of container view
+	CGRect bounds = [self _containerBounds];
+	CGPoint center = [self _containerCenterForBounds:bounds];
+	_containerView.bounds = bounds;
+	_containerView.center = center;
+	
 	// update mask and show background view
 	[self _updateBackgroundViewMaskForPresentation];
 	[backgroundView show];
-	
-	// adjust the center and bounds of container view
-	CGPoint center = [self _containerCenter];
-	CGRect bounds = [self _containerBounds];
-	_containerView.center = center;
-	_containerView.bounds = bounds;
 	
 	// begin animation
 	CALayer *layer = _containerView.layer;
@@ -903,12 +1004,19 @@ static NSMutableSet *_controllers = nil;
 	if (!_isPresented) return;
 	
 	// force navigation controller to update layout
-	UINavigationController *navigationController = _widget.navigationController;
-	[navigationController _updateLayoutForStatusBarAndInterfaceOrientation];
+	// the height of navigation bar is constant on iPad, so it is unnecessary to update layout again
+	if (![PWController isIPad]) {
+		[UIView performWithoutAnimation:^{
+			UINavigationController *navigationController = _widget.navigationController;
+			[navigationController _updateLayoutForStatusBarAndInterfaceOrientation];
+		}];
+	}
 	
 	// update theme layout
-	PWTheme *theme = _widget.theme;
-	[theme adjustLayout];
+	[UIView performWithoutAnimation:^{
+		PWTheme *theme = _widget.theme;
+		[theme adjustLayout];
+	}];
 	
 	if (_isMinimized) {
 		// re-position mini view
@@ -919,7 +1027,7 @@ static NSMutableSet *_controllers = nil;
 	}
 }
 
-- (CGPoint)_containerCenter {
+- (CGPoint)_containerCenterForBounds:(CGRect)bounds {
 	
 	PWController *controller = [PWController sharedInstance];
 	PWView *view = controller.mainView;
@@ -937,12 +1045,46 @@ static NSMutableSet *_controllers = nil;
 	}
 	
 	// view dimensions
-	CGSize size = view.bounds.size;
-	CGFloat width = size.width;
-	CGFloat height = size.height;
+	CGSize viewSize = view.bounds.size;
+	CGSize containerViewSize = bounds.size;
 	CGFloat keyboardHeight = requiresKeyboard ? _keyboardHeight : 0.0;
 	
-	return CGPointMake(width / 2, height / 2 - keyboardHeight / 2);
+	CGFloat margin = 2.0;
+	CGPoint defaultCenter = CGPointMake(viewSize.width / 2, viewSize.height / 2 - keyboardHeight / 2);
+	
+	if (![PWController supportsDragging]) {
+		
+		// always return the center point on iPhone
+		return defaultCenter;
+		
+	} else {
+		
+		CGPoint center;
+		
+		if (_hasContainerViewLocation) {
+			center = CenterFromReferenceLocation(_containerViewLocation, containerViewSize, viewSize);
+			center.x += margin;
+			center.y += margin;
+		} else {
+			center = defaultCenter;
+		}
+		
+		CGFloat minX = containerViewSize.width / 2;
+		CGFloat maxX = viewSize.width - minX;
+		CGFloat minY = containerViewSize.height / 2;
+		CGFloat maxY = viewSize.height - minY;
+		
+		minX += margin;
+		maxX -= margin;
+		minY += margin;
+		maxY -= margin;
+		
+		// limit the moving bounds
+		center.x = MAX(minX, MIN(center.x, maxX));
+		center.y = MAX(minY, MIN(center.y, maxY));
+		
+		return center;
+	}
 }
 
 - (CGRect)_containerBounds {
@@ -988,17 +1130,6 @@ static NSMutableSet *_controllers = nil;
 	miniViewSize.width *= _miniView.scale;
 	miniViewSize.height *= _miniView.scale;
 	
-	CGFloat originX;
-	CGFloat originY;
-	
-	if (_recordedLastPosition) {
-		originX = margin + _lastPosition.x * (viewSize.width - margin * 2);
-		originY = margin + _lastPosition.y * (viewSize.height - margin * 2);
-	} else {
-		originX = viewSize.width;
-		originY = statusBarHeight;
-	}
-	
 	CGFloat minX = miniViewSize.width / 2;
 	CGFloat maxX = viewSize.width - minX;
 	CGFloat minY = miniViewSize.height / 2;
@@ -1009,8 +1140,17 @@ static NSMutableSet *_controllers = nil;
 	minY += margin;
 	maxY -= margin;
 	
+	CGPoint center;
+	
+	if (_hasMiniViewLocation) {
+		center = CenterFromReferenceLocation(_miniViewLocation, miniViewSize, viewSize);
+		center.x += margin;
+		center.y += margin;
+	} else {
+		center = CGPointMake(maxX, statusBarHeight + miniViewSize.height / 2.0);
+	}
+	
 	// limit the moving bounds
-	CGPoint center = CGPointMake(originX, originY);
 	center.x = MAX(minX, MIN(center.x, maxX));
 	center.y = MAX(minY, MIN(center.y, maxY));
 	
@@ -1064,10 +1204,12 @@ static NSMutableSet *_controllers = nil;
 	PWView *mainView = [PWController sharedInstance].mainView;
 	PWBackgroundView *backgroundView = mainView.backgroundView;
 	
-	CGPoint currentCenter = _containerView.center;
 	CGRect currentBounds = _containerView.bounds;
-	CGPoint center = [self _containerCenter];
+	CGPoint currentCenter = _containerView.center;
+	
 	CGRect bounds = [self _containerBounds];
+	CGPoint center = [self _containerCenterForBounds:bounds];
+	
 	CGFloat cornerRadius = [_widget.theme cornerRadius];
 	
 	if (CGPointEqualToPoint(currentCenter, center) && CGRectEqualToRect(currentBounds, bounds)) {
@@ -1127,7 +1269,8 @@ static NSMutableSet *_controllers = nil;
 
 - (void)_keyboardWillShowHandler:(CGFloat)height {
 	
-	if (height != _keyboardHeight) {
+	// ignore the change in keyboard height on iPad
+	if (![PWController isIPad] && height != _keyboardHeight) {
 		
 		_keyboardHeight = height;
 		
@@ -1142,7 +1285,8 @@ static NSMutableSet *_controllers = nil;
 	PWWidgetOrientation orientation = [PWController currentOrientation];
 	CGFloat keyboardHeight = [[PWController sharedInstance] defaultHeightOfKeyboardInOrientation:orientation];
 	
-	if (_keyboardHeight != keyboardHeight) {
+	// ignore the change in keyboard height on iPad
+	if (![PWController isIPad] && _keyboardHeight != keyboardHeight) {
 		
 		_keyboardHeight = keyboardHeight;
 		
@@ -1191,14 +1335,21 @@ static NSMutableSet *_controllers = nil;
 	UIGestureRecognizerState state = [sender state];
 	
 	PWView *view = [PWController sharedInstance].mainView;
+	PWBackgroundView *backgroundView = view.backgroundView;
+	
 	CGSize viewSize = view.bounds.size;
 	CGSize containerViewSize = _containerView.bounds.size;
 	
-	//CGFloat midX = viewSize.width / 2;
+	CGFloat margin = 2.0;
 	CGFloat minX = containerViewSize.width / 2;
 	CGFloat maxX = viewSize.width - minX;
 	CGFloat minY = containerViewSize.height / 2;
 	CGFloat maxY = viewSize.height - minY;
+	
+	minX += margin;
+	maxX -= margin;
+	minY += margin;
+	maxY -= margin;
 	
 	// limit the moving bounds
 	CGPoint center = [sender translationInView:view];
@@ -1215,7 +1366,33 @@ static NSMutableSet *_controllers = nil;
 		[self makeActive:YES];
 	}
 	
-	if (state == UIGestureRecognizerStateEnded) {
+	// hide background view when start dragging
+	if (state == UIGestureRecognizerStateBegan) {
+		if ([PWController shouldShowBackgroundView]) {
+			[backgroundView hide];
+		}
+	}
+	
+	if (state == UIGestureRecognizerStateEnded || state == UIGestureRecognizerStateCancelled || state == UIGestureRecognizerStateFailed) {
+		
+		_isDragging = NO;
+		
+		// show background view when stop dragging
+		// and adjust the mask rect
+		if ([PWController shouldShowBackgroundView]) {
+			
+			if ([PWController shouldMaskBackgroundView]) {
+				CGRect finalRect = _containerView.bounds;
+				finalRect.origin.x = center.x - containerViewSize.width / 2.0;
+				finalRect.origin.y = center.y - containerViewSize.height / 2.0;
+				
+				CGFloat cornerRadius = [_widget.theme cornerRadius];
+				
+				[backgroundView setMaskRect:finalRect fromRect:CGRectNull cornerRadius:cornerRadius animationType:PWBackgroundViewAnimationTypeNone];
+			}
+			
+			[backgroundView show];
+		}
 		
 		[UIView animateWithDuration:PWTransitionAnimationDuration animations:^{
 			_containerView.center = center;
@@ -1224,11 +1401,19 @@ static NSMutableSet *_controllers = nil;
 		
 	} else {
 		
+		_isDragging = YES;
+		
 		[UIView animateWithDuration:PWTransitionAnimationDuration animations:^{
 			_containerView.center = center;
 			_containerView.alpha = .8;
 		}];
 	}
+	
+	CGPoint centerMinusMargin = CGPointMake(center.x - margin, center.y - margin);
+	ReferenceLocation location = ReferenceLocationFromSizeAndCenter(containerViewSize, centerMinusMargin, viewSize);
+	
+	_hasContainerViewLocation = YES;
+	_containerViewLocation = location;
 }
 
 - (void)handleMiniViewPan:(UIPanGestureRecognizer *)sender {
@@ -1263,7 +1448,9 @@ static NSMutableSet *_controllers = nil;
 	
 	[sender setTranslation:CGPointZero inView:view];
 	
-	if (state == UIGestureRecognizerStateEnded) {
+	if (state == UIGestureRecognizerStateEnded || state == UIGestureRecognizerStateCancelled || state == UIGestureRecognizerStateFailed) {
+		
+		_isDragging = NO;
 		
 		CGFloat velocity = 1.0;
 		
@@ -1285,6 +1472,8 @@ static NSMutableSet *_controllers = nil;
 		
 	} else {
 		
+		_isDragging = YES;
+		
 		if (state == UIGestureRecognizerStateBegan) {
 			[_miniView.superview bringSubviewToFront:_miniView];
 		}
@@ -1294,11 +1483,11 @@ static NSMutableSet *_controllers = nil;
 		}];
 	}
 	
-	CGFloat lastPositionX = (center.x - miniViewSize.width / 2 - margin) / (viewSize.width - margin * 2);
-	CGFloat lastPositionY = (center.y - margin) / (viewSize.height - margin * 2);
+	CGPoint centerMinusMargin = CGPointMake(center.x - margin, center.y - margin);
+	ReferenceLocation location = ReferenceLocationFromSizeAndCenter(miniViewSize, centerMinusMargin, viewSize);
 	
-	_recordedLastPosition = YES;
-	_lastPosition = CGPointMake(lastPositionX, lastPositionY);
+	_hasMiniViewLocation = YES;
+	_miniViewLocation = location;
 }
 
 - (void)handleMiniViewSingleTap:(UITapGestureRecognizer *)sender {

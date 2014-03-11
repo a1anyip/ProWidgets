@@ -1,7 +1,6 @@
 #import "objc/objc.h"
 #import "objc/runtime.h"
 #import "interface.h"
-#import "function.h"
 
 //////////////////////////////////////////////////////////////////////
 
@@ -26,8 +25,6 @@
 #define PWSheetHorizontalMargin 6.0
 #define PWSheetVerticalMargin 6.0
 
-#define PWDefaultSingleCellHeight 44.0
-#define PWDefaultTextAreaCellHeight PWDefaultSingleCellHeight * 3
 #define PWDefaultButtonMargin 4.0
 #define PWDefaultItemCellPadding 10.0
 

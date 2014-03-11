@@ -15,6 +15,7 @@
 	PWWidget *_widget;
 	
 	BOOL _shouldAutoConfigureStandardButtons;
+	BOOL _wantsFullscreen;
 	BOOL _shouldMaximizeContentHeight;
 	BOOL _requiresKeyboard;
 	

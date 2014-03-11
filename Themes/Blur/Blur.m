@@ -13,6 +13,8 @@
 @interface _UIBackdropView : UIView
 
 - (id)initWithSettings:(id)settings;
+- (void)setBlurQuality:(id)arg1;
+- (void)setShouldRasterizeEffectsView:(BOOL)arg1;
 
 @end
 
@@ -24,6 +26,8 @@
 
 + (instancetype)settingsForStyle:(int)style;
 - (instancetype)initWithDefaultValues;
+- (void)setBlurRadius:(float)arg1;
+- (void)setBlurQuality:(id)arg1;
 
 @end
 

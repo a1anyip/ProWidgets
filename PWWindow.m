@@ -18,6 +18,7 @@
 
 - (instancetype)init {
 	if (self = [super init]) {
+		
 		// Window Levels
 		// (Cut/Copy) UITextEffectsWindow	2100
 		// (Undo/Cancel) ~Alert window		1996
@@ -26,31 +27,41 @@
 		// === PWWindow ===					1055
 		// Lock Alert Window				1050
 		// UIWindowLevelStatusBar			1000
+		
 		self.windowLevel = 1055.0;
 		self.backgroundColor = [UIColor clearColor];
 		self.userInteractionEnabled = YES;
 		self.frame = [[UIScreen mainScreen] bounds];
 		self.hidden = NO;
+		
+		[self adjustLayout];
 	}
 	return self;
 }
 
 - (void)adjustLayout {
 	
-	PWView *mainView = [PWController sharedInstance].mainView;
-	
 	UIInterfaceOrientation orientation = [[PWController sharedInstance] currentInterfaceOrientation];
-	CGAffineTransform transform = [self orientationToTransform:orientation];
-	LOG(@"PWWindow adjustLayout <orientation: %d>", (int)orientation);
 	
-	mainView.transform = CGAffineTransformIdentity;
-	mainView.transform = transform;
-	mainView.frame = self.bounds;
-	
-	[mainView setNeedsLayout];
-	[mainView layoutIfNeeded];
-	
-	[PWWidgetController adjustLayoutForAllControllers];
+	if (!_adjustedLayout || _currentOrientation != orientation) {
+		
+		_adjustedLayout = YES;
+		_currentOrientation = orientation;
+		
+		CGAffineTransform transform = [self orientationToTransform:orientation];
+		LOG(@"PWWindow adjustLayout <orientation: %d>", (int)orientation);
+		
+		PWView *mainView = [PWController sharedInstance].mainView;
+		
+		mainView.transform = CGAffineTransformIdentity;
+		mainView.transform = transform;
+		mainView.frame = self.bounds;
+		
+		[mainView setNeedsLayout];
+		[mainView layoutIfNeeded];
+		
+		[PWWidgetController adjustLayoutForAllControllers];
+	}
 }
 
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {

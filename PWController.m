@@ -72,6 +72,13 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	
 	LOG(@"PWController: activeInterfaceOrientationDidChangeToOrientation: %d", (int)activeInterfaceOrientation);
 	
+	// prevent this from being called for multiple times
+	if (_lastDidChangeToOrientation == activeInterfaceOrientation) {
+		return;
+	} else {
+		_lastDidChangeToOrientation = activeInterfaceOrientation;
+	}
+	
 	if (_interfaceOrientationIsLocked)
 		return;
 	
@@ -79,14 +86,18 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 		
 		LOG(@"PWController: _lastFirstResponder: %@", _lastFirstResponder);
 		
-		[_lastFirstResponder resignFirstResponder];
-		
-		if (finished) {
-			[_lastFirstResponder becomeFirstResponder];
-		}
-		
-		RELEASE(_lastFirstResponder)
+		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, .1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^(void){
+			
+			if (finished) {
+				[_lastFirstResponder becomeFirstResponder];
+			}
+			
+			RELEASE(_lastFirstResponder)
+		});
 	};
+	
+	//[_lastFirstResponder resignFirstResponder];
+	//[_window endEditing:YES];
 	
 	[UIView animateWithDuration:duration animations:^{
 		[_window adjustLayout];
@@ -95,6 +106,13 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 
 - (void)activeInterfaceOrientationWillChangeToOrientation:(UIInterfaceOrientation)activeInterfaceOrientation {
 	LOG(@"PWController: activeInterfaceOrientationWillChangeToOrientation: %d", (int)activeInterfaceOrientation);
+	
+	// prevent this from being called for multiple times
+	if (_lastWillChangeToOrientation == activeInterfaceOrientation) {
+		return;
+	} else {
+		_lastWillChangeToOrientation = activeInterfaceOrientation;
+	}
 	
 	if (!_interfaceOrientationIsLocked) {
 	
@@ -106,10 +124,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	}
 	
 	[_window endEditing:YES];
-	
-	if (![self.class isIPad]) {
-		[[objc_getClass("SBUIController") sharedInstance] _hideKeyboard]; // force to hide keyboard
-	}
+	[[objc_getClass("SBUIController") sharedInstance] _hideKeyboard]; // force to hide keyboard
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -175,6 +190,10 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 
 + (BOOL)shouldMaskBackgroundView {
 	return !IS_IPHONE4 && ![PWController sharedInstance]._disabledMask;
+}
+
++ (BOOL)shouldMinimizeAllControllersAutomatically {
+	return ![PWController isIPad];
 }
 
 + (BOOL)supportsDragging {
@@ -243,14 +262,11 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 
 - (UIInterfaceOrientation)currentInterfaceOrientation {
 	
-	if (_interfaceOrientationIsLocked)
+	if (_interfaceOrientationIsLocked) {
 		return _lockedInterfaceOrientation;
-	
-	UIApplication *app = [UIApplication sharedApplication];
-	if ([app isKindOfClass:objc_getClass("SpringBoard")]) {
-		return [(SpringBoard *)app activeInterfaceOrientation];
 	} else {
-		return [app statusBarOrientation];
+		// more efficient and reliable way to retrieve latest active interface orientation
+		return _lastWillChangeToOrientation;
 	}
 }
 
@@ -273,13 +289,22 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	CGFloat keyboardHeight = withKeyboard ? [self defaultHeightOfKeyboardInOrientation:orientation] : 0.0;
 	CGFloat margin = PWSheetVerticalMargin * 2;
 	
-	if (isLandscape)
-		margin /= 2;
+	CGFloat availableHeight = screenHeight - keyboardHeight;
 	
-	if ([PWController isIPad]) // just to make sure the sheet on iPad is not too large
-		screenHeight /= 2.0;
+	// just to make sure the sheet on iPad is not too large
+	if ([PWController isIPad]) {
+		if (orientation == PWWidgetOrientationPortrait) {
+			availableHeight /= 2.0;
+		} else if (orientation == PWWidgetOrientationLandscape) {
+			availableHeight *= 4.0 / 5.0;
+		}
+	}
 	
-	return screenHeight - keyboardHeight - margin;
+	// make the margin smaller on iPhone
+	if (![PWController isIPad] && isLandscape)
+		margin /= 2.0;
+	
+	return availableHeight - margin;
 }
 
 - (CGFloat)heightOfNavigationBarInOrientation:(PWWidgetOrientation)orientation {

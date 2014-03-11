@@ -215,7 +215,7 @@
 
 // content width
 - (CGFloat)contentWidthForOrientation:(PWWidgetOrientation)orientation {
-	if (self.wantsFullscreen) {
+	if (self.wantsFullscreen && ![PWController isIPad]) {
 		CGRect screenRect = [[UIScreen mainScreen] bounds];
 		return orientation == PWWidgetOrientationLandscape ? screenRect.size.height : screenRect.size.width;
 	} else {
@@ -226,7 +226,7 @@
 // content height
 // any sub class of PWContentViewController must override this method to return its content height
 - (CGFloat)contentHeightForOrientation:(PWWidgetOrientation)orientation {
-	if (self.wantsFullscreen) {
+	if (self.wantsFullscreen && ![PWController isIPad]) {
 		CGRect screenRect = [[UIScreen mainScreen] bounds];
 		return orientation == PWWidgetOrientationLandscape ? screenRect.size.width : screenRect.size.height;
 	} else if (self.shouldMaximizeContentHeight) {
@@ -240,7 +240,17 @@
 	}
 }
 
+- (BOOL)wantsFullscreen {
+	return _wantsFullscreen && ![PWController isIPad];
+}
+
 - (void)setWantsFullscreen:(BOOL)wantsFullscreen {
+	
+	if ([PWController isIPad]) {
+		_wantsFullscreen = NO;
+		return;
+	}
+	
 	if (_wantsFullscreen != wantsFullscreen) {
 		_wantsFullscreen = wantsFullscreen;
 		PWWidget *widget = self.widget;

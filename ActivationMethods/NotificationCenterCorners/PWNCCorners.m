@@ -229,10 +229,11 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	
 	if (widgetName != nil) {
 		NSDictionary *userInfo = @{ @"from": @"notificationcentercorner" };
-		[[objc_getClass("SBNotificationCenterController") sharedInstance] dismissAnimated:YES];
-		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, .2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^(void){
+		// dismiss notification center
+		[[objc_getClass("SBNotificationCenterController") sharedInstance] dismissAnimated:YES completion:^{
+			// present the widget
 			[PWWidgetController presentWidgetNamed:widgetName userInfo:userInfo];
-		});
+		}];
 	}
 }
 

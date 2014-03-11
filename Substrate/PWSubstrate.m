@@ -50,9 +50,15 @@ static void handleException(NSException *exception) {
 %hook SBNotificationCenterController
 
 - (void)beginPresentationWithTouchLocation:(CGPoint)touchLocation {
-	if ([PWWidgetController isPresentingMaximizedWidget]) {
+	
+	LOG(@"beginPresentationWithTouchLocation: %f, %f", touchLocation.x, touchLocation.y);
+	
+	if ([PWWidgetController isDragging] || [PWWidgetController shouldDisableNotificationCenterPresentation])
+		return;
+	
+	if ([PWController shouldMinimizeAllControllersAutomatically] && [PWWidgetController isPresentingMaximizedWidget])
 		[PWWidgetController minimizeAllControllers];
-	}
+	
 	%orig;
 }
 
@@ -61,9 +67,13 @@ static void handleException(NSException *exception) {
 %hook SBControlCenterController
 
 - (void)beginTransitionWithTouchLocation:(CGPoint)touchLocation {
-	if ([PWWidgetController isPresentingMaximizedWidget]) {
+	
+	if ([PWWidgetController isDragging])
+		return;
+	
+	if ([PWController shouldMinimizeAllControllersAutomatically] && [PWWidgetController isPresentingMaximizedWidget])
 		[PWWidgetController minimizeAllControllers];
-	}
+	
 	%orig;
 }
 

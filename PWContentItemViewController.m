@@ -635,7 +635,7 @@ static NSNumberFormatter *numberFormatter = nil;
 }
 
 - (CGFloat)contentHeightForOrientation:(PWWidgetOrientation)orientation {
-	if (self.wantsFullscreen) {
+	if (self.wantsFullscreen && ![PWController isIPad]) {
 		return [super contentHeightForOrientation:orientation];
 	} else {
 		return [self optimalContentHeightForOrientation:orientation];

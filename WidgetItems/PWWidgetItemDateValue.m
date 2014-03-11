@@ -176,7 +176,10 @@ static NSDateFormatter *dateFormatter = nil;
 		
 		// create a date picker
 		_datePicker = [UIDatePicker new];
-		_datePicker.autoresizingMask = UIViewAutoresizingFlexibleHeight;
+		
+		// this is not necessary on iPad
+		if (![PWController isIPad])
+			_datePicker.autoresizingMask = UIViewAutoresizingFlexibleHeight;
 		
 		// create a text field
 		_textField = [UITextField new];

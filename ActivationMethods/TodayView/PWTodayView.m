@@ -132,12 +132,10 @@ static char PWTodayViewTomorrowSectionKey;
 	}
 	
 	// dismiss notification center
-	[[objc_getClass("SBNotificationCenterController") sharedInstance] dismissAnimated:YES];
-	
-	// present Calendar widget
-	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, .2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^(void){
+	[[objc_getClass("SBNotificationCenterController") sharedInstance] dismissAnimated:YES completion:^{
+		// present Calendar widget
 		[PWWidgetController presentWidgetNamed:@"Calendar" userInfo:userInfo];
-	});
+	}];
 }
 
 %new

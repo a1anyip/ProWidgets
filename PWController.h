@@ -17,7 +17,9 @@
 	
 	BOOL _interfaceOrientationIsLocked;
 	UIInterfaceOrientation _lockedInterfaceOrientation;
-	BOOL _pendingDismissalRequest;
+	
+	UIInterfaceOrientation _lastWillChangeToOrientation;
+	UIInterfaceOrientation _lastDidChangeToOrientation;
 	
 	// Base Bundle
 	// for getting widget path
@@ -112,6 +114,7 @@
 
 + (BOOL)shouldShowBackgroundView;
 + (BOOL)shouldMaskBackgroundView;
++ (BOOL)shouldMinimizeAllControllersAutomatically;
 + (BOOL)supportsDragging;
 + (BOOL)supportsMultipleWidgetsOnScreen;
 

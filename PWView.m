@@ -43,6 +43,11 @@
 	
 	UIView *result = [super hitTest:point withEvent:event];
 	
+	// dragging
+	if ([PWWidgetController isDragging]) {
+		return self;
+	}
+	
 	// background view
 	if (result == _backgroundView) {
 		return result;

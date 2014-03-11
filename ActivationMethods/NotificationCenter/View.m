@@ -211,11 +211,10 @@ static inline UIImage *scaleImage(UIImage *image) {
 		// user info
 		NSDictionary *userInfo = @{ @"from": @"notificationcenter" };
 		// dismiss notification center
-		[[objc_getClass("SBNotificationCenterController") sharedInstance] dismissAnimated:YES];
-		// present the widget
-		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, .2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^(void){
+		[[objc_getClass("SBNotificationCenterController") sharedInstance] dismissAnimated:YES completion:^{
+			// present the widget
 			[PWWidgetController presentWidgetFromBundle:bundle userInfo:userInfo];
-		});
+		}];
 	}
 }
 

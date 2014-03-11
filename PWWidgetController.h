@@ -10,6 +10,22 @@
 #import "header.h"
 #import "PWBackgroundView.h"
 
+typedef enum {
+	ReferenceLineLeft,
+	ReferenceLineMiddle,
+	ReferenceLineRight
+} ReferenceLine;
+
+typedef struct {
+	ReferenceLine referenceLine;
+	CGFloat referenceValue;
+} ReferencePoint;
+
+typedef struct {
+	ReferencePoint x;
+	ReferencePoint y;
+} ReferenceLocation;
+
 @interface PWWidgetController : NSObject {
 	
 	BOOL _isActive;
@@ -19,9 +35,14 @@
 	
 	BOOL _pendingDismissalRequest;
 	
-	BOOL _recordedLastPosition;
-	CGPoint _lastPosition;
+	// container view
+	BOOL _hasContainerViewLocation;
+	ReferenceLocation _containerViewLocation;
 	CGFloat _keyboardHeight;
+	
+	// mini view
+	BOOL _hasMiniViewLocation;
+	ReferenceLocation _miniViewLocation;
 	
 	PWBackgroundView *_backgroundView;
 	PWContainerView *_containerView;
@@ -44,6 +65,8 @@
 
 @property(nonatomic, readonly) PWWidget *widget;
 
++ (BOOL)shouldDisableNotificationCenterPresentation;
++ (BOOL)isDragging;
 + (BOOL)isPresentingWidget;
 + (BOOL)isPresentingMaximizedWidget;
 
@@ -94,7 +117,7 @@
 - (void)adjustLayout;
 
 // private methods
-- (CGPoint)_containerCenter;
+- (CGPoint)_containerCenterForBounds:(CGRect)bounds;
 - (CGRect)_containerBounds;
 - (CGPoint)_miniViewCenter;
 - (void)_updateBackgroundViewMaskForPresentation;

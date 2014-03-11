@@ -9,7 +9,11 @@
 
 #import "header.h"
 
-@interface PWWindow : UIWindow
+@interface PWWindow : UIWindow {
+	
+	BOOL _adjustedLayout;
+	UIInterfaceOrientation _currentOrientation;
+}
 
 - (void)adjustLayout;
 

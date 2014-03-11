@@ -147,7 +147,7 @@ static char SBControlCenterButtonWidgetBundleKey;
 		
 		objc_setAssociatedObject(button, &SBControlCenterButtonWidgetBundleKey, bundle, OBJC_ASSOCIATION_RETAIN);
 		
-		if (currentIcon == iconsPerPage) {
+		if (++currentIcon == iconsPerPage) {
 			
 			// reset
 			currentIcon = 0;
@@ -181,11 +181,10 @@ static char SBControlCenterButtonWidgetBundleKey;
 		// user info
 		NSDictionary *userInfo = @{ @"from": @"controlcenter" };
 		// dismiss control center
-		[[objc_getClass("SBControlCenterController") sharedInstance] dismissAnimated:YES];
-		// present the widget
-		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, .1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^(void){
+		[[objc_getClass("SBControlCenterController") sharedInstance] dismissAnimated:YES completion:^{
+			// present the widget
 			[PWWidgetController presentWidgetFromBundle:bundle userInfo:userInfo];
-		});
+		}];
 	}
 }
 
