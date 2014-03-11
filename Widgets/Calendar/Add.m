@@ -16,9 +16,6 @@
 	
 	[self loadPlist:@"AddItems"];
 	
-	PWWidgetCalendar *widget = (PWWidgetCalendar *)self.widget;
-	_initialTomorrow = [widget.userInfo[@"type"] isEqualToString:@"tomorrow"];
-	
 	// fetch all available calendars
 	[self fetchCalendars:nil];
 	
@@ -162,7 +159,10 @@
 
 - (void)setInitialDates {
 	
-	NSTimeInterval extraDayTime = _initialTomorrow ? 24 * 60 * 60 : 0;
+	PWWidgetCalendar *widget = (PWWidgetCalendar *)self.widget;
+	BOOL initialTomorrow = [widget.userInfo[@"type"] isEqualToString:@"tomorrow"];
+	
+	NSTimeInterval extraDayTime = initialTomorrow ? 24 * 60 * 60 : 0;
 	
 	NSTimeInterval nextHourTime = [[NSDate date] timeIntervalSinceReferenceDate] + 60 * 60 + extraDayTime;
 	NSTimeInterval nextTwoHoursTime = nextHourTime + 60 * 60;

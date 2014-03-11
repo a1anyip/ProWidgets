@@ -109,15 +109,25 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 
 + (BOOL)shouldDisableNotificationCenterPresentation {
 	
-	if (![PWController supportsDragging]) {
-		return NO;
-	}
+	if (YES) return NO;
 	
 	CGFloat thresholdY = 30.0;
 	for (PWWidgetController *controller in _controllers) {
-		if (controller.isPresented && !controller.isMinimized) {
+		if (controller.isPresented) {
+			
+			CGFloat originY;
+			
+			if (controller.isMinimized) {
+				originY = controller.miniView.frame.origin.y;
+			} else if ([PWController supportsDragging]) {
+				originY = controller.containerView.frame.origin.y;
+			} else {
+				continue;
+			}
+			
+			LOG(@"originY: %f", originY);
+			
 			// check if the container view falls into the region above threshold Y
-			CGFloat originY = controller.containerView.frame.origin.y;
 			if (originY <= thresholdY) {
 				return YES;
 			}
@@ -416,6 +426,11 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	// load the widget
 	// e.g. create or push custom view controllers
 	[_widget load];
+	
+	// notify the widget
+	if (_widget.userInfo != nil) {
+		[_widget userInfoChanged:_widget.userInfo];
+	}
 	
 	// if the widget wants to dismiss it in load method, then dismiss it manually
 	if (_pendingDismissalRequest) {

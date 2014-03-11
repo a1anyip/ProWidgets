@@ -80,7 +80,7 @@
 			<key>label</key>
 			<string>Modification</string>
 			<key>footerText</key>
-			<string>Replace all "Add to Reading List" buttons to "Add to Bookmark" function</string>
+			<string>Replace all "Add to Reading List" buttons with "Bookmark" function</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -92,7 +92,7 @@
 			<key>key</key>
 			<string>enabledAddToBookmark</string>
 			<key>label</key>
-			<string>Add to Bookmark</string>
+			<string>Bookmark</string>
 			<key>default</key>
 			<true/>
 		</dict>

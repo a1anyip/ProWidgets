@@ -23,6 +23,8 @@
 
 - (void)setViewControllers:(NSArray *)viewControllers animated:(BOOL)animated {
 	
+	[self.topViewController.view endEditing:YES];
+	
 	for (UIViewController *viewController in viewControllers) {
 		if (![viewController.class conformsToProtocol:@protocol(PWContentViewControllerDelegate)]) {
 			LOG(@"PWWidgetNavigationController: Unable to set view controllers. Reason: one of the view controllers (%@) does not conform to PWContentViewControllerDelegate protocol.", viewController);
@@ -45,6 +47,8 @@
 
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated {
 	
+	[self.topViewController.view endEditing:YES];
+	
 	if (![viewController.class conformsToProtocol:@protocol(PWContentViewControllerDelegate)]) {
 		LOG(@"PWWidgetNavigationController: Unable to push view controller (%@). Reason: view controller does not conform to PWContentViewControllerDelegate protocol.", viewController);
 		return;
@@ -59,6 +63,7 @@
 }
 
 - (void)popViewControllerAnimated:(BOOL)animated {
+	[self.topViewController.view endEditing:YES];
 	[super popViewControllerAnimated:animated];
 }
 

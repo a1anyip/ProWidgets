@@ -296,6 +296,14 @@
 
 - (void)_presentedInNavigationController:(UINavigationController *)navigationController {}
 
+- (BOOL)canBecomeFirstResponder {
+	return NO;
+}
+
+- (BOOL)becomeFirstResponder {
+	return NO;
+}
+
 - (void)_dealloc {
 	LOG(@"PWContentViewController: _dealloc");
 	_widget = nil;

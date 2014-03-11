@@ -59,21 +59,12 @@ static inline UIImage *processImage(UIImage *image, BOOL tint) {
 	CGContextConcatCTM(context, transform);
 	
 	CGRect flippedRect = CGRectApplyAffineTransform(rect, transform);
-	
-	if (tint) {
-		CGContextSetBlendMode(context, kCGBlendModeNormal);
-		[[UIColor whiteColor] setFill];
-		CGContextFillRect(context, flippedRect);
-		CGContextSetBlendMode(context, kCGBlendModeDestinationIn);
-		CGContextDrawImage(context, flippedRect, image.CGImage);
-	} else {
-		CGContextDrawImage(context, flippedRect, image.CGImage);
-	}
+	CGContextDrawImage(context, flippedRect, image.CGImage);
 	
 	UIImage *result = UIGraphicsGetImageFromCurrentImageContext();
 	UIGraphicsEndImageContext();
 	
-	return result;
+	return tint ? [result imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] : result;
 }
 
 static inline UIButton *createButton(id target) {
@@ -81,6 +72,7 @@ static inline UIButton *createButton(id target) {
 	button.adjustsImageWhenHighlighted = YES;
 	button.showsTouchWhenHighlighted = NO;
 	button.backgroundColor = [UIColor clearColor];
+	button.imageView.tintColor = [UIColor whiteColor];
 	button.imageView.contentMode = UIViewContentModeScaleAspectFit;
 	//[button addTarget:target action:@selector(PW_touchDown:) forControlEvents:UIControlEventTouchDown];
 	//[button addTarget:target action:@selector(PW_touchUp:) forControlEvents:UIControlEventTouchUpInside];

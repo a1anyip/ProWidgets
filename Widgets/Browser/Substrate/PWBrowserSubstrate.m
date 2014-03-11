@@ -27,17 +27,36 @@
 
 @end
 
+static BOOL enabledOpenInApp = NO;
+static BOOL enabledOpenFromIcon = NO;
+static BOOL enabledAddToBookmark = NO;
+
 static inline BOOL openBrowserWithURL(NSString *url, NSString *from) {
 	if (url == nil) return NO;
 	NSDictionary *userInfo = @{ @"from": @"app", @"url": url };
 	return [objc_getClass("PWWidgetController") presentWidgetNamed:@"Browser" userInfo:userInfo];
 }
 
-static BOOL enabledOpenInApp = NO;
-static BOOL enabledOpenFromIcon = NO;
-static BOOL enabledAddToBookmark = NO;
+static inline NSString *ReplaceReadingListTitle(NSString *title) {
+	
+	if (enabledAddToBookmark) {
+		if ([title isEqualToString:@"Add to Reading List"]) {
+			return @"Bookmark";
+		}
+	}
+	
+	return title;
+}
 
 %group App
+
+%hook UIActionSheet
+
+- (void)addButtonWithTitle:(NSString *)title {
+	%orig(ReplaceReadingListTitle(title));
+}
+
+%end
 
 %hook SSReadingList
 
@@ -47,7 +66,9 @@ static BOOL enabledAddToBookmark = NO;
 	NSString *urlString = [url absoluteString];
 	if (urlString != nil) {
 		dispatch_sync(dispatch_get_main_queue(), ^{
-			NSDictionary *userInfo = @{ @"from": @"addBookmark", @"url": urlString };
+			
+			NSDictionary *userInfo = @{ @"from": @"addBookmark", @"title": (title == nil ? @"" : title), @"url": urlString };
+			
 			if (objc_getClass("SpringBoard") != nil) {
 				[objc_getClass("PWWidgetController") presentWidgetNamed:@"Browser" userInfo:userInfo];
 			} else {

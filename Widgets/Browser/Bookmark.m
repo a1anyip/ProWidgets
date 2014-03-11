@@ -9,6 +9,7 @@
 
 #import "Bookmark.h"
 #import "Browser.h"
+#import "Add.h"
 #import "PWContentViewController.h"
 #import "PWThemableTableView.h"
 
@@ -24,6 +25,7 @@
 	self.tableView.delegate = self;
 	self.tableView.dataSource = self;
 	
+	[self setActionEventHandler:self selector:@selector(actionEventHandler)];
 	[self setHandlerForEvent:[PWContentViewController titleTappedEventName] target:self selector:@selector(titleTapped)];
 }
 
@@ -45,6 +47,11 @@
 	}
 	[self configureActionButton];
 	[self loadBookmarkItems];
+}
+
+- (void)actionEventHandler {
+	PWWidgetBrowserAddBookmarkViewController *addViewController = [[[PWWidgetBrowserAddBookmarkViewController alloc] initForWidget:self.widget] autorelease];
+	[self.widget pushViewController:addViewController animated:YES];
 }
 
 - (void)titleTapped {
@@ -81,6 +88,13 @@
 	unsigned int row = [indexPath row];
 	
 	if (row >= [_items count]) return;
+	
+	WebBookmarkCollection *collection = [WebBookmarkCollection safariBookmarkCollection];
+	NSDictionary *item = _items[row];
+	NSUInteger identifier = [(NSNumber *)item[@"identifier"] unsignedIntegerValue];
+	
+	WebBookmark *bookmark = [collection bookmarkWithID:identifier];
+	[collection deleteBookmark:bookmark postChangeNotification:YES];
 	
 	[_items removeObjectAtIndex:row];
 	[self reload];

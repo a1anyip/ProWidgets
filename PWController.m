@@ -96,8 +96,8 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 		});
 	};
 	
-	//[_lastFirstResponder resignFirstResponder];
-	//[_window endEditing:YES];
+	[_lastFirstResponder resignFirstResponder];
+	[_window endEditing:YES];
 	
 	[UIView animateWithDuration:duration animations:^{
 		[_window adjustLayout];

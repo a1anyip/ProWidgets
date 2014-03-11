@@ -41,8 +41,16 @@
 }
 
 - (void)userInfoChanged:(NSDictionary *)userInfo {
+	
+	NSString *from = userInfo[@"from"];
+	NSString *title = userInfo[@"title"];
 	NSString *url = userInfo[@"url"];
-	if (url != nil) {
+	
+	if (url == nil) return;
+	
+	if ([from isEqualToString:@"addBookmark"]) {
+		[self addBookmarkFromWebInterfaceWithTitle:title url:url animated:NO];
+	} else {
 		[self navigateToURL:url];
 	}
 }
@@ -69,24 +77,19 @@ ICON_GETTER(folderIcon, @"BookmarksListFolder")
 	}
 }
 
-- (void)addBookmarkFromWebInterfaceWithTitle:(NSString *)title url:(NSString *)url {
+- (void)addBookmarkFromWebInterfaceWithTitle:(NSString *)title url:(NSString *)url animated:(BOOL)animated {
 	
-	if (_currentInterface == PWWidgetBrowserInterfaceBookmark) return;
+	if (_currentInterface == PWWidgetBrowserInterfaceBookmark) {
+		[self switchToWebInterface];
+	}
 	
-	PWWidgetBrowserBookmarkViewController *bookmarkViewController = [[[PWWidgetBrowserBookmarkViewController alloc] initForWidget:self] autorelease];
-	bookmarkViewController.isRoot = YES;
+	PWWidgetBrowserWebViewController *webViewController = (PWWidgetBrowserWebViewController *)_webViewControllers[0];
+	[webViewController configureBackButton];
 	
 	PWWidgetBrowserAddBookmarkViewController *addViewController = [[[PWWidgetBrowserAddBookmarkViewController alloc] initForWidget:self] autorelease];
 	[addViewController updatePrefillTitle:title andAddress:url];
 	
-	//[_bookmarkViewControllers release];
-	//_bookmarkViewControllers = [@[bookmarkViewController, addViewController] copy];
-	
-	//[bookmarkViewController configureBackButton];
-	
-	//[self setViewControllers:@[_webViewControllers[0], addViewController] animated:YES];
-	[self pushViewController:addViewController animated:YES];
-	//_currentInterface = PWWidgetBrowserInterfaceBookmark;
+	[self pushViewController:addViewController animated:animated];
 }
 
 - (void)switchToWebInterface {

@@ -191,9 +191,11 @@
 - (void)configureFirstResponder {
 	// auto focus URL if it's empty
 	UITextField *textField = self.webView.textField;
-	if ([textField.text length] == 0) {
+	if ([textField.text length] == 0 || [textField.text isEqualToString:@"http://"]) {
 		textField.text = @"http://";
 		[textField becomeFirstResponder];
+	} else {
+		[textField resignFirstResponder];
 	}
 }
 
@@ -398,7 +400,7 @@
 				NSString *title = _lastTitle;
 				NSString *url = _lastURLString;
 				PWWidgetBrowser *widget = (PWWidgetBrowser *)self.widget;
-				[widget addBookmarkFromWebInterfaceWithTitle:title url:url];
+				[widget addBookmarkFromWebInterfaceWithTitle:title url:url animated:YES];
 			}
 			break;
 		case 4: // Close Browser

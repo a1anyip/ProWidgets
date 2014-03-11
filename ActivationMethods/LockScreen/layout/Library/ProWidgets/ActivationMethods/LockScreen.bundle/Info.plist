@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleIdentifier</key>
+	<string>cc.tweak.prowidgets.activationmethod.lockscreen</string>
+	<key>PWInfoType</key>
+	<string>activationmethod</string>
+	<key>PWInfoDisplayName</key>
+	<string>Lock Screen</string>
+	<key>PWInfoAuthor</key>
+	<string>ProWidgets</string>
+	<key>PWInfoDescription</key>
+	<string>Present widget from lock screen</string>
+	<key>PWInfoPreferenceFile</key>
+	<string>Preference.plist</string>
+</dict>
+</plist>

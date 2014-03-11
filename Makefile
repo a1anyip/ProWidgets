@@ -90,7 +90,7 @@ LIB += JSBridge/PWJSBridgePreferenceWrapper.m
 ############################################################
 
 # Activation
-#ACTIVATION_METHODS = ActivationMethods/LockScreen
+ACTIVATION_METHODS = ActivationMethods/LockScreen
 ACTIVATION_METHODS += ActivationMethods/TodayView
 ACTIVATION_METHODS += ActivationMethods/NotificationCenter
 ACTIVATION_METHODS += ActivationMethods/NotificationCenterCorners

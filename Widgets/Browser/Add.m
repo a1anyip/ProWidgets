@@ -9,13 +9,14 @@
 
 #import "Add.h"
 #import "Browser.h"
+#import "FolderItem.h"
 #import "PWContentViewController.h"
 
 @implementation PWWidgetBrowserAddBookmarkViewController
 
 - (void)load {
 	
-	self.actionButtonText = @"Add";
+	self.actionButtonText = @"Save";
 		
 	self.shouldAutoConfigureStandardButtons = NO;
 	self.wantsFullscreen = YES;
@@ -28,8 +29,13 @@
 	_addressItem.key = @"address";
 	_addressItem.title = @"Address";
 	
+	_folderItem = [[PWBrowserWidgetItemFolder createItemForItemViewController:self] retain];
+	_folderItem.key = @"folder";
+	_folderItem.title = @"Location";
+	
 	[self addItem:_titleItem];
 	[self addItem:_addressItem];
+	[self addItem:_folderItem];
 	
 	[self setSubmitEventHandler:self selector:@selector(submitEventHandler:)];
 	[self setHandlerForEvent:[PWContentViewController titleTappedEventName] target:self selector:@selector(titleTapped)];
@@ -53,9 +59,15 @@
 }
 
 - (void)submitEventHandler:(NSDictionary *)values {
+	
 	NSString *title = values[@"title"];
 	NSString *address = values[@"address"];
-	[self.widget showMessage:address title:title];
+	//NSString *location = values[@"location"];
+	
+	WebBookmark *bookmark = [[WebBookmark alloc] initWithTitle:title address:address];
+	[[WebBookmarkCollection safariBookmarkCollection] saveBookmark:bookmark];
+	
+	[self.widget popViewController];
 }
 
 - (void)dealloc {

@@ -46,6 +46,11 @@
 - (WebBookmark *)readingListFolder;
 - (WebBookmark *)bookmarksBarBookmark;
 
+- (WebBookmark *)bookmarkWithID:(NSUInteger)bookmarkID;
+
+- (void)saveBookmark:(id)bookmark;
+- (void)deleteBookmark:(id)bookmark postChangeNotification:(BOOL)postChangeNotification;
+
 @end
 
 @interface WebBookmarkList : NSObject
@@ -55,6 +60,8 @@
 @end
 
 @interface WebBookmark : NSObject
+
+- (id)initWithTitle:(id)arg1 address:(id)arg2;
 
 - (BOOL)isFolder;
 - (BOOL)isWebFilterWhiteListFolder;

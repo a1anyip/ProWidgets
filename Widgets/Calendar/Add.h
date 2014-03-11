@@ -11,7 +11,6 @@
 
 @interface PWWidgetCalendarAddViewController : PWContentItemViewController {
 	
-	BOOL _initialTomorrow;
 	EKEventStore *_store;
 	NSArray *_calendars;
 	NSMutableArray *_moreSettings;

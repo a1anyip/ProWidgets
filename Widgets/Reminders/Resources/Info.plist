@@ -12,8 +12,14 @@
 	<string>Reminders</string>
 	<key>PWInfoAuthor</key>
 	<string>ProWidgets</string>
-	<key>PWInfoDescription</key>
+	<key>PWInfoShortDescription</key>
 	<string>Manage and add reminders</string>
+	<key>PWInfoDescription</key>
+	<string>Reminders widget allows you to quickly add a new reminder, view the existing reminders and mark them as complete.
+
+Tap on navigation bar once to switch between add and list interfaces.
+
+Configure the default interface in the widget preference page.</string>
 	<key>PWInfoPreferenceDefaults</key>
 	<string>cc.tweak.prowidgets.widget.reminders</string>
 	<key>PWInfoPreferenceFile</key>

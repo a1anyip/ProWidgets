@@ -3,20 +3,22 @@
 <plist version="1.0">
 <dict>
 	<key>title</key>
-	<string>Preference</string>
+	<string>Notification Center Corners</string>
 	<key>items</key>
 	<array>
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>footerText</key>
-			<string>Choose the widgets to show at the bottom corners of notification center</string>
+			<string>Choose the widgets to show at the corner of notification center</string>
 		</dict>
 		<dict>
 			<key>cell</key>
 			<string>PWWidgetPickerCell</string>
 			<key>defaults</key>
 			<string>cc.tweak.prowidgets.activationmethod.nccorners</string>
+			<key>PostNotification</key>
+			<string>cc.tweak.prowidgets.activationmethod.nccorners.preferencechanged</string>
 			<key>key</key>
 			<string>left</string>
 			<key>label</key>
@@ -33,6 +35,8 @@
 			<string>PWWidgetPickerCell</string>
 			<key>defaults</key>
 			<string>cc.tweak.prowidgets.activationmethod.nccorners</string>
+			<key>PostNotification</key>
+			<string>cc.tweak.prowidgets.activationmethod.nccorners.preferencechanged</string>
 			<key>key</key>
 			<string>right</string>
 			<key>label</key>

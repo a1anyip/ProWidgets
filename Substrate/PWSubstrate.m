@@ -46,7 +46,23 @@ static void handleException(NSException *exception) {
 }
 
 %end
+/*
+%hook SBPanGestureRecognizer
 
+- (id)init {
+	self = %orig;
+	LOG(@"===== SBPanGestureRecognizer: %@ <%p>", self, self);
+	return self;
+}
+
+- (void)updateForBeganOrMovedTouches:(void *)context {
+	%log;
+	LOG(@"===== updateForBeganOrMovedTouches: %@ <%p>", self, self);
+	%orig;
+}
+
+%end
+*/
 %hook SBNotificationCenterController
 
 - (void)beginPresentationWithTouchLocation:(CGPoint)touchLocation {

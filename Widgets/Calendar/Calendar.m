@@ -24,6 +24,20 @@
 	}
 }
 
+- (void)userInfoChanged:(NSDictionary *)userInfo {
+	
+	BOOL fromTodayView = [userInfo[@"from"] isEqualToString:@"todayview"];
+	BOOL initialTomorrow = [userInfo[@"type"] isEqualToString:@"tomorrow"];
+	
+	if (fromTodayView) {
+		[self switchToAddInterface];
+		PWWidgetCalendarAddViewController *addViewController = (PWWidgetCalendarAddViewController *)_addViewControllers[0];
+		if (initialTomorrow) {
+			[addViewController setInitialDates];
+		}
+	}
+}
+
 - (EKEventStore *)eventStore {
 	if (_eventStore == nil) _eventStore = [EKEventStore new];
 	return _eventStore;
