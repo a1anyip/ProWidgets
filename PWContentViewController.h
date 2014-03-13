@@ -39,6 +39,7 @@
 @property(nonatomic, copy) NSString *closeButtonText;
 @property(nonatomic, copy) NSString *actionButtonText;
 
++ (NSString *)closeEventName;
 + (NSString *)actionEventName;
 + (NSString *)titleTappedEventName;
 
@@ -70,6 +71,9 @@
 - (void)triggerEvent:(NSString *)event withObject:(id)object;
 - (void)setHandlerForEvent:(NSString *)event target:(id)target selector:(SEL)selector;
 - (void)setHandlerForEvent:(NSString *)event block:(void(^)(id))block;
+
+- (void)setCloseEventHandler:(id)target selector:(SEL)selector;
+- (void)setCloseEventBlockHandler:(void(^)(id))block;
 
 - (void)setActionEventHandler:(id)target selector:(SEL)selector;
 - (void)setActionEventBlockHandler:(void(^)(id))block;

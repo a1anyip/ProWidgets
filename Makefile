@@ -125,9 +125,9 @@ WIDGETS += Widgets/Notes
 WIDGETS += Widgets/Browser
 WIDGETS += Widgets/Dictionary
 WIDGETS += Widgets/Alarm
+WIDGETS += Widgets/Timer
 WIDGETS += Widgets/Messages
 WIDGETS += Widgets/Mail
-#WIDGETS += Widgets/Contact
 
 ############################################################
 
@@ -155,8 +155,13 @@ PREFERENCE = preference
 
 ############################################################
 
+# Welcome Screen
+WELCOME_SCREEN = WelcomeScreen/PWWSWindow.m
+
+############################################################
+
 LIBRARY_NAME = libprowidgets
-libprowidgets_FILES = function.m $(LIB) $(API)
+libprowidgets_FILES = function.m $(LIB) $(API) $(WELCOME_SCREEN)
 libprowidgets_FRAMEWORKS = CoreFoundation Foundation UIKit CoreGraphics CoreImage QuartzCore JavaScriptCore EventKit
 libprowidgets_PRIVATE_FRAMEWORKS = MobileKeyBag Calculate MobileTimer ToneKit ToneLibrary AddressBook MessageUI ChatKit MailServices Notes
 libprowidgets_INSTALL_PATH = /Library/ProWidgets/

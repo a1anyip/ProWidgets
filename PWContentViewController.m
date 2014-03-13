@@ -17,6 +17,10 @@
 
 @implementation PWContentViewController
 
++ (NSString *)closeEventName {
+	return @"PWContentViewControllerCloseEvent";
+}
+
 + (NSString *)actionEventName {
 	return @"PWContentViewControllerActionEvent";
 }
@@ -48,10 +52,16 @@
 
 - (instancetype)_initForWidget:(PWWidget *)widget {
 	if ((self = [super init])) {
+		
 		self.automaticallyAdjustsScrollViewInsets = NO;
 		self.edgesForExtendedLayout = UIRectEdgeNone;
 		self.extendedLayoutIncludesOpaqueBars = NO;
 		[self _setWidget:widget];
+		
+		// set default close event handler
+		[self setCloseEventBlockHandler:^(id object){
+			[self.widget dismiss];
+		}];
 	}
 	return self;
 }
@@ -171,7 +181,7 @@
 }
 
 - (void)triggerClose {
-	[self.widget dismiss];
+	[self triggerEvent:[self.class closeEventName] withObject:nil];
 }
 
 - (void)triggerAction {
@@ -205,6 +215,14 @@
 	_eventHandlers[event] = handler;
 }
 
+- (void)setCloseEventHandler:(id)target selector:(SEL)selector {
+	[self setHandlerForEvent:[self.class closeEventName] target:target selector:selector];
+}
+
+- (void)setCloseEventBlockHandler:(void(^)(id))block {
+	[self setHandlerForEvent:[self.class closeEventName] block:block];
+}
+
 - (void)setActionEventHandler:(id)target selector:(SEL)selector {
 	[self setHandlerForEvent:[self.class actionEventName] target:target selector:selector];
 }
@@ -229,7 +247,7 @@
 	if (self.wantsFullscreen && ![PWController isIPad]) {
 		CGRect screenRect = [[UIScreen mainScreen] bounds];
 		return orientation == PWWidgetOrientationLandscape ? screenRect.size.width : screenRect.size.height;
-	} else if (self.shouldMaximizeContentHeight) {
+	} else if (self.shouldMaximizeContentHeight || (self.wantsFullscreen && [PWController isIPad])) {
 		PWController *controller = [PWController sharedInstance];
 		CGFloat maxHeight = [controller availableHeightInOrientation:orientation withKeyboard:self.requiresKeyboard];
 		CGFloat navigationBarHeight = [controller heightOfNavigationBarInOrientation:orientation];

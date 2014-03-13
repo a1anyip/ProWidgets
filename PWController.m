@@ -11,6 +11,8 @@
 #import <sys/utsname.h>
 #import <OBJCIPC/IPC.h>
 
+#import "WelcomeScreen/PWWSWindow.h"
+
 #import "PWController.h"
 #import "PWTestBar.h"
 #import "PWMiniView.h"
@@ -373,6 +375,8 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	
 	if (configured) return;
 	configured = YES;
+	
+	//[PWWSWindow new];
 	
 	// construct UI
 	[self _constructUI];

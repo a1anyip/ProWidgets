@@ -1,30 +1,20 @@
-@class CKConversationList, CKConversation, CKComposition, CKIMMessage, CKEntity;
-
-@interface CKConversationList : NSObject
-
-+ (instancetype)sharedConversationList;
-- (CKConversation *)conversationForRecipients:(NSArray *)recipients create:(BOOL)create;
+@interface BrowserViewController : NSObject
 
 @end
 
-@interface CKConversation : NSObject
+@interface MainController : NSObject
 
-- (CKIMMessage *)newMessageWithComposition:(CKComposition *)composition;
-- (void)sendMessage:(CKIMMessage *)message newComposition:(BOOL)newComposition;
-
-@end
-
-@interface CKComposition : NSObject
-
-- (id)initWithText:(NSAttributedString *)text subject:(NSString *)subject;
++ (void)test;
+- (void)applicationDidBecomeActive:(BOOL)animated;
+- (BrowserViewController *)mainBVC;
+- (void)addProfileToActiveBVC;
+- (void)createBVCWithoutProfileForMode:(int)mode;
 
 @end
 
-@interface CKIMMessage : NSObject
-@end
+@interface BookmarkFolderViewController : NSObject
 
-@interface CKEntity : NSObject
-
-+ (CKEntity *)copyEntityForAddressString:(NSString *)address;
+- (instancetype)initWithBookmarks:(void *)bookmarkModel allowNewfolders:(BOOL)allowNewfolders;
+- (void)reloadData;
 
 @end

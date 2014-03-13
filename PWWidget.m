@@ -53,27 +53,6 @@
 - (void)preparePresentation {
 	
 	_isPresenting = YES;
-	
-	// if default layout is set, then auto create a content item view controller
-	if (_layout == PWWidgetLayoutDefault) {
-		
-		// create a content item view controller
-		PWContentItemViewController *controller = [[PWContentItemViewController alloc] initForWidget:self];
-		controller.shouldAutoConfigureStandardButtons = YES;
-		
-		// load item view controller plist
-		if (self.defaultItemViewControllerPlist != nil) {
-			[controller loadPlist:self.defaultItemViewControllerPlist];
-		}
-		
-		// set event handlers
-		[controller setItemValueChangedEventHandler:self selector:@selector(itemValueChangedEventHandler:oldValue:)];
-		[controller setSubmitEventHandler:self selector:@selector(submitEventHandler:)];
-		
-		// push it onto navigation stack
-		_defaultItemViewController = controller;
-		[self pushViewController:controller animated:NO];
-	}
 }
 
 - (UIViewController *)topViewController {
@@ -85,8 +64,6 @@
 	// set up navigation controller
 	_navigationController = [PWWidgetNavigationController new];
 	//_navigationController = [[PWWidgetNavigationController alloc] initWithNavigationBarClass:[PWWidgetNavigationBar class] toolbarClass:nil];
-	
-	//_navigationController.view.backgroundColor = [UIColor yellowColor];
 	
 	LOG(@"_navigationController: %@", _navigationController);
 	
@@ -107,6 +84,27 @@
 	// load default theme
 	if (_theme == nil) {
 		_theme = [[[PWController sharedInstance] loadDefaultThemeForWidget:self] retain];
+	}
+	
+	// if default layout is set, then auto create a content item view controller
+	if (_layout == PWWidgetLayoutDefault) {
+		
+		// create a content item view controller
+		PWContentItemViewController *controller = [[PWContentItemViewController alloc] initForWidget:self];
+		controller.shouldAutoConfigureStandardButtons = YES;
+		
+		// load item view controller plist
+		if (self.defaultItemViewControllerPlist != nil) {
+			[controller loadPlist:self.defaultItemViewControllerPlist];
+		}
+		
+		// set event handlers
+		[controller setItemValueChangedEventHandler:self selector:@selector(itemValueChangedEventHandler:oldValue:)];
+		[controller setSubmitEventHandler:self selector:@selector(submitEventHandler:)];
+		
+		// push it onto navigation stack
+		_defaultItemViewController = controller;
+		[self pushViewController:controller animated:NO];
 	}
 	
 	// update flag value
