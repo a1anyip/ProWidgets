@@ -77,8 +77,7 @@ typedef enum {
 
 - (void)willDismiss {
 	
-	[_timer invalidate];
-	RELEASE(_timer);
+	[self invalidateTimer];
 	
 	[OBJCIPC unregisterIncomingMessageHandlerForAppWithIdentifier:TimerIdentifier andMessageName:MessageName];
 }
@@ -185,7 +184,12 @@ typedef enum {
 	PWWidgetTimerItemDatePicker *item = (PWWidgetTimerItemDatePicker *)[self.defaultItemViewController itemWithKey:@"datePicker"];
 	PWWidgetTimerItemDatePickerCell *cell = (PWWidgetTimerItemDatePickerCell *)item.activeCell;
 	
-	[cell setRemainingTime:time];
+	if (time == 0.0) {
+		[cell showDatePicker];
+		[self updateState:TimerStateStopped];
+	} else {
+		[cell setRemainingTime:time];
+	}
 }
 
 - (void)updateState:(TimerState)state {
@@ -196,14 +200,13 @@ typedef enum {
 	PWWidgetTimerItemDatePicker *item = (PWWidgetTimerItemDatePicker *)[self.defaultItemViewController itemWithKey:@"datePicker"];
 	PWWidgetTimerItemDatePickerCell *cell = (PWWidgetTimerItemDatePickerCell *)item.activeCell;
 	
-	if (state != TimerStateStopped) {
+	if (state == TimerStateStarted) {
 		if (_timer == nil) {
-			_timer = [[NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(timerTick) userInfo:nil repeats:YES] retain];
+			_timer = [[NSTimer scheduledTimerWithTimeInterval:.5 target:self selector:@selector(timerTick) userInfo:nil repeats:YES] retain];
+			[self timerTick];
 		}
-		[self timerTick];
 	} else {
-		[_timer invalidate];
-		RELEASE(_timer);
+		[self invalidateTimer];
 	}
 	
 	if (state == TimerStateStopped) {
@@ -216,6 +219,11 @@ typedef enum {
 		self.defaultItemViewController.actionButtonText = @"Pause";
 		[cell showRemainingTime];
 	}
+}
+
+- (void)invalidateTimer {
+	[_timer invalidate];
+	RELEASE(_timer);
 }
 
 - (void)dealloc {

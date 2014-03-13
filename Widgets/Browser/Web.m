@@ -12,6 +12,7 @@
 #import "PrivateWebView.h"
 #import "PWThemableTextField.h"
 #import "PWView.h"
+#import "PWWebRequest.h"
 
 #define RICKROLL_URL @"http://www.youtube.com/watch?v=dQw4w9WgXcQ"
 
@@ -48,9 +49,9 @@
 		_webView = [PWWidgetBrowserPrivateWebView new];
 		_webView.scalesPageToFit = YES;
 		_webView.allowsInlineMediaPlayback = YES;
-		_webView.alpha = 0.0;
+		_webView.alpha = 1.0;//0.0;
 		[self addSubview:_webView];
-		
+		/*
 		_messageLabel = [UILabel new];
 		//_messageLabel.text = @"Type  or\nTap on title to view bookmarks";
 		_messageLabel.font = [UIFont boldSystemFontOfSize:16.0];
@@ -58,7 +59,7 @@
 		_messageLabel.numberOfLines = 0;
 		_messageLabel.alpha = .5;
 		_messageLabel.textAlignment = NSTextAlignmentCenter;
-		[self addSubview:_messageLabel];
+		[self addSubview:_messageLabel];*/
 	}
 	return self;
 }
@@ -129,9 +130,11 @@
 }
 
 - (void)setWebViewActive:(BOOL)active {
+	/*
 	[UIView animateWithDuration:.1 animations:^{
 		_webView.alpha = active ? 1.0 : 0.0;
 	}];
+	*/
 	[self setButtonHidden:!active];
 }
 
@@ -217,7 +220,12 @@
 	
 	// auto prepend http:// scheme
 	if ([[url scheme] length] == 0) {
-		url = [NSURL URLWithString:[@"http://" stringByAppendingString:urlString]];
+		if ([urlString rangeOfString:@"."].location != NSNotFound) {
+			url = [NSURL URLWithString:[@"http://" stringByAppendingString:urlString]];
+		} else {
+			NSString *query = [PWWebRequest encodeURIComponent:urlString];
+			url = [NSURL URLWithString:[NSString stringWithFormat:@"http://google.com/search?q=%@", query]];
+		}
 	}
 	
 	NSURLRequest *request = [NSURLRequest requestWithURL:url];
@@ -392,10 +400,7 @@
 		case 1: // Copy URL
 			[[UIPasteboard generalPasteboard] setString:_lastURLString];
 			break;
-		case 2: // Share...
-			
-			break;
-		case 3: // Add Bookmark...
+		case 2: // Add Bookmark...
 			{
 				NSString *title = _lastTitle;
 				NSString *url = _lastURLString;
@@ -403,7 +408,7 @@
 				[widget addBookmarkFromWebInterfaceWithTitle:title url:url animated:YES];
 			}
 			break;
-		case 4: // Close Browser
+		case 3: // Close Browser
 			[self.widget dismiss];
 			break;
 		default:
@@ -436,7 +441,7 @@
 		defaultBrowserText = @"Safari";
 	}
 	
-	_actionSheet = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:[NSString stringWithFormat:@"Open in %@", defaultBrowserText], @"Copy URL", @"Share...", @"Bookmark...", @"Close Browser", nil];
+	_actionSheet = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:[NSString stringWithFormat:@"Open in %@", defaultBrowserText], @"Copy URL", @"Bookmark...", @"Close Browser", nil];
 	
 	PWTheme *theme = self.theme;
 	if (theme.wantsDarkKeyboard) {
