@@ -12,6 +12,7 @@
 
 @interface PWWidgetGoogleAuthenticatorViewController : PWContentViewController<UITableViewDelegate, UITableViewDataSource> {
 	
+	BOOL _firstTime;
 	NSTimer *_timer;
 	NSMutableSet *_warningRows;
 	NSArray *_records;

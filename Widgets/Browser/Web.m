@@ -118,6 +118,9 @@
 }
 
 - (void)setButtonHidden:(BOOL)hidden {
+	
+	if (!hidden && [_textField isFirstResponder]) return [self setButtonHidden:YES];
+	
 	_buttonHidden = hidden;
 	[UIView animateWithDuration:.1 animations:^{
 		_actionButton.alpha = hidden ? 0.0 : .5;

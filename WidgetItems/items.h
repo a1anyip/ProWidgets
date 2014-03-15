@@ -9,6 +9,7 @@
 
 #import "PWWidgetItemTextArea.h"
 #import "PWWidgetItemTextField.h"
+#import "PWWidgetItemValue.h"
 #import "PWWidgetItemListValue.h"
 #import "PWWidgetItemDateValue.h"
 #import "PWWidgetItemToneValue.h"

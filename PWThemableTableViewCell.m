@@ -24,16 +24,32 @@ static UIImage *disclosureImage = nil;
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier theme:(PWTheme *)theme {
 	if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier])) {
-		_theme = [theme retain];
-		_customSeparatorView = [UIView new];
-		_customSeparatorView.userInteractionEnabled = NO;
-		[self addSubview:_customSeparatorView];
+		[self setTheme:theme];
 	}
 	return self;
 }
 
 - (PWTheme *)theme {
 	return _theme;
+}
+
+- (void)setTheme:(PWTheme *)theme {
+	
+	if (_theme == nil || ![_theme isEqual:theme]) {
+		
+		[_theme release];
+		_theme = [theme retain];
+		
+		RELEASE_VIEW(_customSeparatorView)
+		_customSeparatorView = [UIView new];
+		_customSeparatorView.userInteractionEnabled = NO;
+		[self addSubview:_customSeparatorView];
+	}
+	
+	if (_configuredAppearance) {
+		_configuredAppearance = NO;
+		[self _configureAppearance];
+	}
 }
 
 - (void)willMoveToSuperview:(UIView *)newSuperview {

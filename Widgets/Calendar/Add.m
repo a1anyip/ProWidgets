@@ -322,21 +322,23 @@
 		if ([value count] == 1) {
 			if ([value[0] isEqual:[[(PWWidgetItemListValue *)item listItemValues] lastObject]]) {
 				
-				__block NSArray *oldCalendarValue = (NSArray *)[oldValue copy];
-				
-				// Create...
-				[self.widget prompt:@"Enter the calendar name" title:@"Create Calendar" buttonTitle:@"Create" defaultValue:nil style:UIAlertViewStylePlainTextInput completion:^(BOOL cancelled, NSString *firstValue, NSString *secondValue) {
+				//dispatch_after(dispatch_time(DISPATCH_TIME_NOW, .5 * NSEC_PER_SEC), dispatch_get_main_queue(), ^(void){
+					__block NSArray *oldCalendarValue = (NSArray *)[oldValue copy];
 					
-					if (cancelled) {
-						// set to previous value
-						[item setValue:oldCalendarValue];
-					} else {
-						// create a calendar with input name (firstValue)
-						[self createCalendar:firstValue];
-					}
-					
-					[oldCalendarValue release], oldCalendarValue = nil;
-				}];
+					// Create...
+					[self.widget prompt:@"Enter the calendar name" title:@"Create Calendar" buttonTitle:@"Create" defaultValue:nil style:UIAlertViewStylePlainTextInput completion:^(BOOL cancelled, NSString *firstValue, NSString *secondValue) {
+						
+						if (cancelled) {
+							// set to previous value
+							[item setValue:oldCalendarValue];
+						} else {
+							// create a calendar with input name (firstValue)
+							[self createCalendar:firstValue];
+						}
+						
+						[oldCalendarValue release], oldCalendarValue = nil;
+					}];
+				//});
 			}
 		}
 	}

@@ -18,4 +18,7 @@
 - (NSTimeInterval)lastProgress;
 - (OTPGenerator *)generator;
 
+- (void)generateNextOTPCode;
+- (NSString *)otpCode;
+
 @end

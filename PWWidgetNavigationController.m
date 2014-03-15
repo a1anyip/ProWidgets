@@ -49,8 +49,11 @@
 	
 	[self.topViewController.view endEditing:YES];
 	
-	if (![viewController.class conformsToProtocol:@protocol(PWContentViewControllerDelegate)]) {
+	if (![viewController.class conformsToProtocol:@protocol(PWContentViewControllerDelegate)] &&
+		![viewController isKindOfClass:objc_getClass("TKToneClassicsTableViewController")]) {
+		
 		LOG(@"PWWidgetNavigationController: Unable to push view controller (%@). Reason: view controller does not conform to PWContentViewControllerDelegate protocol.", viewController);
+		
 		return;
 	}
 	

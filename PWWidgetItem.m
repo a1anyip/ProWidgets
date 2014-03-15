@@ -78,6 +78,7 @@
 		predefinedTypes = [@{
 							 @"textarea": @"PWWidgetItemTextArea",
 							 @"textfield": @"PWWidgetItemTextField",
+							 @"value": @"PWWidgetItemValue",
 							 @"listvalue": @"PWWidgetItemListValue",
 							 @"datevalue": @"PWWidgetItemDateValue",
 							 @"tonevalue": @"PWWidgetItemToneValue",

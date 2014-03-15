@@ -13,6 +13,11 @@
 
 #define SAFE_TEXT(x) (x == nil ? @"" : x)
 
+enum {
+	TimeBased = 1,
+	CounterBased = 2
+} RecordType;
+
 static inline __attribute__((constructor)) void init() {
 	@autoreleasepool {
 		
@@ -38,6 +43,10 @@ static inline __attribute__((constructor)) void init() {
 				
 				for (OTPAuthURL *authURL in authURLs) {
 					
+					// type
+					RecordType type = [authURL isKindOfClass:objc_getClass("HOTPAuthURL")] ? CounterBased : TimeBased;
+					LOG(@"%@: %d", authURL, (int)type);
+					
 					// name
 					NSString *name = authURL.name;
 					
@@ -45,13 +54,16 @@ static inline __attribute__((constructor)) void init() {
 					NSString *issuer = authURL.issuer;
 					
 					// verification code
-					OTPGenerator *generator = authURL.generator;
-					NSString *code = [generator generateOTP];
+					//OTPGenerator *generator = authURL.generator;
+					//NSString *code = [generator generateOTP];
+					[authURL generateNextOTPCode];
+					NSString *code = [authURL otpCode];
 					
 					// get the period
-					NSTimeInterval period = generator.period;
+					NSTimeInterval period = type == TimeBased ? generator.period : 0.0;
 					
-					NSDictionary *record = @{ @"name": SAFE_TEXT(name),
+					NSDictionary *record = @{ @"type": @(type),
+											  @"name": SAFE_TEXT(name),
 											  @"issuer": SAFE_TEXT(issuer),
 											  @"code": SAFE_TEXT(code),
 											  @"period": @(period)

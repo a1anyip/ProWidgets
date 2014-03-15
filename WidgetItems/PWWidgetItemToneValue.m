@@ -112,6 +112,12 @@
 	[self.itemViewController itemValueChanged:self oldValue:oldValue];
 }
 
+- (void)dealloc {
+	RELEASE(_tonePickerController)
+	RELEASE(_selectedToneIdentifier)
+	[super dealloc];
+}
+
 @end
 
 @implementation PWWidgetItemToneValueCell
@@ -133,7 +139,7 @@
 	NSString *toneIdentifier = value[@"identifier"];
 	ToneType toneType = [PWWidgetItemTonePickerController toneTypeFromNumber:value[@"type"]];
 	
-	if (toneIdentifier == nil) {
+	if (toneIdentifier == nil || [toneIdentifier length] == 0) {
 		self.detailTextLabel.text = @"None";
 	} else {
 		self.detailTextLabel.text = [PWWidgetItemTonePickerController nameOfToneWithIdentifier:toneIdentifier andType:toneType];

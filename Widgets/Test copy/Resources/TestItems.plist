@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	
+	<key>actionButtonText</key>
+	<string>Send</string>
+	
+	<key>items</key>
+	<array>
+		
+		<dict>
+			<key>key</key>
+			<string>time</string>
+			<key>title</key>
+			<string>Time</string>
+			<key>type</key>
+			<string>datevalue</string>
+			<key>dateMode</key>
+			<string>time</string>
+			<key>dateMinuteInterval</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>key</key>
+			<string>repeat</string>
+			<key>title</key>
+			<string>Repeat</string>
+			<key>type</key>
+			<string>PWWidgetAlarmItemListValue</string>
+			<key>listNoneIndex</key>
+			<integer>0</integer>
+			<key>listMaxSelection</key>
+			<integer>7</integer>
+			<key>listItemTitles</key>
+			<array>
+				<string>Never</string>
+				<string>Every Sunday</string>
+				<string>Every Monday</string>
+				<string>Every Tuesday</string>
+				<string>Every Wednesday</string>
+				<string>Every Thursday</string>
+				<string>Every Friday</string>
+				<string>Every Saturday</string>
+			</array>
+			<key>listItemValues</key>
+			<array>
+				<integer>0</integer>
+				<integer>64</integer>
+				<integer>1</integer>
+				<integer>2</integer>
+				<integer>4</integer>
+				<integer>8</integer>
+				<integer>16</integer>
+				<integer>32</integer>
+			</array>
+		</dict>
+		<dict>
+			<key>key</key>
+			<string>label</string>
+			<key>title</key>
+			<string>Label</string>
+			<key>type</key>
+			<string>textfield</string>
+		</dict>
+		<dict>
+			<key>key</key>
+			<string>sound</string>
+			<key>title</key>
+			<string>Sound</string>
+			<key>type</key>
+			<string>tonevalue</string>
+			<key>tonePickerType</key>
+			<string>ringtone</string>
+		</dict>
+		<dict>
+			<key>key</key>
+			<string>snooze</string>
+			<key>title</key>
+			<string>Snooze</string>
+			<key>type</key>
+			<string>switch</string>
+			<key>default</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>key</key>
+			<string>switch</string>
+			<key>title</key>
+			<string>Test Switch</string>
+			<key>type</key>
+			<string>switch</string>
+			<key>default</key>
+			<true/>
+		</dict>
+		
+		<dict>
+			<key>key</key>
+			<string>button</string>
+			<key>title</key>
+			<string>Test Button</string>
+			<key>type</key>
+			<string>button</string>
+		</dict>
+		
+		<dict>
+			<key>key</key>
+			<string>inputField</string>
+			<key>title</key>
+			<string>Test Input Field</string>
+			<key>type</key>
+			<string>PWWidgetItemTextField</string>
+			<key>default</key>
+			<string>Default Value</string>
+		</dict>
+		
+		<dict>
+			<key>key</key>
+			<string>textArea</string>
+			<key>title</key>
+			<string>Test Input Field</string>
+			<key>type</key>
+			<string>textArea</string>
+			
+		</dict>
+		
+		<dict>
+			<key>key</key>
+			<string>testKey</string>
+			<key>title</key>
+			<string>Test Title</string>
+			<key>type</key>
+			<string>datevalue</string>
+			
+		</dict>
+		
+		<dict>
+			<key>key</key>
+			<string>testKey</string>
+			<key>title</key>
+			<string>Test Title</string>
+			<key>type</key>
+			<string>listvalue</string>
+			<key>default</key>
+			<integer>2</integer>
+			
+			<key>listMaxSelection</key>
+			<integer>2</integer>
+						
+			<key>listItemTitles</key>
+			<array>
+				<string>Key 1</string>
+				<string>Key 2</string>
+			</array>
+			
+			<key>listItemValues</key>
+			<array>
+				<integer>1</integer>
+				<integer>2</integer>
+			</array>
+			
+		</dict>
+		
+		<dict>
+			<key>key</key>
+			<string>text</string>
+			<key>title</key>
+			<string>Test Text Test Text Test Text Test Text Test Text Test Text Test Text Test Text Test Text Test Text Test Text Test Text Test Text Test Text Test Text Test Text</string>
+			<key>type</key>
+			<string>text</string>
+		</dict>
+		
+	</array>
+</dict>
+</plist>

@@ -27,7 +27,7 @@
 }
 
 #define PW_IMP_ALARM_WRAPPER(name,setName,type,toType) - (JSValue *)name {\
-	return [JSValue valueWith##toType:_alarm.name inContext:_bridge.context];\
+	return [JSValue valueWith##toType:_alarm.name inContext:[JSContext currentContext]];\
 }\
 \
 - (void)set##setName:(JSValue *)value {\

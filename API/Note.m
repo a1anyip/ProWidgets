@@ -124,7 +124,7 @@
 }
 
 - (JSValue *)content {
-	return [JSValue valueWithObject:_note.content inContext:_bridge.context];
+	return [JSValue valueWithObject:_note.content inContext:[JSContext currentContext]];
 }
 
 - (void)setContent:(JSValue *)value {
@@ -132,7 +132,7 @@
 }
 
 - (JSValue *)creationDate {
-	return [JSValue valueWithObject:_note.creationDate inContext:_bridge.context];
+	return [JSValue valueWithObject:_note.creationDate inContext:[JSContext currentContext]];
 }
 
 - (void)setCreationDate:(JSValue *)value {
@@ -140,7 +140,7 @@
 }
 
 - (JSValue *)modificationDate {
-	return [JSValue valueWithObject:_note.modificationDate inContext:_bridge.context];
+	return [JSValue valueWithObject:_note.modificationDate inContext:[JSContext currentContext]];
 }
 
 - (void)setModificationDate:(JSValue *)value {

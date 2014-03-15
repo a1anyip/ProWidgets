@@ -8,6 +8,7 @@
 //
 
 #import "PWWidget.h"
+#import "PWWidgetJS.h"
 #import "PWController.h"
 #import "PWWidgetController.h"
 #import "PWView.h"
@@ -86,11 +87,21 @@
 		_theme = [[[PWController sharedInstance] loadDefaultThemeForWidget:self] retain];
 	}
 	
+	BOOL isJSWidget = [self isMemberOfClass:[PWWidgetJS class]];
+	
 	// if default layout is set, then auto create a content item view controller
-	if (_layout == PWWidgetLayoutDefault) {
+	if (_layout == PWWidgetLayoutDefault || isJSWidget) {
 		
 		// create a content item view controller
-		PWContentItemViewController *controller = [[PWContentItemViewController alloc] initForWidget:self];
+		PWContentItemViewController *controller;
+		
+		if (isJSWidget) {
+			controller = [[PWContentItemViewControllerJS alloc] initForWidget:self];
+			 [(PWContentItemViewControllerJS *)controller setBridge:[(PWWidgetJS *)self bridge]];
+		} else {
+			controller = [[PWContentItemViewController alloc] initForWidget:self];
+		}
+		
 		controller.shouldAutoConfigureStandardButtons = YES;
 		
 		// load item view controller plist

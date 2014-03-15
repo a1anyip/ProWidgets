@@ -14,7 +14,9 @@
 @interface PWWidgetGoogleAuthenticator : PWWidget {
 	
 	PWWidgetGoogleAuthenticatorViewController *_viewController;
+	UIImage *_reloadImage;
 }
 
+@property(nonatomic, readonly) UIImage *reloadImage;
 
 @end

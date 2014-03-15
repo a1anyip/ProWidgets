@@ -27,7 +27,7 @@
 }
 
 #define PW_IMP_ITEM_WRAPPER(name,setName,type,toType) - (JSValue *)name {\
-	return [JSValue valueWith##toType:_widgetItem.name inContext:_bridge.context];\
+	return [JSValue valueWith##toType:_widgetItem.name inContext:[JSContext currentContext]];\
 }\
 \
 - (void)set##setName:(JSValue *)value {\
@@ -35,7 +35,7 @@
 }
 
 #define PW_IMP_ITEM_STRING_WRAPPER(name,setName) - (JSValue *)name {\
-	return [JSValue valueWithObject:_widgetItem.name inContext:_bridge.context];\
+	return [JSValue valueWithObject:_widgetItem.name inContext:[JSContext currentContext]];\
 }\
 \
 - (void)set##setName:(JSValue *)value {\

@@ -7,6 +7,8 @@
 
 @interface SBApplication : NSObject
 
+- (NSString *)path;
+
 @end
 
 @interface SBApplicationController : NSObject

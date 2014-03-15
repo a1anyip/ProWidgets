@@ -8,6 +8,8 @@
 - (NSString *)copyNameOfRingtoneWithIdentifier:(NSString *)identifier;
 - (NSString *)localizedNameWithIdentifier:(NSString *)identifier;
 
+- (void)setDelegate:(id)delegate;
+
 @end
 
 @interface TLITunesTone : NSObject

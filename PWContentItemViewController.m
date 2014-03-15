@@ -124,6 +124,7 @@ static NSNumberFormatter *numberFormatter = nil;
 	LOG(@"PWContentItemViewController: configureFirstResponder: _lastFirstResponder: %@", _lastFirstResponder);
 	
 	if (_lastFirstResponder != nil && [_items containsObject:_lastFirstResponder]) {
+		LOG(@"REQUEST FIRST RESPONDER: last first responder <%@>", _lastFirstResponder);
 		[self requestFirstResponder:_lastFirstResponder];
 		return;
 	}
@@ -141,8 +142,6 @@ static NSNumberFormatter *numberFormatter = nil;
 - (void)requestFirstResponder:(PWWidgetItem *)item {
 	
 	LOG(@"PWContentItemViewController: requestFirstResponder: %@ <active cell: %@>", item, item.activeCell);
-	
-	//[self.tableView visibleCells]
 	
 	NSUInteger index = [self indexOfItem:item];
 	if (index == NSNotFound) return;
@@ -629,7 +628,13 @@ static NSNumberFormatter *numberFormatter = nil;
 	if (_pendingFirstResponder != nil && item == _pendingFirstResponder) {
 		_pendingFirstResponder = nil;
 		if ([itemCell.class contentCanBecomeFirstResponder]) {
-			[itemCell contentSetFirstResponder];
+			// to see if there's another key window which already has its first responder
+			// e.g. text field in alert view
+			UIWindow *window = [UIApplication sharedApplication].keyWindow;
+			id firstResponder = [window firstResponder];
+			// only set first responder if there's no active first responder
+			if (firstResponder == nil)
+				[itemCell contentSetFirstResponder];
 		}
 	}
 }
@@ -816,6 +821,8 @@ static NSNumberFormatter *numberFormatter = nil;
 	[super _willBePresentedInNavigationController:navigationController];
 	//[self.tableView reloadData];
 	_shouldUpdateLastFirstResponder = NO;
+	
+	//object_setInstanceVariable(self.tableView, "_firstResponderView", )
 }
 
 - (void)_presentedInNavigationController:(UINavigationController *)navigationController {

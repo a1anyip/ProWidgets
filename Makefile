@@ -49,6 +49,7 @@ LIB += PWWidgetItemCell.m
 LIB += WidgetItems/_PWWidgetItemTextInputTraits.m
 LIB += WidgetItems/PWWidgetItemTextArea.m
 LIB += WidgetItems/PWWidgetItemTextField.m
+LIB += WidgetItems/PWWidgetItemValue.m
 LIB += WidgetItems/PWWidgetItemListValue.m
 LIB += WidgetItems/PWWidgetItemDateValue.m
 LIB += WidgetItems/PWWidgetItemToneValue.m
@@ -117,8 +118,6 @@ API_SUBSTRATES += API/AlarmSubstrate
 ############################################################
 
 # Built-in Widgets
-#WIDGETS = Widgets/Test
-#WIDGETS += Widgets/Custom
 WIDGETS += Widgets/Calendar
 WIDGETS += Widgets/Reminders
 WIDGETS += Widgets/Notes
@@ -128,6 +127,9 @@ WIDGETS += Widgets/Alarm
 WIDGETS += Widgets/Timer
 WIDGETS += Widgets/Messages
 WIDGETS += Widgets/Mail
+
+WIDGETS += Widgets/Test
+#WIDGETS += Widgets/Custom
 
 ############################################################
 

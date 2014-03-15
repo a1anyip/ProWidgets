@@ -112,6 +112,10 @@
 	[self.widget setPreferredBarTextColor:color];
 }
 
+- (void)setWantsFullscreen:(BOOL)value {
+	[self.itemViewController setWantsFullscreen:value];
+}
+
 - (void)setShouldMaximizeContentHeight:(BOOL)value {
 	[self.itemViewController setShouldMaximizeContentHeight:value];
 }
@@ -121,7 +125,7 @@
 }
 
 - (void)setTitle:(JSValue *)value {
-	NSString *text = [value isString] ? [value toString] : @"";
+	NSString *text = [value isUndefined] || [value isNull] ? @"" : [value toString];
 	[self.itemViewController setTitle:text];
 }
 
@@ -145,7 +149,7 @@
 			[itemWrappers addObject:wrapper];
 		}
 	}
-	return [JSValue valueWithObject:itemWrappers inContext:_bridge.context];
+	return [JSValue valueWithObject:itemWrappers inContext:[JSContext currentContext]];
 }
 
 - (void)setItems:(JSValue *)items {
@@ -413,6 +417,7 @@
 }
 
 // Callbacks
+PW_IMP_HANDLER(configure, Configure)
 PW_IMP_HANDLER(load, Load)
 PW_IMP_HANDLER(willPresent, WillPresent)
 PW_IMP_HANDLER(didPresent, DidPresent)
@@ -420,6 +425,7 @@ PW_IMP_HANDLER(willDismiss, WillDismiss)
 PW_IMP_HANDLER(didDismiss, DidDismiss)
 PW_IMP_HANDLER(configureFirstResponder, ConfigureFirstResponder)
 PW_IMP_HANDLER(itemValueChangedEventHandler, ItemValueChangedEventHandler)
+PW_IMP_HANDLER(closeEventHandler, CloseEventHandler)
 PW_IMP_HANDLER(submitEventHandler, SubmitEventHandler)
 
 - (PWWidget *)base { return _bridge.widgetRef; }
@@ -431,6 +437,7 @@ PW_IMP_HANDLER(submitEventHandler, SubmitEventHandler)
 	DEALLOCLOG;
 	
 	// release callbacks
+	PW_RELEASE_HANDLER(configure)
 	PW_RELEASE_HANDLER(load)
 	PW_RELEASE_HANDLER(willPresent)
 	PW_RELEASE_HANDLER(didPresent)
@@ -439,6 +446,7 @@ PW_IMP_HANDLER(submitEventHandler, SubmitEventHandler)
 	PW_RELEASE_HANDLER(configureFirstResponder)
 	PW_RELEASE_HANDLER(itemValueChangedEventHandler)
 	PW_RELEASE_HANDLER(submitEventHandler)
+	PW_RELEASE_HANDLER(closeEventHandler)
 	
 	[super dealloc];
 }

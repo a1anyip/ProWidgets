@@ -17,11 +17,9 @@
 	UIView *_customSeparatorView;
 }
 
+@property(nonatomic, retain) PWTheme *theme;
+
 - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier theme:(PWTheme *)theme;
-- (PWTheme *)theme;
-
-//////////////////////////////////////////////////////////////////////
-
 - (void)_configureAppearance;
 
 ////////// Normal //////////
@@ -47,7 +45,5 @@
 - (void)setSwitchThumbColor:(UIColor *)color;
 - (void)setSwitchOnColor:(UIColor *)color;
 - (void)setSwitchOffColor:(UIColor *)color;
-
-//////////////////////////////////////////////////////////////////////
 
 @end

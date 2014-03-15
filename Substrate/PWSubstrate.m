@@ -9,6 +9,8 @@
 #import "header.h"
 
 #import "PWWidgetPickerCell.h"
+#import "PWTheme.h"
+#import "PWThemableTableViewCell.h"
 
 #import "PWController.h"
 #import "PWWidgetController.h"
@@ -207,6 +209,59 @@ static void handleException(NSException *exception) {
 		[PWWidgetController minimizeAllControllers];
 		%orig;
 	}
+}
+
+%end
+
+extern char PWWidgetItemTonePickerControllerThemeKey;
+
+@interface UITableViewCell ()
+
+- (void)setSeparatorStyle:(UITableViewCellSeparatorStyle)style;
+
+@end
+
+%hook TKToneTableController
+
+- (void)_configureTextColorOfLabelInCell:(UITableViewCell *)cell checked:(BOOL)checked {
+	%orig;
+	if (cell != nil && [cell isKindOfClass:[PWThemableTableViewCell class]]) {
+		LOG(@"cell : %@", cell);
+		PWTheme *theme = (PWTheme *)objc_getAssociatedObject(self, &PWWidgetItemTonePickerControllerThemeKey);
+		if (theme != NULL) {
+			[(PWThemableTableViewCell *)cell setTheme:theme];
+		}
+	}
+}
+
+- (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath {
+	%orig;
+	if (cell != nil) {
+		
+		PWTheme *theme = (PWTheme *)objc_getAssociatedObject(self, &PWWidgetItemTonePickerControllerThemeKey);
+		
+		if ([cell isKindOfClass:[PWThemableTableViewCell class]]) {
+			cell.separatorStyle = UITableViewCellSeparatorStyleNone;
+		} else if ([cell isKindOfClass:objc_getClass("TLDividerTableViewCell")]) {
+			UIColor *dividerColor = [theme cellHeaderFooterViewBackgroundColor];
+			TLDividerTableViewCell *divider = (TLDividerTableViewCell *)cell;
+			[divider setContentBackgroundColor:dividerColor];
+			[divider setContentFillColor:dividerColor];
+		}
+	}
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+	UITableViewCell *cell = %orig;
+	if (cell != nil) {
+		if ([cell isKindOfClass:[PWThemableTableViewCell class]]) {
+			PWTheme *theme = (PWTheme *)objc_getAssociatedObject(self, &PWWidgetItemTonePickerControllerThemeKey);
+			if (theme != NULL) {
+				[(PWThemableTableViewCell *)cell setTheme:theme];
+			}
+		}
+	}
+	return cell;
 }
 
 %end

@@ -228,6 +228,7 @@
 }
 
 - (void)_finishConnection {
+	RELEASE(_headers)
 	RELEASE(_response)
 	RELEASE(_request)
 	RELEASE(_connection)
@@ -248,11 +249,11 @@
 		
 		JSValue *callbackFunction = [_callback value];
 		if (callbackFunction != nil) {
-			[callbackFunction callWithArguments:@[@NO, @0, [NSNull null], errMsg]];
+			[callbackFunction callWithArguments:@[@NO, @0, [NSNull null], [NSNull null], errMsg]];
 		}
 		
 	} else {
-		_completionHandler(NO, 0, nil, error);
+		_completionHandler(NO, 0, nil, nil, error);
 	}
 	
 	[self _finishConnection];
@@ -293,7 +294,10 @@
 	else
 		_encoding = CFStringConvertEncodingToNSStringEncoding(CFStringConvertIANACharSetNameToEncoding((CFStringRef)encodingName));
 	
-	LOG(@"PWWebRequest: didReceiveResponse <status code: %d> <encoding: %@>", _statusCode, encodingName);
+	// update headers
+	_headers = [response isKindOfClass:[NSHTTPURLResponse class]] ? [[(NSHTTPURLResponse *)response allHeaderFields] copy] : nil;
+	
+	LOG(@"PWWebRequest: didReceiveResponse <status code: %d> <encoding: %@> <headers: %@>", _statusCode, encodingName, _headers);
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
@@ -311,11 +315,11 @@
 		
 		JSValue *callbackFunction = [_callback value];
 		if (callbackFunction != nil) {
-			[callbackFunction callWithArguments:@[@YES, @(_statusCode), (responseString == nil ? [NSNull null] : responseString), [NSNull null]]];
+			[callbackFunction callWithArguments:@[@YES, @(_statusCode), (_headers == nil ? [NSNull null] : _headers), (responseString == nil ? [NSNull null] : responseString), [NSNull null]]];
 		}
 		
 	} else {
-		_completionHandler(YES, _statusCode, responseString, nil);
+		_completionHandler(YES, _statusCode, _headers, responseString, nil);
 	}
 	
 	[self _finishConnection];

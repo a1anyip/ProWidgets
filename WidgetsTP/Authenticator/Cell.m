@@ -7,6 +7,7 @@
 //
 
 #import "Cell.h"
+#import "Authenticator.h"
 #import "PWTheme.h"
 
 @implementation PWWidgetGoogleAuthenticatorTableViewCell
@@ -42,6 +43,12 @@
 		_codeLabel.highlightedTextColor = [UIColor whiteColor];
 		_codeLabel.font = [UIFont systemFontOfSize:44.0];
 		[self.contentView addSubview:_codeLabel];
+		
+		// reload btn
+		UIImage *reloadImage = [PWWidgetGoogleAuthenticator widget].reloadImage;
+		_reloadBtn = [UIButton new];
+		[_reloadBtn setImage:reloadImage forState:UIControlStateNormal];
+		[self.contentView addSubview:_reloadBtn];
 	}
 	return self;
 }
@@ -55,14 +62,18 @@
 	CGFloat horizontalPadding = 20.0;
 	CGFloat codeHeight = 50.0;
 	CGFloat textHeight = 20.0;
+	CGFloat reloadButtonSize = 30.0;
+	CGFloat reloadButtonMargin = 6.0;
 	CGFloat contentHeight = codeHeight + textHeight;
 	
 	CGRect codeRect = CGRectMake(horizontalPadding, (height - contentHeight) / 2, width - horizontalPadding * 2, codeHeight);
-	CGRect textRect = CGRectMake(horizontalPadding, codeRect.origin.y + codeRect.size.height, width - horizontalPadding * 2, textHeight);
+	CGRect textRect = CGRectMake(horizontalPadding, codeRect.origin.y + codeRect.size.height, width - reloadButtonSize - horizontalPadding * 2, textHeight);
+	CGRect reloadButtonRect = CGRectMake(width - reloadButtonSize - reloadButtonMargin, height - reloadButtonSize - reloadButtonMargin, reloadButtonSize, reloadButtonSize);
 	
 	_copiedLabel.frame = self.contentView.bounds;
 	_codeLabel.frame = codeRect;
 	_textLabel.frame = textRect;
+	_reloadBtn.frame = reloadButtonRect;
 }
 
 - (void)setName:(NSString *)name issuer:(NSString *)issuer {
@@ -81,6 +92,23 @@
 
 - (void)setWarning:(BOOL)warning {
 	_codeLabel.textColor = warning ? [PWTheme parseColorString:@"#ab1c1c"] : [PWTheme systemBlueColor];
+}
+
+- (void)setReloadBtnHidden:(BOOL)hidden {
+	_reloadBtn.hidden = hidden;
+}
+
+- (void)setReloadBtnEnabled:(BOOL)enabled {
+	_reloadBtn.enabled = enabled;
+}
+
+- (void)setReloadBtnTarget:(id)target action:(SEL)action {
+	[_reloadBtn removeTarget:nil action:NULL forControlEvents:UIControlEventTouchUpInside];
+	[_reloadBtn addTarget:target action:action forControlEvents:UIControlEventTouchUpInside];
+}
+
+- (void)setReloadBtnRecordIndex:(NSUInteger)index {
+	_reloadBtn.tag = index;
 }
 
 - (void)showCopied {
@@ -103,6 +131,7 @@
 	RELEASE_VIEW(_copiedLabel)
 	RELEASE_VIEW(_textLabel)
 	RELEASE_VIEW(_codeLabel)
+	RELEASE_VIEW(_reloadBtn)
 	[super dealloc];
 }
 

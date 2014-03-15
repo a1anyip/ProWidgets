@@ -45,29 +45,6 @@
 	return self;
 }
 
-- (void)preparePresentation {
-	
-	_isPresenting = YES;
-	
-	// create a content item view controller
-	PWContentItemViewControllerJS *controller = [PWContentItemViewControllerJS new];
-	controller.bridge = _bridge;
-	controller.shouldAutoConfigureStandardButtons = YES;
-	
-	// load item view controller plist
-	if (_defaultItemViewControllerPlist != nil) {
-		[controller loadPlist:_defaultItemViewControllerPlist];
-	}
-	
-	// set event handlers
-	[controller setItemValueChangedEventHandler:self selector:@selector(itemValueChangedEventHandler:oldValue:)];
-	[controller setSubmitEventHandler:self selector:@selector(submitEventHandler:)];
-	
-	// push it onto navigation stack
-	[self pushViewController:controller animated:NO];
-	_defaultItemViewController = controller;
-}
-
 - (void)itemValueChangedEventHandler:(PWWidgetItem *)item oldValue:(id)oldValue {
 	JSValue *callback = [_bridge.widget itemValueChangedEventHandler];
 	if (callback != nil) {
@@ -87,6 +64,7 @@
 }
 
 // Callback methods
+PW_IMP_HANDLER(configure)
 PW_IMP_HANDLER(load)
 PW_IMP_HANDLER(willPresent)
 PW_IMP_HANDLER(didPresent)

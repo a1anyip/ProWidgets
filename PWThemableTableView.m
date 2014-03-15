@@ -46,16 +46,19 @@ static char PWThemableTableViewHeaderFooterViewConfiguredKey;
 	
 	UITableViewHeaderFooterView *view = [super _sectionHeaderView:arg1 withFrame:frame forSection:section floating:floating reuseViewIfPossible:reuse];
 	
+	if (view == nil) return nil;
+	
 	NSNumber *configured = objc_getAssociatedObject(view, &PWThemableTableViewHeaderFooterViewConfiguredKey);
 	if (configured == nil || ![configured boolValue]) {
 		
-		[view setOpaque:NO];
-		
 		// configure its appearance
 		PWTheme *theme = _theme;
-		view.contentView.backgroundColor = [theme cellHeaderFooterViewBackgroundColor];
+		view.tintColor = [theme cellHeaderFooterViewTitleTextColor];
 		view.textLabel.textColor = [theme cellHeaderFooterViewTitleTextColor];
 		view.detailTextLabel.textColor = [theme cellHeaderFooterViewTitleTextColor];
+		
+		if (self.style == UITableViewStylePlain)
+			view.contentView.backgroundColor = [theme cellHeaderFooterViewBackgroundColor];
 		
 		objc_setAssociatedObject(view, &PWThemableTableViewHeaderFooterViewConfiguredKey, @(YES), OBJC_ASSOCIATION_COPY);
 	}
