@@ -30,7 +30,7 @@
 	_defaultBrowser = [self intValueForPreferenceKey:@"defaultBrowser" defaultValue:(NSInteger)PWWidgetBrowserDefaultSafari] == (NSInteger)PWWidgetBrowserDefaultChrome ? PWWidgetBrowserDefaultChrome : PWWidgetBrowserDefaultSafari;
 	
 	if (_defaultBrowser == PWWidgetBrowserDefaultChrome) {
-		[self showMessage:@"Setting Chrome as default browser is not supported yet."];
+		[self showMessage:@"Setting Chrome as the default browser is not supported yet."];
 		[self dismiss];
 		return;
 	}

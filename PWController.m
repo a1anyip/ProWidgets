@@ -285,18 +285,24 @@ static inline void showWelcomeScreen(CFNotificationCenterRef center, void *obser
 	}
 }
 
-- (CGFloat)availableWidthInOrientation:(PWWidgetOrientation)orientation {
+- (CGFloat)availableWidthInOrientation:(PWWidgetOrientation)orientation fullscreen:(BOOL)fullscreen {
 	
 	CGSize screenSize = [[UIScreen mainScreen] bounds].size;
 	CGFloat width = orientation == PWWidgetOrientationPortrait ? screenSize.width : screenSize.height;
 	
-	if ([PWController isIPad]) // just to make sure the sheet on iPad is not too large
-		width /= 2.0;
+	// just to make sure the sheet on iPad is not too large
+	if ([PWController isIPad]) {
+		if (fullscreen) {
+			width *= 2.0  / 3.0;
+		} else {
+			width /= 2.0;
+		}
+	}
 	
 	return MAX(1.0, width - PWSheetHorizontalMargin * 2);
 }
 
-- (CGFloat)availableHeightInOrientation:(PWWidgetOrientation)orientation withKeyboard:(BOOL)withKeyboard {
+- (CGFloat)availableHeightInOrientation:(PWWidgetOrientation)orientation fullscreen:(BOOL)fullscreen withKeyboard:(BOOL)withKeyboard {
 	
 	BOOL isLandscape = orientation == PWWidgetOrientationLandscape;
 	CGSize screenSize = [[UIScreen mainScreen] bounds].size;
@@ -308,10 +314,18 @@ static inline void showWelcomeScreen(CFNotificationCenterRef center, void *obser
 	
 	// just to make sure the sheet on iPad is not too large
 	if ([PWController isIPad]) {
-		if (orientation == PWWidgetOrientationPortrait) {
-			availableHeight /= 2.0;
-		} else if (orientation == PWWidgetOrientationLandscape) {
-			availableHeight *= 4.0 / 5.0;
+		if (fullscreen) {
+			if (orientation == PWWidgetOrientationPortrait) {
+				availableHeight *= 4.0 / 5.0;
+			} else if (orientation == PWWidgetOrientationLandscape) {
+				availableHeight *= 4.0 / 5.0;
+			}
+		} else {
+			if (orientation == PWWidgetOrientationPortrait) {
+				availableHeight /= 2.0;
+			} else if (orientation == PWWidgetOrientationLandscape) {
+				availableHeight *= 4.0 / 5.0;
+			}
 		}
 	}
 	
@@ -488,9 +502,8 @@ static inline void showWelcomeScreen(CFNotificationCenterRef center, void *obser
 	
 	NSDictionary *dict = [[NSDictionary alloc] initWithContentsOfFile:PWPrefPath];
 	
-	if (dict == nil || [dict[@"showedWelcomeScreen"] boolValue]) {
-		_showedWelcomeScreen = YES;
-	}
+	// Showed Welcome Screen
+	_showedWelcomeScreen = [dict[@"showedWelcomeScreen"] boolValue];
 	
 	// Lock Action
 	NSNumber *lockAction = dict[@"lockAction"];

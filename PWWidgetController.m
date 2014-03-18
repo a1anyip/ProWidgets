@@ -1125,7 +1125,6 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	CGSize size = view.bounds.size;
 	CGFloat width = size.width;
 	CGFloat height = size.height;
-	//CGFloat availableHeight = [controller availableHeightInOrientation:orientation withKeyboard:requiresKeyboard];
 	
 	// calculate container width
 	CGFloat contentWidth = [viewController contentWidthForOrientation:orientation];

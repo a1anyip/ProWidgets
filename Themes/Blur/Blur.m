@@ -196,7 +196,10 @@
 	CGRect superRect = [self containerView].bounds;
 	CGSize superSize = superRect.size;
 	
-	_barBlurView.frame = CGRectMake(0, 0, superSize.width, [self navigationBar].bounds.size.height);
+	[UIView performWithoutAnimation:^{
+		_barBlurView.frame = CGRectMake(0, 0, superSize.width, [self navigationBar].bounds.size.height);
+		LOG(@"_barBlurView: %@", _barBlurView);
+	}];
 	_contentBlurView.frame = CGRectMake(0, _barBlurView.frame.size.height, superSize.width, superSize.height - _barBlurView.frame.size.height);
 }
 

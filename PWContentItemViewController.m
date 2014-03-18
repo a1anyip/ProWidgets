@@ -640,7 +640,7 @@ static NSNumberFormatter *numberFormatter = nil;
 }
 
 - (CGFloat)contentHeightForOrientation:(PWWidgetOrientation)orientation {
-	if (self.wantsFullscreen && ![PWController isIPad]) {
+	if (self.wantsFullscreen) {
 		return [super contentHeightForOrientation:orientation];
 	} else {
 		return [self optimalContentHeightForOrientation:orientation];
@@ -677,7 +677,7 @@ static NSNumberFormatter *numberFormatter = nil;
 - (CGFloat)optimalContentHeightForOrientation:(PWWidgetOrientation)orientation {
 	
 	PWController *controller = [PWController sharedInstance];
-	CGFloat maxHeight = [controller availableHeightInOrientation:orientation withKeyboard:self.requiresKeyboard];
+	CGFloat maxHeight = [controller availableHeightInOrientation:orientation fullscreen:self.wantsFullscreen withKeyboard:self.requiresKeyboard];
 	CGFloat navigationBarHeight = [controller heightOfNavigationBarInOrientation:orientation];
 	CGFloat availableHeight = MAX(1.0, maxHeight - navigationBarHeight);
 	

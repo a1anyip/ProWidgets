@@ -249,7 +249,7 @@
 		CGRect screenRect = [[UIScreen mainScreen] bounds];
 		return orientation == PWWidgetOrientationLandscape ? screenRect.size.height : screenRect.size.width;
 	} else {
-		return [[PWController sharedInstance] availableWidthInOrientation:orientation];
+		return [[PWController sharedInstance] availableWidthInOrientation:orientation fullscreen:self.wantsFullscreen];
 	}
 }
 
@@ -261,7 +261,7 @@
 		return orientation == PWWidgetOrientationLandscape ? screenRect.size.width : screenRect.size.height;
 	} else if (self.shouldMaximizeContentHeight || (self.wantsFullscreen && [PWController isIPad])) {
 		PWController *controller = [PWController sharedInstance];
-		CGFloat maxHeight = [controller availableHeightInOrientation:orientation withKeyboard:self.requiresKeyboard];
+		CGFloat maxHeight = [controller availableHeightInOrientation:orientation fullscreen:self.wantsFullscreen withKeyboard:self.requiresKeyboard];
 		CGFloat navigationBarHeight = [controller heightOfNavigationBarInOrientation:orientation];
 		CGFloat availableHeight = MAX(1.0, maxHeight - navigationBarHeight);
 		return availableHeight;
@@ -271,16 +271,10 @@
 }
 
 - (BOOL)wantsFullscreen {
-	return _wantsFullscreen && ![PWController isIPad];
+	return _wantsFullscreen;
 }
 
 - (void)setWantsFullscreen:(BOOL)wantsFullscreen {
-	
-	if ([PWController isIPad]) {
-		_wantsFullscreen = NO;
-		return;
-	}
-	
 	if (_wantsFullscreen != wantsFullscreen) {
 		_wantsFullscreen = wantsFullscreen;
 		PWWidget *widget = self.widget;

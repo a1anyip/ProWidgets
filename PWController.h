@@ -151,8 +151,8 @@
 + (UIInterfaceOrientation)currentInterfaceOrientation;
 - (UIInterfaceOrientation)currentInterfaceOrientation;
 
-- (CGFloat)availableWidthInOrientation:(PWWidgetOrientation)orientation;
-- (CGFloat)availableHeightInOrientation:(PWWidgetOrientation)orientation withKeyboard:(BOOL)withKeyboard;
+- (CGFloat)availableWidthInOrientation:(PWWidgetOrientation)orientation fullscreen:(BOOL)fullscreen;
+- (CGFloat)availableHeightInOrientation:(PWWidgetOrientation)orientation fullscreen:(BOOL)fullscreen withKeyboard:(BOOL)withKeyboard;
 - (CGFloat)heightOfNavigationBarInOrientation:(PWWidgetOrientation)orientation;
 - (CGFloat)defaultHeightOfKeyboardInOrientation:(PWWidgetOrientation)orientation;
 
