@@ -128,19 +128,19 @@ WIDGETS += Widgets/Timer
 WIDGETS += Widgets/Messages
 WIDGETS += Widgets/Mail
 
-WIDGETS += Widgets/Test
+#WIDGETS += Widgets/Test
 #WIDGETS += Widgets/Custom
 
 ############################################################
 
 # Third-party Widgets
-WIDGETSTP = WidgetsTP/Authenticator
-WIDGETSTP += WidgetsTP/Spotify
+#WIDGETSTP = WidgetsTP/Authenticator
+#WIDGETSTP += WidgetsTP/Spotify
 
 ############################################################
 
 # Test Scripts
-SCRIPTS = Scripts/Test
+#SCRIPTS = Scripts/Test
 
 ############################################################
 
@@ -159,12 +159,13 @@ PREFERENCE = preference
 
 # Welcome Screen
 WELCOME_SCREEN = WelcomeScreen/PWWSWindow.m
+WELCOME_SCREEN += WelcomeScreen/PWWSTipView.m
 
 ############################################################
 
 LIBRARY_NAME = libprowidgets
 libprowidgets_FILES = function.m $(LIB) $(API) $(WELCOME_SCREEN)
-libprowidgets_FRAMEWORKS = CoreFoundation Foundation UIKit CoreGraphics CoreImage QuartzCore JavaScriptCore EventKit
+libprowidgets_FRAMEWORKS = CoreFoundation Foundation UIKit CoreGraphics CoreImage QuartzCore JavaScriptCore EventKit AddressBook MediaPlayer
 libprowidgets_PRIVATE_FRAMEWORKS = MobileKeyBag Calculate MobileTimer ToneKit ToneLibrary AddressBook MessageUI ChatKit MailServices Notes
 libprowidgets_INSTALL_PATH = /Library/ProWidgets/
 libprowidgets_LIBRARIES = substrate objcipc

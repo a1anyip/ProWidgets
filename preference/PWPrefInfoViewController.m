@@ -37,9 +37,9 @@ extern NSBundle *bundle;
 
 - (void)viewWillAppear:(BOOL)animated {
 	
-	self.navigationItem.title = @"Info";
+	self.navigationItem.title = PTEXT(@"Info");
 	
-	UIBarButtonItem *closeButton = [[[UIBarButtonItem alloc] initWithTitle:@"Close" style:UIBarButtonItemStylePlain target:self.navigationController action:@selector(dismiss)] autorelease];
+	UIBarButtonItem *closeButton = [[[UIBarButtonItem alloc] initWithTitle:PTEXT(@"Close") style:UIBarButtonItemStylePlain target:self.navigationController action:@selector(dismiss)] autorelease];
 	
 	self.navigationItem.leftBarButtonItem = closeButton;
 }

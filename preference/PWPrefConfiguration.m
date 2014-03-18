@@ -39,12 +39,12 @@ static BOOL isIPhone4 = NO;
 }
 
 - (void)showWelcomeScreen {
-	
+	CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), CFSTR(PWShowWelcomeScreenNotification), NULL, NULL, true);
 }
 
 - (void)resetPreference {
 	
-	PWAlertView *alertView = [[PWAlertView alloc] initWithTitle:@"Confirmation" message:@"Are you sure to reset all core settings of ProWidgets?" buttonTitle:@"Yes" cancelButtonTitle:@"No" defaultValue:nil style:UIAlertViewStyleDefault completion:^(BOOL cancelled, NSString *firstValue, NSString *secondValue) {
+	PWAlertView *alertView = [[PWAlertView alloc] initWithTitle:PTEXT(@"Confirmation") message:PTEXT(@"ResetCoreSettingsConfirmation") buttonTitle:PTEXT(@"Yes") cancelButtonTitle:PTEXT(@"No") defaultValue:nil style:UIAlertViewStyleDefault completion:^(BOOL cancelled, NSString *firstValue, NSString *secondValue) {
 		if (!cancelled) {
 			
 			// write an empty dictionary to preference file
@@ -52,7 +52,7 @@ static BOOL isIPhone4 = NO;
 			CFNotificationCenterRef center = CFNotificationCenterGetDarwinNotifyCenter();
 			CFNotificationCenterPostNotification(center, CFSTR("cc.tweak.prowidgets.preferencechanged"), NULL, NULL, true);
 			
-			UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"ProWidgets" message:@"Core preference file is reset." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+			UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"ProWidgets" message:PTEXT(@"ResetCoreSettingsMessage") delegate:nil cancelButtonTitle:PTEXT(@"OK") otherButtonTitles:nil];
 			[alertView show];
 			[alertView release];
 			

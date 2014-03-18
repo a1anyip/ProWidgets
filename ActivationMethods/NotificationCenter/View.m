@@ -180,7 +180,7 @@ static inline UIImage *scaleImage(UIImage *image) {
 		if (++currentIcon == iconPerPage) {
 			
 			// reset
-			currentIcon = 1;
+			currentIcon = 0;
 			currentPageIndex++;
 			
 			if (currentPageIndex <= pageCount) {

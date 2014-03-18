@@ -53,12 +53,10 @@ static char PWThemableTableViewHeaderFooterViewConfiguredKey;
 		
 		// configure its appearance
 		PWTheme *theme = _theme;
-		view.tintColor = [theme cellHeaderFooterViewTitleTextColor];
+		view.contentView.backgroundColor = [theme cellHeaderFooterViewBackgroundColor];
 		view.textLabel.textColor = [theme cellHeaderFooterViewTitleTextColor];
 		view.detailTextLabel.textColor = [theme cellHeaderFooterViewTitleTextColor];
-		
-		if (self.style == UITableViewStylePlain)
-			view.contentView.backgroundColor = [theme cellHeaderFooterViewBackgroundColor];
+		view.opaque = NO;
 		
 		objc_setAssociatedObject(view, &PWThemableTableViewHeaderFooterViewConfiguredKey, @(YES), OBJC_ASSOCIATION_COPY);
 	}

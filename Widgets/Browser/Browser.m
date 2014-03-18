@@ -13,6 +13,7 @@
 #import "Add.h"
 
 #define SAFARI_BUNDLE_PATH @"/Applications/MobileSafari.app/"
+#define ChromeIdentifier @"com.google.chrome.ios"
 
 #define ICON_GETTER(ivar, name) - (UIImage *)ivar {\
 	if (_##ivar == nil) {\
@@ -24,6 +25,15 @@
 @implementation PWWidgetBrowser
 
 - (void)load {
+	
+	// get the preference of default browser
+	_defaultBrowser = [self intValueForPreferenceKey:@"defaultBrowser" defaultValue:(NSInteger)PWWidgetBrowserDefaultSafari] == (NSInteger)PWWidgetBrowserDefaultChrome ? PWWidgetBrowserDefaultChrome : PWWidgetBrowserDefaultSafari;
+	
+	if (_defaultBrowser == PWWidgetBrowserDefaultChrome) {
+		[self showMessage:@"Setting Chrome as default browser is not supported yet."];
+		[self dismiss];
+		return;
+	}
 	
 	NSDictionary *userInfo = self.userInfo;
 	NSString *url = userInfo[@"url"];
@@ -124,7 +134,35 @@ ICON_GETTER(folderIcon, @"BookmarksListFolder")
 	[self setViewControllers:_bookmarkViewControllers animated:YES];
 	_currentInterface = PWWidgetBrowserInterfaceBookmark;
 }
-
+/*
++ (NSDictionary *)readChromeBookmarks {
+	
+	SBApplicationController *controller = [objc_getClass("SBApplicationController") sharedInstance];
+	SBApplication *chromeApp = [controller applicationWithDisplayIdentifier:ChromeIdentifier];
+	if (chromeApp == nil) return nil;
+	
+	NSString *chromeBookmarkPath = [NSString stringWithFormat:@"%@/Library/Application Support/Google/Chrome/Default/Bookmarks", chromeApp.sandboxPath];
+	NSData *data = [NSData dataWithContentsOfFile:chromeBookmarkPath];
+	
+	NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+	NSDictionary *roots = json[@"roots"];
+	
+	for (NSString *key in roots) {
+		
+		NSDictionary *rootFolder = roots[key];
+		if (![rootFolder isKindOfClass:[NSDictionary class]]) continue;
+		
+		NSString *name = rootFolder[@"name"];
+		NSString *type = rootFolder[@"type"];
+		if (![type isEqualToString:@"folder"]) continue;
+		
+		LOG(@"key: %@", key);
+		LOG(@"name: %@", name);
+	}
+	
+	return nil;//json;
+}
+*/
 - (void)dealloc {
 	RELEASE(_webViewControllers)
 	RELEASE(_bookmarkViewControllers)

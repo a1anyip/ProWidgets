@@ -13,7 +13,7 @@ extern NSBundle *bundle;
 }
 
 - (NSString *)navigationTitle {
-	return @"Widgets";
+	return PTEXT(@"Widgets");
 }
 
 - (BOOL)requiresEditBtn {
@@ -51,17 +51,17 @@ extern NSBundle *bundle;
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
-	return section == 0 ? @"Installed widgets" : nil;
+	return section == 0 ? PTEXT(@"InstalledWidgets") : nil;
 }
 
 
 - (NSString *)tableView:(UITableView *)tableView titleForFooterInSection:(NSInteger)section {
 	if (section == 0 && [_installedWidgets count] > 0) {
-		return @"You could configure widgets in this page, and rearrange them in Activation Methods.\n\nTap on icons to view details.";
+		return PTEXT(@"InstalledWidgetsFooterText");
 	} else if (section == 0 && [_installedWidgets count] == 0) {
-		return @"You may find some useful widgets in Cydia, or re-install ProWidgets to restore stock widgets.";
+		return PTEXT(@"NoInstalledWidgetsFooterText");
 	} else if (section == 1) {
-		return @"Only widgets installed via URL can be uninstalled in this page.\n\nInstall or Uninstall other widgets in Cydia.";
+		return PTEXT(@"InstallWidgetViaURLFooterText");
 	}
 	return nil;
 }
@@ -93,7 +93,7 @@ extern NSBundle *bundle;
 		
 		if (isMessageCell) {
 			
-			cell.textLabel.text = @"No installed widgets";
+			cell.textLabel.text = PTEXT(@"NoInstalledWidgets");
 			cell.textLabel.textColor = [UIColor colorWithWhite:.5 alpha:1.0];
 			cell.textLabel.font = [UIFont italicSystemFontOfSize:[UIFont labelFontSize]];
 			cell.textLabel.textAlignment = NSTextAlignmentCenter;
@@ -110,7 +110,7 @@ extern NSBundle *bundle;
 			
 		} else if (section == 1) {
 			
-			cell.textLabel.text = @"Install widget via URL";
+			cell.textLabel.text = PTEXT(@"InstallWidgetViaURL");
 			cell.textLabel.textAlignment = NSTextAlignmentCenter;
 			cell.accessoryType = UITableViewCellAccessoryNone;
 		}
@@ -130,7 +130,7 @@ extern NSBundle *bundle;
 		BOOL hasPreference = [info[@"hasPreference"] boolValue];
 		
 		// set default display name
-		if ([displayName length] == 0) displayName = @"Unknown";
+		if ([displayName length] == 0) displayName = PTEXT(@"Unknown");
 		
 		// set default description
 		if ([shortDescription length] == 0) shortDescription = nil;
@@ -170,11 +170,53 @@ extern NSBundle *bundle;
 			BOOL hasPreference = [info[@"hasPreference"] boolValue];
 			
 			if (hasPreference) {
+				
 				NSString *prefFile = info[@"preferenceFile"];
-				PWPrefWidgetPreference *controller = [[[PWPrefWidgetPreference alloc] initWithPlist:prefFile inBundle:bundle] autorelease];
-				controller.rootController = self.rootController;
-				controller.parentController = self;
-				[self pushController:controller];
+				NSString *prefBundle = info[@"preferenceBundle"];
+				
+				if ([prefFile length] > 0) {
+					
+					PWPrefWidgetPreference *controller = [[[PWPrefWidgetPreference alloc] initWithPlist:prefFile inBundle:bundle] autorelease];
+					controller.rootController = self.rootController;
+					controller.parentController = self;
+					[self pushController:controller];
+					
+				} else if ([prefBundle length] > 0) {
+					
+					// load the preference bundle
+					if ([prefBundle hasSuffix:@".bundle"]) {
+						prefBundle = [prefBundle stringByDeletingPathExtension];
+					}
+					
+					NSString *bundlePath = [NSString stringWithFormat:@"/Library/PreferenceBundles/%@.bundle/", prefBundle];
+					NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
+					
+					if ([bundle load]) {
+						
+						Class principalClass = [bundle principalClass];
+						id viewController = [[principalClass new] autorelease];
+						
+						if (viewController == nil) {
+							LOG(@"The principal class cannot be found or initialized.");
+							return;
+						}
+						
+						if (![viewController isKindOfClass:[UIViewController class]]) {
+							LOG(@"The principal class is not a sub class of UIViewController.");
+							return;
+						}
+						
+						if ([viewController respondsToSelector:@selector(setRootController:)]) {
+							[viewController performSelector:@selector(setRootController:) withObject:self.rootController];
+						}
+						
+						if ([viewController respondsToSelector:@selector(setParentController:)]) {
+							[viewController performSelector:@selector(setParentController:) withObject:self];
+						}
+						
+						[self pushController:viewController];
+					}
+				}
 			}
 		}
 	} else if (section == 1) {
@@ -202,7 +244,7 @@ extern NSBundle *bundle;
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForDeleteConfirmationButtonForRowAtIndexPath:(NSIndexPath *)indexPath {
-	return @"Uninstall";
+	return PTEXT(@"Uninstall");
 }
 
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {

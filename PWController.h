@@ -15,6 +15,8 @@
 	///// Runtime variables /////
 	/////////////////////////////
 	
+	BOOL _showingWelcomeScreen;
+	
 	BOOL _interfaceOrientationIsLocked;
 	UIInterfaceOrientation _lockedInterfaceOrientation;
 	
@@ -25,6 +27,11 @@
 	// for getting widget path
 	NSBundle *_baseBundle;
 	
+	// Localization Bundle
+	NSBundle *_localizationBundle;
+	NSArray *_localizations;
+	NSMutableDictionary *_cachedCommonLocalizations;
+	
 	// Resource Bundle
 	NSBundle *_resourceBundle;
 	
@@ -33,6 +40,9 @@
 	//////////////////////////
 	///// User Interface /////
 	//////////////////////////
+	
+	// Welcome Screen
+	PWWSWindow *_welcomeScreen;
 	
 	// Main Window
 	PWWindow *_window;
@@ -47,6 +57,9 @@
 	NSArray *_visibleWidgetOrder;
 	NSArray *_hiddenWidgetOrder;
 	NSString *_defaultThemeName;
+	
+	// Welcome Screen
+	BOOL _showedWelcomeScreen;
 	
 	// General
 	PWLockAction _lockAction;
@@ -78,6 +91,7 @@
 @property(nonatomic, assign) UIInterfaceOrientation lockedInterfaceOrientation;
 
 @property(nonatomic, readonly) NSBundle *baseBundle;
+@property(nonatomic, readonly) NSBundle *localizationBundle;
 @property(nonatomic, readonly) NSBundle *resourceBundle;
 
 @property(nonatomic, readonly) PWWindow *window;
@@ -123,6 +137,7 @@
 + (int)version;
 + (NSBundle *)baseBundle;
 + (NSString *)basePath;
++ (NSBundle *)localizationBundle;
 
 + (BOOL)isIPad;
 + (BOOL)isPortrait;
@@ -142,6 +157,7 @@
 - (CGFloat)defaultHeightOfKeyboardInOrientation:(PWWidgetOrientation)orientation;
 
 - (UIImage *)imageResourceNamed:(NSString *)name;
+- (NSString *)commonLocalizedStringForPreferences:(NSArray *)preferences key:(NSString *)key;
 
 //////////////////////////////////////////////////////////////////////
 
@@ -231,6 +247,11 @@
  **/
 
 + (BOOL)_checkAPIEnvironment;
+
+- (BOOL)_showingWelcomeScreen;
+- (void)_firstTimeShowWelcomeScreen;
+- (void)_showWelcomeScreen;
+- (void)_hideWelcomeScreen;
 
 - (void)_recordInitialTime;
 - (void)_outputDuration;

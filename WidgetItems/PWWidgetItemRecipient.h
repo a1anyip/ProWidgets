@@ -15,8 +15,10 @@
 	PWWidgetItemRecipientController *_recipientController;
 	NSString *_titleWithoutColon;
 	
-	PWWidgetItemRecipientType _type;
+	PWWidgetItemRecipientType _recipientType;
 }
+
+@property(nonatomic) PWWidgetItemRecipientType recipientType;
 
 - (NSArray *)addresses;
 - (void)setAddresses:(NSArray *)addresses;

@@ -12,8 +12,19 @@
 
 @interface PWBrowserWidgetItemFolderController : PWContentViewController<UITableViewDelegate, UITableViewDataSource> {
 	
+	id _delegate;
+	
+	NSString *_selectedTitle;
+	NSUInteger _selectedIdentifier;
+	NSArray *_folders;
 }
 
+@property(nonatomic, assign) id delegate;
+@property(nonatomic, readonly) NSString *selectedTitle;
+@property(nonatomic, readonly) NSUInteger selectedIdentifier;
 
++ (void)getDefaultSelectedTitle:(NSString **)selectedTitleOut selectedIdentifier:(NSUInteger *)selectedIdentifierOut;
+
+- (UITableView *)tableView;
 
 @end

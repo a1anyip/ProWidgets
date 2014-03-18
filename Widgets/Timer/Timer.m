@@ -8,6 +8,7 @@
 //
 
 #import "interface.h"
+#import "substrate/interface.h"
 #import "PWContentItemViewController.h"
 #import "PWWidget.h"
 #import "PWWidgetItem.h"
@@ -34,6 +35,7 @@ typedef enum {
 	NSTimeInterval _remainingTime;
 }
 
+- (NSString *)defaultSound;
 - (void)scheduleWithDuration:(NSTimeInterval)duration sound:(NSString *)sound;
 
 - (void)resume;
@@ -58,6 +60,13 @@ typedef enum {
 		return nil;
 	}];
 	
+	// retrieve default sound
+	NSString *defaultIdentifier = [self defaultSound];
+	
+	// pass the default values to tone value item
+	PWWidgetItemToneValue *item = (PWWidgetItemToneValue *)[self.defaultItemViewController itemWithKey:@"sound"];
+	[item setSelectedToneIdentifier:defaultIdentifier toneType:ToneTypeRingtone];
+	
 	self.defaultItemViewController.requiresKeyboard = NO;
 	self.defaultItemViewController.shouldMaximizeContentHeight = NO;
 	
@@ -80,6 +89,13 @@ typedef enum {
 	[self invalidateTimer];
 	
 	[OBJCIPC unregisterIncomingMessageHandlerForAppWithIdentifier:TimerIdentifier andMessageName:MessageName];
+}
+
+- (NSString *)defaultSound {
+	
+	[objc_getClass("ClockManager") loadUserPreferences];
+	TimerManager *manager = [objc_getClass("TimerManager") sharedManager];
+	return [manager defaultSound];
 }
 
 - (void)scheduleWithDuration:(NSTimeInterval)duration sound:(NSString *)sound {
@@ -122,7 +138,7 @@ typedef enum {
 }
 
 - (void)reloadState:(NSString *)subaction {
-	[OBJCIPC sendMessageToAppWithIdentifier:TimerIdentifier messageName:MessageName dictionary:@{ @"action": @"update", @"subaction": (subaction == nil ? @"" : subaction) } replyHandler:^(NSDictionary *dict) {
+	[OBJCIPC sendMessageToAppWithIdentifier:TimerIdentifier messageName:MessageName dictionary:@{ @"action": @"query", @"subaction": (subaction == nil ? @"" : subaction) } replyHandler:^(NSDictionary *dict) {
 		
 		_fireTime = [dict[@"fireTime"] doubleValue];
 		_remainingTime = [dict[@"remainingTime"] doubleValue];
@@ -147,6 +163,17 @@ typedef enum {
 		[alertView release];
 	} else {
 		[self dismiss];
+	}
+}
+
+- (void)itemValueChangedEventHandler:(PWWidgetItem *)item oldValue:(NSDictionary *)oldValue {
+	if ([item.key isEqualToString:@"sound"]) {
+		
+		NSString *toneIdentifier = item.value[@"identifier"];
+		if (toneIdentifier == nil) toneIdentifier = @"";
+		
+		NSDictionary *dict = @{ @"action": @"setDefaultSound", @"sound": toneIdentifier };
+		[OBJCIPC sendMessageToAppWithIdentifier:TimerIdentifier messageName:MessageName dictionary:dict replyHandler:nil];
 	}
 }
 

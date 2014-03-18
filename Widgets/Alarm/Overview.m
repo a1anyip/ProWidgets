@@ -27,7 +27,7 @@
 	PWTheme *theme = self.theme;
 	
 	_noLabel = [UILabel new];
-	_noLabel.text = @"Loading";
+	_noLabel.text = TEXT(PWWidgetAlarm, @"Loading");
 	_noLabel.textColor = [PWTheme translucentColor:[theme sheetForegroundColor]];
 	_noLabel.font = [UIFont boldSystemFontOfSize:22.0];
 	_noLabel.textAlignment = NSTextAlignmentCenter;
@@ -37,7 +37,7 @@
 }
 
 - (NSString *)title {
-	return @"Manage";
+	return TEXT(PWWidgetAlarm, @"Manage");
 }
 
 - (void)loadView {
@@ -61,7 +61,7 @@
 	
 	// fade in or out the no label
 	if ([_alarms count] == 0) {
-		_noLabel.text = @"No Alarms";
+		_noLabel.text = TEXT(PWWidgetAlarm, @"NoAlarms");
 		self.tableView.alwaysBounceVertical = NO;
 		[UIView animateWithDuration:PWTransitionAnimationDuration animations:^{
 			_noLabel.alpha = 1.0;
@@ -104,7 +104,7 @@
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForDeleteConfirmationButtonForRowAtIndexPath:(NSIndexPath *)indexPath {
-	return @"Remove";
+	return TEXT(PWWidgetAlarm, @"Remove");
 }
 
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {

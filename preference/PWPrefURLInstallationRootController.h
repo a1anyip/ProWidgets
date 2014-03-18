@@ -5,6 +5,7 @@
 	// basic properties
 	NSURL *_url;
 	PWPrefURLInstallationType _type;
+	NSString *_bundleExtension;
 	BOOL _fromPreference;
 	
 	// request and connection
@@ -26,6 +27,7 @@
 
 @property(nonatomic, retain) NSURL *url;
 @property(nonatomic) PWPrefURLInstallationType type;
+@property(nonatomic, copy) NSString *bundleExtension;
 @property(nonatomic) BOOL fromPreference;
 
 - (instancetype)initWithURL:(NSURL *)url type:(PWPrefURLInstallationType)type fromPreference:(BOOL)fromPreference;

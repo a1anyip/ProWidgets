@@ -19,7 +19,9 @@
 
 Tap on navigation bar once to switch between browser and bookmark interfaces.
 
-Configure the default browser (Safari or Chrome) and other settings in the widget preference page.</string>
+Configure the default browser (Safari or Chrome) and other settings in the widget preference page.
+
+Chrome will be supported in the future updates.</string>
 	<key>PWInfoIconFile</key>
 	<string>icon.png</string>
 	<key>PWInfoPreferenceDefaults</key>

@@ -23,6 +23,8 @@ typedef enum {
 
 - (void)load {
 	
+	_firstTime = YES;
+	
 	self.requiresKeyboard = NO;
 	self.shouldMaximizeContentHeight = NO;
 	self.actionButtonText = @"Manage";

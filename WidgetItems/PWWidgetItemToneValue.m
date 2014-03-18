@@ -8,6 +8,7 @@
 //
 
 #import "PWWidgetItemToneValue.h"
+#import "ToneValue/PWWidgetItemTonePickerController.h"
 #import "../PWController.h"
 #import "../PWWidget.h"
 #import "../PWWidgetItem.h"
@@ -140,7 +141,7 @@
 	ToneType toneType = [PWWidgetItemTonePickerController toneTypeFromNumber:value[@"type"]];
 	
 	if (toneIdentifier == nil || [toneIdentifier length] == 0) {
-		self.detailTextLabel.text = @"None";
+		self.detailTextLabel.text = CT(@"ToneValueNone");
 	} else {
 		self.detailTextLabel.text = [PWWidgetItemTonePickerController nameOfToneWithIdentifier:toneIdentifier andType:toneType];
 	}

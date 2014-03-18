@@ -111,6 +111,8 @@
 
 - (void)setIdleTimerDisabled:(BOOL)disabled forReason:(id)reason;
 
+- (void)setBacklightFactor:(CGFloat)factor source:(int)source;
+
 @end
 
 @interface UIPeripheralHost

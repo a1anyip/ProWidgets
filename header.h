@@ -32,6 +32,10 @@
 
 // Handy marcos
 
+#define CT(key) T(key,[PWController localizationBundle])
+#define T(key,bundle)  ([bundle localizedStringForKey:key value:nil table:nil])
+#define INFOT(key,bundle) ((key) == nil ? nil : (T(key,bundle)))
+
 #define IS_IPHONE4 ([[PWController deviceModel] hasPrefix:@"iPhone3,"])
 #define CHECK_API(x) if (![PWController _checkAPIEnvironment]) return x;
 
@@ -65,6 +69,7 @@
 #define PWBaseBundlePath @"/Library/ProWidgets/"
 
 // Notification names
+#define PWShowWelcomeScreenNotification "PWShowWelcomeScreenNotification"
 #define PWPresentWidgetNotification @"PWPresentWidgetNotification"
 #define PWDismissWidgetNotification @"PWDismissWidgetNotification"
 
@@ -74,7 +79,7 @@
 @class PWController, PWWidgetController, PWWidgetNavigationController;
 
 // Core
-@class PWTestBar, PWMiniView, PWBase, PWWindow, PWBackgroundView, PWView, PWContainerView, PWContentViewController, PWContentItemViewController, PWContentListViewController, PWEventHandler, PWThemableTableView, PWThemableTableViewCell, PWAlertView;
+@class PWTestBar, PWMiniView, PWBase, PWWindow, PWWSWindow, PWBackgroundView, PWView, PWContainerView, PWContentViewController, PWContentItemViewController, PWContentListViewController, PWEventHandler, PWThemableTableView, PWThemableTableViewCell, PWAlertView;
 
 // Widget
 @class PWWidget, PWWidgetJS, PWWidgetPlistParser, PWWidgetItem, PWWidgetItemCell;

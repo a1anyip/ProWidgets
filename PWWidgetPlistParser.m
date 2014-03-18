@@ -22,6 +22,8 @@
 	
 	LOG(@"PWWidgetPlistParser: Parsing plist for widget (%@)", widget);
 	
+	NSBundle *bundle = widget.bundle;
+	
 	// requiresProtectedDataAccess
 	NSNumber *requiresProtectedDataAccess = dict[@"requiresProtectedDataAccess"];
 	if (requiresProtectedDataAccess != nil) {
@@ -30,7 +32,7 @@
 	
 	// title
 	NSString *title = dict[@"title"];
-	if (title != nil) widget.title = title;
+	if (title != nil) widget.title = T(title, bundle);
 	
 	// layout
 	NSString *layoutName = [dict[@"layout"] lowercaseString];
@@ -82,17 +84,20 @@
 
 + (void)parse:(NSDictionary *)dict forContentViewController:(PWContentViewController *)viewController {
 	
+	NSBundle *bundle = viewController.widget.bundle;
+	
 	// title
 	NSString *title = dict[@"title"];
 	if (title != nil) viewController.title = title;
+	else title = T(title, bundle);
 	
 	// closeButtonText
 	NSString *closeButtonText = dict[@"closeButtonText"];
-	if (closeButtonText != nil) [viewController setCloseButtonText:closeButtonText];
+	if (closeButtonText != nil) [viewController setCloseButtonText:T(closeButtonText, bundle)];
 	
 	// actionButtonText
 	NSString *actionButtonText = dict[@"actionButtonText"];
-	if (actionButtonText != nil) [viewController setActionButtonText:actionButtonText];
+	if (actionButtonText != nil) [viewController setActionButtonText:T(actionButtonText, bundle)];
 	
 	// shouldAutoConfigureStandardButtons
 	NSNumber *shouldAutoConfigureStandardButtons = dict[@"shouldAutoConfigureStandardButtons"];
@@ -122,6 +127,8 @@
 + (void)parse:(NSDictionary *)dict forContentItemViewController:(PWContentItemViewController *)itemViewController {
 	
 	[self parse:dict forContentViewController:itemViewController];
+	
+	NSBundle *bundle = itemViewController.widget.bundle;
 	
 	// override content height
 	id overrideContentHeight = dict[@"overrideContentHeight"];
@@ -202,6 +209,7 @@ NSString *expression = [NSString stringWithFormat:@"%f", [expressionNumber doubl
 			
 			// title
 			NSString *title = item[@"title"];
+			if (title != nil) title = T(title, bundle);
 			
 			// type
 			NSString *type = item[@"type"];
@@ -228,7 +236,7 @@ NSString *expression = [NSString stringWithFormat:@"%f", [expressionNumber doubl
 			NSString *icon = item[@"icon"];
 			UIImage *iconImage = nil;
 			if (icon != nil) {
-				iconImage = [UIImage imageNamed:icon inBundle:itemViewController.widget.bundle];
+				iconImage = [UIImage imageNamed:icon inBundle:bundle];
 			}
 			
 			// should fill height

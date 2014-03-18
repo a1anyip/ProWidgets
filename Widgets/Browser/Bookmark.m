@@ -174,58 +174,67 @@
 
 - (void)loadBookmarkItems {
 	
-	WebBookmarkCollection *collecton = [WebBookmarkCollection safariBookmarkCollection];
-	NSMutableArray *items = [NSMutableArray array];
+	PWWidgetBrowserDefault defaultBrowser = [(PWWidgetBrowser *)self.widget defaultBrowser];
 	
-	__block void(^processBookmark)(WebBookmark *) = ^void(WebBookmark *bookmark) {
-		
-		BOOL isFolder = bookmark.isFolder;
-		BOOL isWebFilterWhiteListFolder = bookmark.isWebFilterWhiteListFolder;
-		BOOL isReadingListFolder = bookmark.isReadingListFolder;
-		if (isWebFilterWhiteListFolder || isReadingListFolder) return;
-		
-		NSUInteger identifier = bookmark.identifier;
-		NSString *title = bookmark.localizedTitle;
-		NSString *address = bookmark.address;
-		
-		if (title == nil) title = @"";
-		if (address == nil) address = @"";
-		
-		NSDictionary *row = @{ @"identifier": @(identifier), @"title": title, @"address": address, @"isFolder": @(isFolder) };
-		[items addObject:row];
-	};
+	if (defaultBrowser == PWWidgetBrowserDefaultSafari) {
 	
-	__block void(^iterateSubitems)(WebBookmarkList *) = ^void(WebBookmarkList *list) {
-		NSArray *bookmarks = [list bookmarkArray];
-		for (WebBookmark *bookmark in bookmarks) {
-			processBookmark(bookmark);
+		WebBookmarkCollection *collecton = [WebBookmarkCollection safariBookmarkCollection];
+		NSMutableArray *items = [NSMutableArray array];
+		
+		__block void(^processBookmark)(WebBookmark *) = ^void(WebBookmark *bookmark) {
+			
+			BOOL isFolder = bookmark.isFolder;
+			BOOL isWebFilterWhiteListFolder = bookmark.isWebFilterWhiteListFolder;
+			BOOL isReadingListFolder = bookmark.isReadingListFolder;
+			if (isWebFilterWhiteListFolder || isReadingListFolder) return;
+			
+			NSUInteger identifier = bookmark.identifier;
+			NSString *title = bookmark.localizedTitle;
+			NSString *address = bookmark.address;
+			
+			if (title == nil) title = @"";
+			if (address == nil) address = @"";
+			
+			NSDictionary *row = @{ @"identifier": @(identifier), @"title": title, @"address": address, @"isFolder": @(isFolder) };
+			[items addObject:row];
+		};
+		
+		__block void(^iterateSubitems)(WebBookmarkList *) = ^void(WebBookmarkList *list) {
+			NSArray *bookmarks = [list bookmarkArray];
+			for (WebBookmark *bookmark in bookmarks) {
+				processBookmark(bookmark);
+			}
+		};
+		
+		if (_isRoot) {
+			// reading list
+			WebBookmark *readingListFolder = [collecton readingListFolder];
+			if (readingListFolder != nil)
+				processBookmark(readingListFolder);
+			
+			// favourite
+			WebBookmark *bookmarksBarBookmark = [collecton bookmarksBarBookmark];
+			if (bookmarksBarBookmark != nil)
+				processBookmark(bookmarksBarBookmark);
+			
+			// root list
+			WebBookmarkList *root = [collecton rootList];
+			iterateSubitems(root);
+			
+		} else {
+			
+			// folder list
+			WebBookmarkList *folderList = [collecton listWithID:_folderIdentifier];
+			iterateSubitems(folderList);
 		}
-	};
-	
-	if (_isRoot) {
-		// reading list
-		WebBookmark *readingListFolder = [collecton readingListFolder];
-		if (readingListFolder != nil)
-			processBookmark(readingListFolder);
 		
-		// favourite
-		WebBookmark *bookmarksBarBookmark = [collecton bookmarksBarBookmark];
-		if (bookmarksBarBookmark != nil)
-			processBookmark(bookmarksBarBookmark);
+		[_items release];
+		_items = [items retain];
 		
-		// root list
-		WebBookmarkList *root = [collecton rootList];
-		iterateSubitems(root);
+	} else if (defaultBrowser == PWWidgetBrowserDefaultChrome) {
 		
-	} else {
-		
-		// folder list
-		WebBookmarkList *folderList = [collecton listWithID:_folderIdentifier];
-		iterateSubitems(folderList);
+		//NSDictionary *dict = [PWWidgetBrowser readChromeBookmarks];
 	}
-	
-	[_items release];
-	_items = [items retain];
 	
 	[self.tableView reloadData];
 }

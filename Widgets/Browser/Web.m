@@ -14,6 +14,7 @@
 #import "PWView.h"
 #import "PWWebRequest.h"
 
+#define WEBVIEW_INACTIVE_ALPHA 0.0
 #define RICKROLL_URL @"http://www.youtube.com/watch?v=dQw4w9WgXcQ"
 
 @implementation PWWidgetBrowserWebView
@@ -49,7 +50,7 @@
 		_webView = [PWWidgetBrowserPrivateWebView new];
 		_webView.scalesPageToFit = YES;
 		_webView.allowsInlineMediaPlayback = YES;
-		_webView.alpha = 1.0;//0.0;
+		_webView.alpha = WEBVIEW_INACTIVE_ALPHA;
 		[self addSubview:_webView];
 		/*
 		_messageLabel = [UILabel new];
@@ -103,7 +104,7 @@
 
 - (void)setTextFieldActive:(BOOL)active {
 	[UIView animateWithDuration:.1 animations:^{
-		_textField.alpha = active ? 1.0 : .4;
+		_textField.alpha = active ? 1.0 : 0.4;
 	}];
 	[self setButtonHidden:active];
 }
@@ -133,11 +134,11 @@
 }
 
 - (void)setWebViewActive:(BOOL)active {
-	/*
+	
 	[UIView animateWithDuration:.1 animations:^{
-		_webView.alpha = active ? 1.0 : 0.0;
+		_webView.alpha = active ? 1.0 : WEBVIEW_INACTIVE_ALPHA;
 	}];
-	*/
+	
 	[self setButtonHidden:!active];
 }
 

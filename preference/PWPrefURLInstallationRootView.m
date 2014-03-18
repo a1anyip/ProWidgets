@@ -45,7 +45,7 @@ extern NSBundle *bundle;
 		_retryButton.adjustsImageWhenHighlighted = YES;
 		_retryButton.alpha = 0.0;
 		_retryButton.hidden = YES;
-		[_retryButton setTitle:@"Retry" forState:UIControlStateNormal];
+		[_retryButton setTitle:PTEXT(@"Retry") forState:UIControlStateNormal];
 		[_retryButton setBackgroundImage:[PWTheme imageFromColor:[UIColor redColor]] forState:UIControlStateNormal];
 		[_retryButton addTarget:[self nextResponder] action:@selector(retry) forControlEvents:UIControlEventTouchUpInside];
 		[self addSubview:_retryButton];
@@ -208,7 +208,7 @@ extern NSBundle *bundle;
 }
 
 - (void)setError:(NSString *)errMsg {
-	[self setStatus:@"Failed"];
+	[self setStatus:PTEXT(@"Failed")];
 	[self setProgressText:errMsg];
 	
 	// show the retry button

@@ -22,15 +22,15 @@
 			<key>key</key>
 			<string>lockAction</string>
 			<key>label</key>
-			<string>Lock Action</string>
+			<string>LockAction</string>
 			<key>default</key>
 			<integer>0</integer>
 			<key>detail</key>
 			<string>PSListItemsController</string>
 			<key>validTitles</key>
 			<array>
-				<string>Minimize all widgets</string>
-				<string>Dismiss all widgets</string>
+				<string>MinimizeAllWidgets</string>
+				<string>DismissAllWidgets</string>
 			</array>
 			<key>validValues</key>
 			<array>
@@ -48,7 +48,7 @@
 			<key>key</key>
 			<string>miniViewScale</string>
 			<key>label</key>
-			<string>Minimization View Size</string>
+			<string>MinimizationViewSize</string>
 			<key>default</key>
 			<real>0.3</real>
 			<key>detail</key>
@@ -84,7 +84,7 @@
 			<key>key</key>
 			<string>enabledParallax</string>
 			<key>label</key>
-			<string>Parallax Effect</string>
+			<string>ParallaxEffect</string>
 			<key>default</key>
 			<true/>
 		</dict>
@@ -98,7 +98,7 @@
 			<key>key</key>
 			<string>disabledBlur</string>
 			<key>label</key>
-			<string>Disable Blur Effect</string>
+			<string>DisableBlurEffect</string>
 			<key>default</key>
 			<false/>
 		</dict>
@@ -112,7 +112,7 @@
 			<key>key</key>
 			<string>disabledMask</string>
 			<key>label</key>
-			<string>Better Blur Quality</string>
+			<string>BetterBlurQuality</string>
 			<key>default</key>
 			<false/>
 			<key>negate</key>
@@ -122,9 +122,9 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>Global Preference</string>
+			<string>GlobalPreference</string>
 			<key>footerText</key>
-			<string>Select your preferred source when creating calendars</string>
+			<string>GlobalPreferenceFooterText</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -136,7 +136,7 @@
 			<key>key</key>
 			<string>preferredSource</string>
 			<key>label</key>
-			<string>Preferred Source</string>
+			<string>PreferredSource</string>
 			<key>default</key>
 			<integer>0</integer>
 			<key>detail</key>
@@ -155,32 +155,8 @@
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
-			<key>label</key>
-			<string>Third-party Section</string>
 			<key>footerText</key>
-			<string>Developers and themers may find some useful configurations and documentations inside.</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSLinkListCell</string>
-			<key>label</key>
-			<string>Developer Section</string>
-			<key>detail</key>
-			<string>PWPrefDeveloperSection</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSLinkListCell</string>
-			<key>label</key>
-			<string>Themer Section</string>
-			<key>detail</key>
-			<string>PWPrefThemerSection</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSGroupCell</string>
-			<key>footerText</key>
-			<string>In Test Mode, an extra bar will be shown for testing widgets or themes while a widget is presented.</string>
+			<string>TestModeFooterText</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -192,7 +168,7 @@
 			<key>key</key>
 			<string>testMode</string>
 			<key>label</key>
-			<string>Test Mode</string>
+			<string>TestMode</string>
 			<key>default</key>
 			<false/>
 		</dict>
@@ -200,13 +176,13 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>footerText</key>
-			<string>Show the welcome screen that was presented after you installed ProWidgets again.</string>
+			<string>ShowWelcomeScreenFooterText</string>
 		</dict>
 		<dict>
 			<key>cell</key>
 			<string>PSButtonCell</string>
 			<key>label</key>
-			<string>Show Welcome Screen</string>
+			<string>ShowWelcomeScreen</string>
 			<key>action</key>
 			<string>showWelcomeScreen</string>
 		</dict>
@@ -214,13 +190,13 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>footerText</key>
-			<string>Reset the main preference file of ProWidgets, not including any widgets, themes, and activation methods.</string>
+			<string>ResetCoreSettingsFooterText</string>
 		</dict>
 		<dict>
 			<key>cell</key>
 			<string>PSButtonCell</string>
 			<key>label</key>
-			<string>Reset Core Settings</string>
+			<string>ResetCoreSettings</string>
 			<key>action</key>
 			<string>resetPreference</string>
 		</dict>
@@ -228,7 +204,7 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>footerText</key>
-			<string>Unless specified, respring is not required after changing configurations.</string>
+			<string>RespringFooterText</string>
 		</dict>
 		<dict>
 			<key>cell</key>

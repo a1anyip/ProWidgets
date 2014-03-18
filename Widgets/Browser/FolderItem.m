@@ -12,11 +12,18 @@
 @implementation PWBrowserWidgetItemFolder
 
 + (Class)valueClass {
-	return [NSNumber class];
+	return [NSDictionary class];
 }
 
-+ (id)defaultValue {
-	return nil;
++ (NSDictionary *)defaultValue {
+	
+	NSString *defaultSelectedTitle;
+	NSUInteger defaultSelectedIdentifier;
+	[PWBrowserWidgetItemFolderController getDefaultSelectedTitle:&defaultSelectedTitle selectedIdentifier:&defaultSelectedIdentifier];
+	
+	if (defaultSelectedTitle == nil) defaultSelectedTitle = @"None";
+	
+	return @{ @"identifier": @(defaultSelectedIdentifier), @"title": defaultSelectedTitle };
 }
 
 + (Class)cellClass {
@@ -31,9 +38,22 @@
 	
 	if (_folderController == nil) {
 		_folderController = [[PWBrowserWidgetItemFolderController alloc] initForWidget:self.itemViewController.widget];
+		_folderController.delegate = self;
 	}
 	
 	[self.itemViewController.widget pushViewController:_folderController animated:YES];
+}
+
+- (void)selectedFolderChanged {
+	
+	NSString *selectedTitle = _folderController.selectedTitle;
+	NSUInteger selectedIdentifier = _folderController.selectedIdentifier;
+	
+	if (selectedTitle == nil) selectedTitle = @"None";
+	
+	[self setValue:@{ @"identifier": @(selectedIdentifier), @"title": selectedTitle }];
+	
+	[self.itemViewController.widget popViewController];
 }
 
 - (void)dealloc {
@@ -64,8 +84,9 @@
 	self.textLabel.text = title;
 }
 
-- (void)setValue:(NSArray *)value {
-	self.detailTextLabel.text = @"Bookmark";
+- (void)setValue:(NSDictionary *)value {
+	NSString *title = value[@"title"];
+	self.detailTextLabel.text = title;
 	[self setNeedsLayout]; // this line is important to instantly reflect the new value
 }
 

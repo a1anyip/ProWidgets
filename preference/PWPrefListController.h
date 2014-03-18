@@ -12,5 +12,6 @@
 - (instancetype)initWithPlist:(NSString *)plist inBundle:(NSBundle *)bundle;
 
 - (NSArray *)specifiers;
+- (NSBundle *)bundle;
 
 @end

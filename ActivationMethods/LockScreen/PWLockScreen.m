@@ -38,7 +38,7 @@ static inline void buttonPressed() {
 	}
 }
 
-static inline UIImage *processImage(UIImage *image, BOOL tint) {
+static inline UIImage *processImage(UIImage *image) {
 	
 	if (image == nil || image.size.width == 0 || image.size.height == 0) return nil;
 	
@@ -68,7 +68,7 @@ static inline UIImage *processImage(UIImage *image, BOOL tint) {
 	UIImage *result = UIGraphicsGetImageFromCurrentImageContext();
 	UIGraphicsEndImageContext();
 	
-	return tint ? [result imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] : result;
+	return result;
 }
 
 static inline void createButton() {
@@ -87,19 +87,25 @@ static inline void createButton() {
 	button.imageView.contentMode = UIViewContentModeScaleAspectFit;
 }
 
+@interface CALayer ()
+
+@property(nonatomic) BOOL allowsGroupBlending;
+
+@end
+
 static inline void updateButton(NSString *widgetName) {
 	
 	if (button == nil) {
-		createButton();
+		//createButton();
+		return;
 	}
 	
 	PWController *controller = [PWController sharedInstance];
 	NSDictionary *info = [controller infoOfWidgetNamed:widgetName];
 	NSBundle *bundle = info[@"bundle"];
 	NSString *maskFile = info[@"maskFile"];
-	NSString *iconFile = info[@"iconFile"];
 	
-	if (bundle == nil || (maskFile == nil && iconFile == nil)) {
+	if (bundle == nil) {
 		button.hidden = YES;
 		return;
 	}
@@ -107,11 +113,12 @@ static inline void updateButton(NSString *widgetName) {
 	UIImage *image = nil;
 	
 	if (maskFile != nil) {
-		image = processImage([UIImage imageNamed:maskFile inBundle:bundle], YES);
+		image = [UIImage imageNamed:maskFile inBundle:bundle];
 	}
 	
-	if (image == nil && iconFile != nil) {
-		image = processImage([UIImage imageNamed:iconFile inBundle:bundle], NO);
+	// unknown icon (fallback)
+	if (image == nil) {
+		image = [[PWController sharedInstance] imageResourceNamed:@"unknownMask"];
 	}
 	
 	if (image == nil) {
@@ -119,9 +126,55 @@ static inline void updateButton(NSString *widgetName) {
 		return;
 	}
 	
-	button.alpha = BTN_INITIAL_ALPHA;
+	// scale it
+	image = processImage(image);
+	
+	// remove all subviews
+	[button.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
+	
+	button.alpha = 1.0;//BTN_INITIAL_ALPHA;
 	button.hidden = NO;
-	[button setImage:image forState:UIControlStateNormal];
+	button.clipsToBounds = YES;
+	button.opaque = NO;
+	//button.layer.allowsGroupBlending = NO;
+	
+	CGSize buttonSize = button.bounds.size;
+	CGSize size = image.size;
+	
+	CALayer *mask = [CALayer layer];
+	mask.contents = (id)image.CGImage;
+	mask.frame = CGRectMake((buttonSize.width - size.width) / 2, (buttonSize.height - size.height) / 2, size.width, size.height);
+	button.layer.mask = mask;
+	button.layer.masksToBounds = YES;
+	
+	SBWallpaperEffectView *wallpaperEffect = [[objc_getClass("SBWallpaperEffectView") alloc] initWithWallpaperVariant:0];
+	wallpaperEffect.frame = button.bounds;
+	wallpaperEffect.style = 6;
+	[wallpaperEffect setMaskImage:image masksBlur:NO masksTint:NO];
+	[button addSubview:wallpaperEffect];
+	[wallpaperEffect release];
+	/*
+	CGRect frame = button.bounds;
+	UIColor *color = *(UIColor **)instanceVar(wallpaperEffect, "_wallpaperAverageColor"); //[UIColor colorWithWhite:.9 alpha:1.0];
+	NSInteger style = [objc_getClass("_UILegibilitySettingsProvider") styleForContentColor:color];
+	NSInteger vibrantStyle = style == 2 ? 1 : 0;
+	*/
+	_SBFVibrantSettings *settings = [objc_getClass("_SBFVibrantSettings") vibrantSettingsWithReferenceColor:nil legibilitySettings:nil];
+	/*
+	Ivar settingsStyle = class_getInstanceVariable(objc_getClass("_SBFVibrantSettings"), "_style");
+	if (settingsStyle) {
+		NSInteger *settingsStylePointer = (NSInteger *)((uint8_t *)(void *)settings + ivar_getOffset(settingsStyle));
+		*settingsStylePointer = vibrantStyle;
+	}*/
+	
+	UIView *colorCompositingView = [settings colorCompositingViewWithFrame:button.bounds];
+	[button addSubview:colorCompositingView];
+	
+	UIView *darkTintView = [settings darkTintViewWithFrame:button.bounds];
+	[button addSubview:darkTintView];
+	
+	UIView *lightTintView = [settings lightTintViewWithFrame:button.bounds];
+	[button addSubview:lightTintView];
 }
 
 %hook SBLockScreenBounceAnimator
@@ -149,6 +202,10 @@ static inline void updateButton(NSString *widgetName) {
 	UIView *lockView = *(UIView **)instanceVar(self, "_foregroundLockView");
 	if (lockView != nil) {
 		
+		if (button == nil) {
+			createButton();
+		}
+		
 		UIView *buttonSubview = [lockView viewWithTag:BTN_TAG];
 		if (buttonSubview == nil) {
 			[button removeFromSuperview];
@@ -157,6 +214,8 @@ static inline void updateButton(NSString *widgetName) {
 		
 		CGRect rect = lockView.bounds;
 		button.frame = CGRectMake(0.0, rect.size.height - buttonHeight, buttonWidth, buttonHeight);
+		
+		updateButton(widgetName);
 	}
 }
 
@@ -164,6 +223,8 @@ static inline void updateButton(NSString *widgetName) {
 
 // Loading preference
 static inline void loadPref() {
+	
+	[widgetName release];
 	
 	NSDictionary *pref = [[NSDictionary alloc] initWithContentsOfFile:LS_PREF_PATH];
 	widgetName = [pref[@"widget"] copy];

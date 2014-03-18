@@ -21,7 +21,7 @@
 		
 		_textField = [[PWThemableTextField alloc] initWithFrame:CGRectZero theme:theme];
 		//[_textField setValue:[UIColor blueColor] forKeyPath:@"_placeholderLabel.textColor"];
-		_textField.placeholder = @"Type recipients here...";
+		_textField.placeholder = CT(@"TypeRecipientPlaceholder");
 		_textField.backgroundColor = [UIColor clearColor];
 		[self addSubview:_textField];
 		

@@ -255,8 +255,55 @@
 	}
 }
 
++ (UIImage *)imageNamed:(NSString *)name {
+	PWWidget *widget = [self widget];
+	if (widget != nil) {
+		return [widget imageNamed:name];
+	} else {
+		return nil;
+	}
+}
+
 - (UIImage *)imageNamed:(NSString *)name {
 	return [UIImage imageNamed:name inBundle:_bundle];
+}
+
++ (NSString *)localizedStringForKey:(NSString *)key value:(NSString *)value table:(NSString *)table {
+	PWWidget *widget = [self widget];
+	if (widget != nil) {
+		return [widget localizedStringForKey:key value:value table:table];
+	} else {
+		return @"";
+	}
+}
+
+- (NSString *)localizedStringForKey:(NSString *)key value:(NSString *)value table:(NSString *)table {
+	
+	if (key == nil || [key length] == 0) return @"";
+	
+	NSBundle *bundle = self.bundle;
+	
+	// to check whether the localiztion file for the current locale exists in the specified bundle
+	// in order to make the language consistent
+	NSMutableDictionary *cache = [self _cachedLocalizationsForTable:table];
+	NSString *localizedString = cache[key];
+	
+	if (localizedString != nil) {
+		LOG(@"localizedStringForKey: return cached localized string (%@) for key (%@)", localizedString, key);
+		return localizedString;
+	}
+	
+	NSString *commonLocalizedString = [[PWController sharedInstance] commonLocalizedStringForPreferences:bundle.preferredLocalizations key:key];
+	
+	if (commonLocalizedString != nil) {
+		// cache it
+		cache[key] = commonLocalizedString;
+		return commonLocalizedString;
+	} else {
+		NSString *fallback = value == nil ? key : @"";
+		cache[key] = fallback;
+		return fallback;
+	}
 }
 
 - (void)setViewControllers:(NSArray *)viewControllers {
@@ -441,6 +488,37 @@
 	[self.widgetController minimize];
 }
 
+- (NSMutableDictionary *)_cachedLocalizationsForTable:(NSString *)table {
+	
+	if (table == nil) table = @"Localizable";
+	
+	// return cached dictionary
+	NSMutableDictionary *cached = _cachedLocalizations[table];
+	if (cached != nil) {
+		return cached;
+	}
+	
+	if (_cachedLocalizations == nil) {
+		_cachedLocalizations = [NSMutableDictionary new];
+	}
+	
+	// load it
+	NSBundle *bundle = self.bundle;
+	NSArray *preferredLocalizations = bundle.preferredLocalizations;
+	if ([preferredLocalizations count] > 0) {
+		NSString *tablePath = [NSString stringWithFormat:@"%@/%@.lproj/%@.strings", bundle.bundlePath, preferredLocalizations[0], table];
+		NSMutableDictionary *bundleLocalization = [NSMutableDictionary dictionaryWithContentsOfFile:tablePath];
+		if (bundleLocalization != nil) {
+			_cachedLocalizations[table] = bundleLocalization;
+			return bundleLocalization;
+		}
+	}
+	
+	NSMutableDictionary *fallback = [NSMutableDictionary dictionary];
+	_cachedLocalizations[table] = fallback;
+	return fallback;
+}
+
 - (NSString *)description {
 	return [NSString stringWithFormat:@"<%@ %p> Name: %@ / Bundle: %@", [self class], self, _name, _bundle];
 }
@@ -473,6 +551,9 @@
 	// release default item view controller
 	RELEASE(_defaultItemViewControllerPlist)
 	RELEASE(_defaultItemViewController)
+	
+	// release cached localizations
+	RELEASE(_cachedLocalizations)
 }
 
 - (void)dealloc {

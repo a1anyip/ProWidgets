@@ -110,7 +110,13 @@
 
 // button configurations
 - (NSString *)closeButtonText {
-	return _closeButtonText == nil ? @"Close" : _closeButtonText;
+	if (_closeButtonText == nil) {
+		NSString *defaultText = [self.widget localizedStringForKey:@"Close" value:nil table:nil];
+		_closeButtonText = [defaultText copy];
+		return defaultText;
+	} else {
+		return _closeButtonText;
+	}
 }
 
 - (void)setCloseButtonText:(NSString *)buttonText {
@@ -126,7 +132,13 @@
 }
 
 - (NSString *)actionButtonText {
-	return _actionButtonText == nil ? @"Done" : _actionButtonText;
+	if (_actionButtonText == nil) {
+		NSString *defaultText = [self.widget localizedStringForKey:@"Done" value:nil table:nil];
+		_actionButtonText = [defaultText copy];
+		return defaultText;
+	} else {
+		return _actionButtonText;
+	}
 }
 
 - (void)setActionButtonText:(NSString *)buttonText {
@@ -171,7 +183,7 @@
 
 - (void)configureBackButton {
 	if (self.navigationItem.backBarButtonItem == nil) {
-		self.navigationItem.backBarButtonItem = [[[UIBarButtonItem alloc] initWithTitle:@"Back" style:UIBarButtonItemStylePlain target:nil action:nil] autorelease];
+		self.navigationItem.backBarButtonItem = [[[UIBarButtonItem alloc] initWithTitle:TEXT(self.widget.class, @"Back") style:UIBarButtonItemStylePlain target:nil action:nil] autorelease];
 	}
 }
 

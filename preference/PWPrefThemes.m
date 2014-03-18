@@ -13,7 +13,7 @@ extern NSBundle *bundle;
 }
 
 - (NSString *)navigationTitle {
-	return @"Themes";
+	return PTEXT(@"Themes");
 }
 
 - (BOOL)requiresEditBtn {
@@ -54,16 +54,16 @@ extern NSBundle *bundle;
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
-	return section == 0 ? @"Installed themes" : nil;
+	return section == 0 ? PTEXT(@"InstalledThemes") : nil;
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForFooterInSection:(NSInteger)section {
 	if (section == 0 && [_installedThemes count] > 0) {
-		return @"You could choose the default theme in this page.\n\nTap on icons to view details.";
+		return PTEXT(@"InstalledThemesFooterText");
 	} else if (section == 0 && [_installedThemes count] == 0) {
-		return @"You may find some themes in Cydia, or re-install ProWidgets to restore stock themes.";
+		return PTEXT(@"NoInstalledThemesFooterText");
 	} else if (section == 1) {
-		return @"Only themes installed via URL can be uninstalled in this page.\n\nInstall or Uninstall other themes in Cydia.";
+		return PTEXT(@"InstallThemeViaURLFooterText");
 	}
 	return nil;
 }
@@ -98,7 +98,7 @@ extern NSBundle *bundle;
 		
 		if (isMessageCell) {
 			
-			cell.textLabel.text = @"No installed themes";
+			cell.textLabel.text = PTEXT(@"NoInstalledThemes");
 			cell.textLabel.textColor = [UIColor colorWithWhite:.5 alpha:1.0];
 			cell.textLabel.font = [UIFont italicSystemFontOfSize:[UIFont labelFontSize]];
 			cell.textLabel.textAlignment = NSTextAlignmentCenter;
@@ -115,7 +115,7 @@ extern NSBundle *bundle;
 			
 		} else if (section == 1) {
 			
-			cell.textLabel.text = @"Install theme via URL";
+			cell.textLabel.text = PTEXT(@"InstallThemeViaURL");
 			cell.textLabel.textAlignment = NSTextAlignmentCenter;
 			cell.accessoryType = UITableViewCellAccessoryNone;
 		}
@@ -135,7 +135,7 @@ extern NSBundle *bundle;
 		UIImage *iconImage = [iconFile length] > 0 ? [UIImage imageNamed:iconFile inBundle:themeBundle] : nil;
 		
 		// set default display name
-		if ([displayName length] == 0) displayName = @"Unknown";
+		if ([displayName length] == 0) displayName = PTEXT(@"Unknown");
 		
 		// set default description
 		if ([shortDescription length] == 0) shortDescription = nil;
@@ -206,7 +206,7 @@ extern NSBundle *bundle;
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForDeleteConfirmationButtonForRowAtIndexPath:(NSIndexPath *)indexPath {
-	return @"Uninstall";
+	return PTEXT(@"Uninstall");
 }
 
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {

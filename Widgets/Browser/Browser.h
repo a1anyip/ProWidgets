@@ -11,6 +11,8 @@
 
 @interface PWWidgetBrowser : PWWidget {
 	
+	PWWidgetBrowserDefault _defaultBrowser;
+	
 	NSBundle *_safariBundle;
 	UIImage *_reloadIcon;
 	UIImage *_stopIcon;
@@ -21,6 +23,8 @@
 	NSArray *_webViewControllers;
 	NSArray *_bookmarkViewControllers;
 }
+
+@property(nonatomic, readonly) PWWidgetBrowserDefault defaultBrowser;
 
 - (NSBundle *)safariBundle;
 - (UIImage *)reloadIcon;
@@ -33,5 +37,7 @@
 
 - (void)switchToWebInterface;
 - (void)switchToBookmarkInterface;
+
+//+ (NSDictionary *)readChromeBookmarks;
 
 @end

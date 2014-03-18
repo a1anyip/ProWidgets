@@ -60,7 +60,7 @@ static inline __attribute__((constructor)) void init() {
 			
 			LOG(@"PWTimerSubstrate: Received action (%@)", action);
 			
-			if ([action isEqualToString:@"update"]) {
+			if ([action isEqualToString:@"query"]) {
 				
 				NSString *subaction = dict[@"subaction"];
 				
@@ -114,7 +114,7 @@ static inline __attribute__((constructor)) void init() {
 				NSTimeInterval fireTime = manager.fireTime;
 				
 				return @{ @"state": @(state), @"fireTime": @(fireTime) };
-				
+			
 			} else if ([action isEqualToString:@"setDefaultSound"]) {
 				
 				NSString *sound = dict[@"sound"];

@@ -14,6 +14,7 @@ extern NSBundle *bundle;
 	if ((self = [super init])) {
 		self.url = url;
 		self.type = type;
+		self.bundleExtension = type == PWPrefURLInstallationTypeWidget ? @"widget" : @"theme";
 		self.fromPreference = fromPreference;
 	}
 	return self;
@@ -26,20 +27,20 @@ extern NSBundle *bundle;
 - (void)viewWillAppear:(BOOL)animated {
 	
 	// set title
-	self.navigationItem.title = @"URL Installation";
+	self.navigationItem.title = PTEXT(@"URLInstallation");
 	
 	// set cancel button
-	UIBarButtonItem *cancelBtn = [[[UIBarButtonItem alloc] initWithTitle:@"Cancel" style:UIBarButtonItemStylePlain target:self action:@selector(cancel)] autorelease];
-	cancelBtn.possibleTitles = [NSSet setWithObjects:@"Cancel", @"Close", nil];
+	UIBarButtonItem *cancelBtn = [[[UIBarButtonItem alloc] initWithTitle:PTEXT(@"Cancel") style:UIBarButtonItemStylePlain target:self action:@selector(cancel)] autorelease];
+	cancelBtn.possibleTitles = [NSSet setWithObjects:PTEXT(@"Cancel"), PTEXT(@"Close"), nil];
 	self.navigationItem.leftBarButtonItem = cancelBtn;
 	
 	// set initial status
 	[self.rootView setURL:[_url absoluteString]];
 	
 	if (self.fromPreference) {
-		[self.rootView setStatus:@"Downloading..."];
+		[self.rootView setStatus:PTEXT(@"Downloading")];
 	} else {
-		[self.rootView setStatus:@"Ready to Download"];
+		[self.rootView setStatus:PTEXT(@"ReadyToDownload")];
 		[self.rootView hideProgressView];
 	}
 }
@@ -48,10 +49,10 @@ extern NSBundle *bundle;
 	
 	void (^begin)(void) = ^() {
 		if (!self.fromPreference) {
-			[self.rootView setStatus:@"Downloading..."];
+			[self.rootView setStatus:PTEXT(@"Downloading")];
 			[self.rootView showProgressView];
 		}
-		[self.rootView setProgressText:@"Connecting to server..."];
+		[self.rootView setProgressText:PTEXT(@"ConnectingToServer")];
 		[self downloadPackage];
 	};
 	
@@ -73,13 +74,13 @@ extern NSBundle *bundle;
 	
 	// check URL format
 	if ([[_url absoluteString] length] == 0) {
-		[self showError:@"Empty installation URL"];
+		[self showError:PTEXT(@"EmptyInstallationURL")];
 		return;
 	}
 	
 	NSString *scheme = [[_url scheme] lowercaseString];
 	if (![scheme isEqualToString:@"http"] && ![scheme isEqualToString:@"https"]) {
-		[self showError:@"Unsupported installation URL"];
+		[self showError:PTEXT(@"UnsupportedURL")];
 		return;
 	}
 	
@@ -108,8 +109,8 @@ extern NSBundle *bundle;
 	LOG(@"PWPrefURLInstallationRootController: validatePackage");
 	
 	[self.rootView exitDownloadInterface];
-	[self.rootView setStatus:@"Validating..."];
-	[self.rootView setProgressText:@"Please wait until the package validation process completes."];
+	[self.rootView setStatus:PTEXT(@"Validating")];
+	[self.rootView setProgressText:PTEXT(@"ValidatingMessage")];
 	
 	if (_filePath == nil) {
 		[self showUnknownError];
@@ -118,7 +119,7 @@ extern NSBundle *bundle;
 	
 	NSString *unzipPath = @"/usr/bin/unzip";
 	if (![[NSFileManager defaultManager] isExecutableFileAtPath:unzipPath]) {
-		[self showError:@"Unable to extract the package.\nPlease reinstall ProWidgets in Cydia."];
+		[self showError:PTEXT(@"UnableExtract")];
 		return;
 	}
 	
@@ -145,7 +146,7 @@ extern NSBundle *bundle;
 	if (_validated) return;
 	_validated = YES;
 	
-	NSString *infoFilePath = @".bundle/Info.plist";
+	NSString *infoFilePath = [NSString stringWithFormat:@".%@/Info.plist", self.bundleExtension];
 	
 	NSData *data = [notification userInfo][NSFileHandleNotificationDataItem];
 	NSString *output = [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] autorelease];
@@ -164,8 +165,8 @@ extern NSBundle *bundle;
 	
 	LOG(@"PWPrefURLInstallationRootController: extractPackage");
 	
-	[self.rootView setStatus:@"Extracting..."];
-	[self.rootView setProgressText:@"Please wait until the package extraction process completes."];
+	[self.rootView setStatus:PTEXT(@"Extracting")];
+	[self.rootView setProgressText:PTEXT(@"ExtractingMessage")];
 	
 	if (![self setupTempDirectory]) {
 		[self _removeTempFile];
@@ -226,8 +227,8 @@ extern NSBundle *bundle;
 	
 	LOG(@"PWPrefURLInstallationRootController: analyzePackage");
 	
-	[self.rootView setStatus:@"Analyzing..."];
-	[self.rootView setProgressText:@"Please wait until the analysis of package contents finishes."];
+	[self.rootView setStatus:PTEXT(@"Analyzing")];
+	[self.rootView setProgressText:PTEXT(@"AnalyzingMessage")];
 	
 	if (_directoryPath == nil || [_directoryPath length] == 0) {
 		[self showUnknownError];
@@ -245,7 +246,7 @@ extern NSBundle *bundle;
 		
 		if ([name hasPrefix:@"."]) continue; // bypass hidden items
 		if ([name length] <= 7) continue; // shorter or equal to ".bundle"
-		if (![name hasSuffix:@".bundle"]) continue; // bypass non-bundle items
+		if (![name hasSuffix:[NSString stringWithFormat:@".%@", self.bundleExtension]]) continue; // bypass non-bundle items
 		
 		BOOL isDir = NO;
 		NSString *bundlePath = [NSString stringWithFormat:@"%@/%@", _directoryPath, name];
@@ -265,12 +266,12 @@ extern NSBundle *bundle;
 	}
 	
 	if (!onlyOneBundle) {
-		[self showError:@"Invalid package (more than one bundles)"];
+		[self showError:PTEXT(@"InvalidPackageMoreThanOneBundles")];
 		return;
 	}
 	
 	if (installBundleName == nil || installBundlePath == nil) {
-		[self showError:@"Invalid package (bundle not found)"];
+		[self showError:PTEXT(@"InvalidPackageBundleNotFound")];
 		return;
 	}
 	
@@ -284,9 +285,9 @@ extern NSBundle *bundle;
 	}
 	
 	// check duplication
-	NSString *installedPath = [NSString stringWithFormat:@"%@/%@/%@.bundle", [PWController basePath], (self.type == PWPrefURLInstallationTypeWidget ? @"Widgets" : @"Themes"), installBundleName];
+	NSString *installedPath = [NSString stringWithFormat:@"%@/%@/%@.%@", [PWController basePath], (self.type == PWPrefURLInstallationTypeWidget ? @"Widgets" : @"Themes"), installBundleName, self.bundleExtension];
 	if ([fm fileExistsAtPath:installedPath]) {
-		[self showError:@"You have installed a package with the same name before."];
+		[self showError:PTEXT(@"DuplicatedPackageError")];
 		return;
 	}
 	
@@ -296,7 +297,7 @@ extern NSBundle *bundle;
 	NSDictionary *info = [NSDictionary dictionaryWithContentsOfFile:infoPath];
 	
 	if (info == nil) {
-		[self showError:@"Invalid package (unable to read Info.plist)"];
+		[self showError:PTEXT(@"InvalidPackageUnableReadInfo")];
 		return;
 	}
 	
@@ -308,7 +309,7 @@ extern NSBundle *bundle;
 		parsed = [[PWController sharedInstance] infoOfThemeInBundle:installBundle];
 	
 	if (parsed == nil) {
-		[self showError:@"Invalid package type"];
+		[self showError:PTEXT(@"InvalidPackageType")];
 		return;
 	}
 	
@@ -325,7 +326,7 @@ extern NSBundle *bundle;
 	
 	// PWInfoDescription
 	NSString *description = parsed[@"description"];
-	if ([description length] == 0) description = @"No description";
+	if ([description length] == 0) description = PTEXT(@"NoDescription");
 	
 	// PWInfoIconFile
 	NSString *iconFile = parsed[@"iconFile"];
@@ -345,7 +346,7 @@ extern NSBundle *bundle;
 	[infoView setAuthor:author];
 	[infoView setDescription:description];
 	[infoView setConfirmButtonType:PWPrefInfoViewConfirmButtonTypeNormal];
-	[infoView setConfirmButtonTitle:@"Install"];
+	[infoView setConfirmButtonTitle:PTEXT(@"Install")];
 	[infoView setConfirmButtonTarget:self action:@selector(confirmInstallation)];
 	
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.0 * NSEC_PER_SEC), dispatch_get_main_queue(), ^(void){
@@ -358,8 +359,8 @@ extern NSBundle *bundle;
 	LOG(@"PWPrefURLInstallationRootController: confirmInstallation");
 	
 	[self.rootView switchFromInfoView];
-	[self.rootView setStatus:@"Installing..."];
-	[self.rootView setProgressText:@"Please wait until the package installation process completes."];
+	[self.rootView setStatus:PTEXT(@"Installing")];
+	[self.rootView setProgressText:PTEXT(@"InstallingMessage")];
 	
 	if (_installBundlePath == nil || _installBundleName == nil || [_installBundlePath length] == 0 || [_installBundleName length] == 0) {
 		[self showUnknownError];
@@ -371,18 +372,18 @@ extern NSBundle *bundle;
 	// first, ensure the target directory exists
 	NSString *sourcePath = _installBundlePath;
 	NSString *containerPath = [NSString stringWithFormat:@"%@/%@/", [PWController basePath], (self.type == PWPrefURLInstallationTypeWidget ? @"Widgets" : @"Themes")];
-	NSString *destinationPath = [NSString stringWithFormat:@"%@%@.bundle/", containerPath, _installBundleName];
+	NSString *destinationPath = [NSString stringWithFormat:@"%@%@.%@/", containerPath, _installBundleName, self.bundleExtension];
 	
 	if (![fm fileExistsAtPath:containerPath]) {
 		if (![fm createDirectoryAtPath:containerPath withIntermediateDirectories:YES attributes:nil error:nil]) {
-			[self showError:@"Unable to reach the destination path. You may try reinstalling ProWidgets in Cydia."];
+			[self showError:PTEXT(@"UnableReach")];
 			return;
 		}
 	}
 	
 	// copy the bundle from extracted path to /Library/ProWidgets/
 	if (![fm copyItemAtPath:sourcePath toPath:destinationPath error:nil]) {
-		[self showError:@"Unable to copy package contents to destination path."];
+		[self showError:PTEXT(@"UnableCopy")];
 		return;
 	}
 	
@@ -398,11 +399,11 @@ extern NSBundle *bundle;
 	
 	LOG(@"PWPrefURLInstallationRootController: finishInstallation");
 	
-	[self.rootView setStatus:@"Installation Complete"];
-	[self.rootView setProgressText:@"The installation was successful. You can uninstall it in the preference page anytime."];
+	[self.rootView setStatus:PTEXT(@"InstallationComplete")];
+	[self.rootView setProgressText:PTEXT(@"InstallationCompleteMessage")];
 	
 	// update close button text
-	self.navigationItem.leftBarButtonItem.title = @"Close";
+	self.navigationItem.leftBarButtonItem.title = PTEXT(@"Close");
 	
 	// clear everything
 	[self _clear];
@@ -410,17 +411,17 @@ extern NSBundle *bundle;
 
 - (void)showUnknownError {
 	LOG(@"PWPrefURLInstallationRootController: showUnknownError");
-	[self showError:@"Unknown error occurs. Please try again."];
+	[self showError:PTEXT(@"UnknownError")];
 }
 
 - (void)showInvalidPackage {
 	LOG(@"PWPrefURLInstallationRootController: showInvalidPackage");
-	[self showError:@"Invalid package"];
+	[self showError:PTEXT(@"InvalidPackage")];
 }
 
 - (void)showExtractionFail {
 	LOG(@"PWPrefURLInstallationRootController: showExtractionFail");
-	[self showError:@"Fail to extract package, or the package content is empty"];
+	[self showError:PTEXT(@"FailExtract")];
 }
 
 - (BOOL)setupTempFile {
@@ -462,7 +463,7 @@ extern NSBundle *bundle;
 	free(directoryName);
 	
 	if (!result || _directoryPath == nil) {
-		[self showError:@"Unable to create a temporary directory. Please try again."];
+		[self showError:PTEXT(@"UnableCreateTempFolder")];
 		return NO;
 	}
 	
@@ -599,7 +600,7 @@ extern NSBundle *bundle;
 		else
 			extraInfo = @"";
 		
-		[self showError:[NSString stringWithFormat:@"Received HTTP status code: %d%@", statusCode, extraInfo]];
+		[self showError:[NSString stringWithFormat:@"%@ %d%@", PTEXT(@"HTTPStatusCodeMessage"), statusCode, extraInfo]];
 		return;
 	}
 	
@@ -633,6 +634,7 @@ extern NSBundle *bundle;
 	
 	[self _clear];
 	
+	RELEASE(_bundleExtension)
 	RELEASE(_url)
 	RELEASE(_request)
 	RELEASE(_connection)

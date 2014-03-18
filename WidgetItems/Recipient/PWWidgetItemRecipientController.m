@@ -9,15 +9,17 @@
 
 #import "PWWidgetItemRecipientController.h"
 #import "PWWidgetItemRecipientTableViewCell.h"
-#import "../../API/Mail.h"
 
+extern NSArray *CKPreferredAddressTypes();
 extern char PWWidgetItemRecipientTableViewCellRecipientKey;
+
+#define SEARCH_TYPES 7
 
 @implementation PWWidgetItemRecipientController
 
 + (NSString *)displayTextForRecipients:(NSArray *)recipients maxWidth:(CGFloat)maxWidth font:(UIFont *)font {
 	
-	if (font == nil || maxWidth <= 0.0 || [recipients count] == 0) return @"No recipients";
+	if (font == nil || maxWidth <= 0.0 || [recipients count] == 0) return CT(@"NoRecipients");
 	
 	// with name
 	NSUInteger maxRecipients = [recipients count];
@@ -30,15 +32,14 @@ extern char PWWidgetItemRecipientTableViewCellRecipientKey;
 		
 		for (NSUInteger i = 0; i < number; i++) {
 			MFComposeRecipient *recipient = recipients[i];
-			//NSString *name = recipient.shortName;
-			//if (name == nil) name = recipient.compositeName;
 			NSString *name = recipient.compositeName;
+			if (name == nil) name = recipient.address;
 			if (name == nil) name = @"";
 			[names addObject:name];
 		}
 		
 		NSString *nameText = [names componentsJoinedByString:@", "];
-		NSString *moreRecipients = numberOfMoreRecipients == 0 ? @"" : [NSString stringWithFormat:@" & %d more...", (int)numberOfMoreRecipients];
+		NSString *moreRecipients = numberOfMoreRecipients == 0 ? @"" : [NSString stringWithFormat:CT(@"RecipientMore"), (int)numberOfMoreRecipients];
 		NSString *result = [NSString stringWithFormat:@"%@%@", nameText, moreRecipients];
 		
 		CGFloat width = [result boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX)
@@ -60,7 +61,8 @@ extern char PWWidgetItemRecipientTableViewCellRecipientKey;
 	NSString *resultWithName = testWithNumberOfRecipients(1); // start from 1 recipient
 	if (resultWithName == nil) {
 		// only number of recipients
-		return [NSString stringWithFormat:@"%d recipient%@", (int)[recipients count], ([recipients count] == 1 ? @"" : @"s")];
+		NSUInteger count = [recipients count];
+		return [NSString stringWithFormat:(count == 1 ? CT(@"Recipient") : CT(@"Recipients")), (int)count];
 	} else {
 		return resultWithName;
 	}
@@ -68,15 +70,6 @@ extern char PWWidgetItemRecipientTableViewCellRecipientKey;
 
 - (instancetype)initWithTitle:(NSString *)title delegate:(id<PWWidgetItemRecipientControllerDelegate>)delegate recipients:(NSArray *)recipients type:(PWWidgetItemRecipientType)type forWidget:(PWWidget *)widget {
 	if ((self = [super initForWidget:widget])) {
-		
-		_recipients = [NSMutableArray new];
-		
-		if (type == PWWidgetItemRecipientTypePhoneContact) {
-			
-		} else if (type == PWWidgetItemRecipientTypeMailContact) {
-			_mailContactSearchController = [MFMailComposeContactsSearchController new];
-			_mailContactSearchController.delegate = self;
-		}
 		
 		self.title = title;
 		self.delegate = delegate;
@@ -86,6 +79,54 @@ extern char PWWidgetItemRecipientTableViewCellRecipientKey;
 		self.automaticallyAdjustsScrollViewInsets = NO;
 		self.requiresKeyboard = YES;
 		self.shouldMaximizeContentHeight = YES;
+		
+		// setup runtime variables
+		_recipients = [NSMutableArray new];
+		
+		// retrieve the bundle identifier for recent contacts
+		NSString *recentsBundleIdentifier = nil;
+		if (type == PWWidgetItemRecipientTypeMessageContact) {
+			recentsBundleIdentifier = @"";
+		} else if (type == PWWidgetItemRecipientTypeMailContact) {
+			recentsBundleIdentifier = @"";
+		}
+		
+		// setup search manager and results model
+		if (type == PWWidgetItemRecipientTypeMessageContact) {
+			
+			NSUInteger propertyCount = 0;
+			
+			NSArray *_properties = CKPreferredAddressTypes(); // an array containing NSNumber
+			
+			// to support searching iMessage emails
+			_properties = [[_properties mutableCopy] autorelease];
+			[(NSMutableArray *)_properties addObject:@(kABPersonEmailProperty)];
+			
+			NSInteger *properties = malloc(sizeof(NSInteger) * [_properties count]);
+			
+			for (NSNumber *property in _properties) {
+				NSInteger propertyInt = [property integerValue];
+				properties[propertyCount++] = propertyInt;
+			}
+			
+			_searchManager = [[MFContactsSearchManager alloc] initWithAddressBook:NULL properties:properties propertyCount:propertyCount recentsBundleIdentifier:@"com.apple.MobileSMS"];
+			
+			_searchResultsModel = [[MFContactsSearchResultsModel alloc] initWithFavorMobileNumbers:YES];
+			
+			free(properties);
+			
+		} else if (type == PWWidgetItemRecipientTypeMailContact) {
+			
+			NSInteger property = (NSInteger)kABPersonEmailProperty;
+			NSInteger *properties = &property;
+			
+			_searchManager = [[MFContactsSearchManager alloc] initWithAddressBook:NULL properties:properties propertyCount:1 recentsBundleIdentifier:@"com.apple.mobilemail"];
+			
+			_searchResultsModel = [[MFContactsSearchResultsModel alloc] initWithResultTypeSortOrderComparator:nil resultTypePriorityComparator:nil favorMobileNumbers:NO];
+		}
+		
+		// the following line is important and cannot be changed
+		[_searchManager setSearchTypes:SEARCH_TYPES]; // fixed
 	}
 	return self;
 }
@@ -100,6 +141,10 @@ extern char PWWidgetItemRecipientTableViewCellRecipientKey;
 	return (PWWidgetItemRecipientView *)self.view;
 }
 
+- (void)willBePresentedInNavigationController:(UINavigationController *)navigationController {
+	[self resetState];
+}
+
 - (void)configureFirstResponder {
 	[self.recipientView.textField becomeFirstResponder];
 }
@@ -110,14 +155,14 @@ extern char PWWidgetItemRecipientTableViewCellRecipientKey;
 
 - (void)resetState {
 	
+	[self cancelSearch];
+	
 	UITextField *textField = self.recipientView.textField;
 	UITableView *recipientTableView = self.recipientView.recipientTableView;
 	UITableView *searchResultTableView = self.recipientView.searchResultTableView;
 	
 	textField.text = @""; // clear text
 	
-	//recipientTableView.alpha = 1.0;
-	//searchResultTableView.alpha = 0.0;
 	recipientTableView.hidden = NO;
 	searchResultTableView.hidden = YES;
 	
@@ -133,6 +178,14 @@ extern char PWWidgetItemRecipientTableViewCellRecipientKey;
 	
 	// scroll to top
 	[searchResultTableView setContentOffset:CGPointZero animated:NO];
+}
+
+- (void)cancelSearch {
+	if (_currentTaskID != nil) {
+		[_searchManager cancelTaskWithID:_currentTaskID];
+		[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+		RELEASE(_currentTaskID)
+	}
 }
 
 - (BOOL)recipientExists:(MFComposeRecipient *)recipient {
@@ -171,7 +224,6 @@ extern char PWWidgetItemRecipientTableViewCellRecipientKey;
 	UITableView *recipientTableView = self.recipientView.recipientTableView;
 	[self updateSearchResults:nil];
 	[recipientTableView reloadData];
-	//applyFadeTransition(recipientTableView, .1);
 	
 	// scroll to bottom
 	if ([_recipients count] > 0) {
@@ -186,8 +238,6 @@ extern char PWWidgetItemRecipientTableViewCellRecipientKey;
 }
 
 - (void)updateSearchResults:(NSArray *)results {
-	
-	//CGFloat duration = .15;
 	
 	[_searchResults release];
 	_searchResults = [results retain];
@@ -208,30 +258,41 @@ extern char PWWidgetItemRecipientTableViewCellRecipientKey;
 	[searchResultTableView setContentOffset:CGPointZero animated:NO];
 }
 
-- (void)willBePresentedInNavigationController:(UINavigationController *)navigationController {
-	[self resetState];
+- (void)beganNetworkActivity {
+	[UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
 }
 
-/**
- * MFMailComposeContactsSearchControllerDelegate
- **/
+- (void)endedNetworkActivity {
+	[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+}
 
-- (void)composeContactsSearchController:(MFMailComposeContactsSearchController *)controller didFindCorecipients:(id)arg2 {}
-
-- (void)composeContactsSearchController:(MFMailComposeContactsSearchController *)controller finishedWithResults:(BOOL)hasResults {
-	if (!hasResults) {
-		// no results
-		[self updateSearchResults:nil];
+- (void)consumeSearchResults:(id)results type:(NSInteger)type taskID:(NSNumber *)taskID {
+	LOG(@"consumeSearchResults: %@ / type: %d / taskID: %@", results, (int)type, taskID);
+	if (_currentTaskID != nil && [taskID isEqual:_currentTaskID]) {
+		[_searchResultsModel addResults:results ofType:type];
 	}
 }
 
-- (void)composeContactsSearchController:(MFMailComposeContactsSearchController *)controller didSortResults:(NSArray *)results {
-	LOG(@"didSortResults: %@", results);
-	[self updateSearchResults:results];
+- (void)finishedSearchingForType:(NSInteger)type {
+	
+	// ignore all other types
+	if (type != 1 && type != 2 && type != 4) return;
+	
+	[_searchResultsModel processAddedResultsOfType:type completion:^(NSArray *results) {
+		dispatch_async(dispatch_get_main_queue(), ^{
+			LOG(@"finishedSearchingForType: (%d) %@", (int)type, results);
+			_pendingSearchTypes = MAX(0, _pendingSearchTypes - type);
+			if (_pendingSearchTypes == 0) {
+				[self updateSearchResults:results];
+			}
+		});
+	}];
 }
 
-- (NSString *)sendingAddressForComposeContactsSearchController:(MFMailComposeContactsSearchController *)controller {
-	return [PWAPIMail defaultSenderAccount][@"address"];
+- (void)finishedTaskWithID:(NSNumber *)taskID {
+	if (_currentTaskID != nil && [taskID isEqual:_currentTaskID]) {
+		RELEASE(_currentTaskID)
+	}
 }
 
 /**
@@ -248,21 +309,11 @@ extern char PWWidgetItemRecipientTableViewCellRecipientKey;
 	}
 	
 	// perform searching
-	dispatch_async(dispatch_get_global_queue(0, 0), ^{
-		
-		if (_type == PWWidgetItemRecipientTypePhoneContact) {
-			// search for phone contacts
-			CKRecipientGenerator *generator = [CKRecipientGenerator sharedRecipientGenerator];
-			NSArray *results = [generator resultsForText:text];
-			if (results == nil) results = [NSArray array];
-			dispatch_async(dispatch_get_main_queue(), ^{
-				[self updateSearchResults:results];
-			});
-		} else if (_type == PWWidgetItemRecipientTypeMailContact) {
-			// search for mail contacts
-			[_mailContactSearchController searchWithString:text];
-		}
-	});
+	[self cancelSearch];
+	[_searchResultsModel reset];
+	[_searchResultsModel setEnteredRecipients:self.recipients];
+	_pendingSearchTypes = SEARCH_TYPES; // 1, 2, 4
+	_currentTaskID = [[_searchManager searchForText:text consumer:self] copy];
 }
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField {
@@ -313,15 +364,7 @@ extern char PWWidgetItemRecipientTableViewCellRecipientKey;
 		return [_searchResults count];
 	}
 }
-/*
-- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
-	if (tableView == self.recipientView.recipientTableView) {
-		return [NSString stringWithFormat:@"Recipients (%d)", (int)[_recipients count]];
-	} else {
-		return @"Search Results";
-	}
-}
-*/
+
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
 	
 	unsigned int row = [indexPath row];
@@ -359,7 +402,6 @@ extern char PWWidgetItemRecipientTableViewCellRecipientKey;
 }
 
 - (void)removeButtonPressed:(UIButton *)sender {
-	LOG(@"removeButtonPressed: %@", sender);
 	if (sender != nil) {
 		MFComposeRecipient *recipient = objc_getAssociatedObject(sender, &PWWidgetItemRecipientTableViewCellRecipientKey);
 		if (recipient != nil) {
@@ -369,8 +411,13 @@ extern char PWWidgetItemRecipientTableViewCellRecipientKey;
 }
 
 - (void)dealloc {
+	_delegate = nil;
+	[self cancelSearch];
+	RELEASE(_currentTaskID)
 	RELEASE(_recipients)
 	RELEASE(_searchResults)
+	RELEASE(_searchManager)
+	RELEASE(_searchResultsModel)
 	[super dealloc];
 }
 

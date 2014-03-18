@@ -7,6 +7,7 @@
 //  Copyright 2014 Alan Yip. All rights reserved.
 //
 
+#import <MediaPlayer/MPMediaItem.h>
 #import "PWWidgetItemTonePickerController.h"
 #import "../PWWidgetItemToneValue.h"
 #import "../../PWController.h"
@@ -16,6 +17,7 @@
 #import "../../PWThemableTableViewCell.h"
 
 char PWWidgetItemTonePickerControllerThemeKey = 0;
+extern MPMediaItem *MediaItemForAlarmSound(NSString *sound);
 
 /*
 @protocol TKTonePickerStyleProvider <NSObject>
@@ -159,10 +161,19 @@ char PWWidgetItemTonePickerControllerThemeKey = 0;
 
 + (NSString *)nameOfToneWithIdentifier:(NSString *)toneIdentifier andType:(ToneType)toneType {
 	
-	TLToneManager *toneManager = [TLToneManager sharedRingtoneManager];
-	NSString *toneName = [[toneManager copyNameOfIdentifier:toneIdentifier isValid:NULL] autorelease];
+	NSString *toneName = nil;
 	
-	return toneName;
+	if (toneType == ToneTypeRingtone) {
+		TLToneManager *toneManager = [TLToneManager sharedRingtoneManager];
+		toneName = [[toneManager copyNameOfIdentifier:toneIdentifier isValid:NULL] autorelease];
+	} else if (toneType == ToneTypeMediaItem) {
+		MPMediaItem *item = MediaItemForAlarmSound(toneIdentifier);
+		if (item != NULL) {
+			toneName = [item valueForProperty:MPMediaItemPropertyTitle];
+		}
+	}
+	
+	return toneName == nil ? toneIdentifier : toneName;
 }
 
 + (TonePickerType)tonePickerTypeFromNumber:(NSNumber *)number {
@@ -238,7 +249,7 @@ char PWWidgetItemTonePickerControllerThemeKey = 0;
 }
 
 - (NSString *)title {
-	return @"Sound";
+	return CT(@"ToneValueSound");
 }
 
 - (void)willMoveToParentViewController:(UIViewController *)parent {

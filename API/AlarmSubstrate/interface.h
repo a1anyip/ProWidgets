@@ -36,7 +36,7 @@ typedef enum {
 
 @interface AlarmManager : NSObject
 
-@property(readonly, nonatomic) int defaultSoundType;
+@property(readonly, nonatomic) NSInteger defaultSoundType;
 @property(readonly, nonatomic) NSString *defaultSound;
 
 + (NSArray *)copyReadAlarmsFromPreferences;

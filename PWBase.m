@@ -142,7 +142,7 @@ PW_IMP_PREF_GETTER_NUMBER(bool, BOOL, NO)
 		}
 	};
 	
-	PWAlertView *alertView = [[PWAlertView alloc] initWithTitle:title message:message buttonTitle:nil cancelButtonTitle:@"OK" defaultValue:nil style:UIAlertViewStyleDefault completion:completion];
+	PWAlertView *alertView = [[PWAlertView alloc] initWithTitle:title message:message buttonTitle:nil cancelButtonTitle:CT(@"OK") defaultValue:nil style:UIAlertViewStyleDefault completion:completion];
 	[alertView show];
 	[alertView release];
 }
@@ -157,7 +157,7 @@ PW_IMP_PREF_GETTER_NUMBER(bool, BOOL, NO)
 	if (title == nil)
 		title = self.displayName;
 	
-	PWAlertView *alertView = [[PWAlertView alloc] initWithTitle:title message:message buttonTitle:buttonTitle cancelButtonTitle:@"Cancel" defaultValue:defaultValue style:style completion:completion];
+	PWAlertView *alertView = [[PWAlertView alloc] initWithTitle:title message:message buttonTitle:buttonTitle cancelButtonTitle:CT(@"Cancel") defaultValue:defaultValue style:style completion:completion];
 	[alertView show];
 	[alertView release];
 }

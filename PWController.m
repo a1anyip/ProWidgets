@@ -39,12 +39,21 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	[[PWController sharedInstance] _reloadPreference];
 }
 
+static inline void showWelcomeScreen(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
+	[[PWController sharedInstance] _showWelcomeScreen];
+}
+
 @implementation PWController
 
 + (void)load {
+	
 	// add observer to reload preference
 	CFNotificationCenterRef center = CFNotificationCenterGetDarwinNotifyCenter();
 	CFNotificationCenterAddObserver(center, NULL, &reloadPref, CFSTR("cc.tweak.prowidgets.preferencechanged"), NULL, 0);
+	
+	if (objc_getClass("SpringBoard")) {
+		CFNotificationCenterAddObserver(center, NULL, &showWelcomeScreen, CFSTR(PWShowWelcomeScreenNotification), NULL, 0);
+	}
 }
 
 + (instancetype)sharedInstance {
@@ -229,6 +238,10 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	return [[PWController sharedInstance].baseBundle bundlePath];
 }
 
++ (NSBundle *)localizationBundle {
+	return [PWController sharedInstance].localizationBundle;
+}
+
 + (BOOL)isIPad {
 	
 	static BOOL queried = NO;
@@ -339,6 +352,42 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	return [UIImage imageNamed:name inBundle:_resourceBundle];
 }
 
+- (NSString *)commonLocalizedStringForPreferences:(NSArray *)preferences key:(NSString *)key {
+	
+	if (key == nil) return nil;
+	
+	NSBundle *localizationBundle = [self localizationBundle];
+	
+	if (_localizations == nil) {
+		_localizations = [localizationBundle.localizations copy];
+	}
+	
+	NSArray *commonPreferredLocalizations = [NSBundle preferredLocalizationsFromArray:_localizations forPreferences:preferences];
+	if ([commonPreferredLocalizations count] == 0) return nil;
+	
+	NSString *locale = commonPreferredLocalizations[0];
+	NSMutableDictionary *cache = _cachedCommonLocalizations[locale];
+	
+	// return cached localized string
+	if (cache != nil) {
+		LOG(@"*** Return cached localizations in commonLocalizedStringForPreferences");
+		return cache[key];
+	}
+	
+	NSString *commonTablePath = [NSString stringWithFormat:@"%@/%@.lproj/Common.strings", localizationBundle.bundlePath, commonPreferredLocalizations[0]];
+	NSDictionary *commonBundleLocalization = [NSDictionary dictionaryWithContentsOfFile:commonTablePath];
+	NSString *commonLocalizedString = commonBundleLocalization[key];
+	
+	// cache the retrieved dictionary for a specific locale
+	if (commonBundleLocalization != nil) {
+		if (_cachedCommonLocalizations == nil) _cachedCommonLocalizations = [NSMutableDictionary new];
+		_cachedCommonLocalizations[locale] = commonBundleLocalization;
+	}
+	
+	// return the localized string
+	return commonLocalizedString;
+}
+
 - (PWView *)mainView {
 	return (PWView *)self.view;
 }
@@ -358,6 +407,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 		
 		// prepare bundles
 		_baseBundle = [[NSBundle bundleWithPath:PWBaseBundlePath] retain];
+		_localizationBundle = [[NSBundle bundleWithPath:[NSString stringWithFormat:@"%@/Localization/", PWBaseBundlePath]] retain];
 		_resourceBundle = [[NSBundle bundleWithPath:[NSString stringWithFormat:@"%@/Resources/", PWBaseBundlePath]] retain];
 		
 		// load preference
@@ -376,10 +426,13 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	if (configured) return;
 	configured = YES;
 	
-	//[PWWSWindow new];
-	
 	// construct UI
 	[self _constructUI];
+	
+	// show welcome screen, if needed
+	/*if (YES) {
+		[self _showWelcomeScreen];
+	}*/
 	
 	// remove all observers, just in case (prevent duplicated observers)
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -435,6 +488,10 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	
 	NSDictionary *dict = [[NSDictionary alloc] initWithContentsOfFile:PWPrefPath];
 	
+	if (dict == nil || [dict[@"showedWelcomeScreen"] boolValue]) {
+		_showedWelcomeScreen = YES;
+	}
+	
 	// Lock Action
 	NSNumber *lockAction = dict[@"lockAction"];
 	_lockAction = [lockAction unsignedIntegerValue] == 1 ? PWLockActionDismiss : PWLockActionMinimize;
@@ -478,7 +535,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	
 	if (visibleWidgetOrder == nil) {
 		// default set of built-in widgets
-		_visibleWidgetOrder = [@[@"Calendar", @"Reminders", @"Notes", @"Browser", @"Messages", @"Mail", @"Dictionary", @"Alarm"] copy];
+		_visibleWidgetOrder = [@[@"Calendar", @"Reminders", @"Notes", @"Browser", @"Messages", @"Mail", @"Dictionary", @"Alarm", @"Timer"] copy];
 	}
 	
 	// Hidden widget order
@@ -792,7 +849,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	if (![type isEqualToString:@"widget"]) return nil; // invalid type
 	
 	// PWInfoDisplayName
-	NSString *displayName = info[@"PWInfoDisplayName"];
+	NSString *displayName = INFOT(info[@"PWInfoDisplayName"], bundle);
 	if (displayName == nil) displayName = widgetName;
 	
 	// PWInfoAuthor
@@ -800,10 +857,10 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	if (author == nil) author = @"";
 	
 	// PWInfoShortDescription
-	NSString *shortDescription = info[@"PWInfoShortDescription"];
+	NSString *shortDescription = INFOT(info[@"PWInfoShortDescription"], bundle);
 	
 	// PWInfoDescription
-	NSString *description = info[@"PWInfoDescription"];
+	NSString *description = INFOT(info[@"PWInfoDescription"], bundle);
 	if (description == nil) description = @"";
 	
 	// PWInfoEnableActivation
@@ -826,6 +883,10 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	NSString *preferenceFile = info[@"PWInfoPreferenceFile"];
 	if (preferenceFile == nil) preferenceFile = @"";
 	
+	// PWInfoPreferenceBundle
+	NSString *preferenceBundle = info[@"PWInfoPreferenceBundle"];
+	if (preferenceBundle == nil) preferenceBundle = @"";
+	
 	// PWInfoAppIdentifier
 	NSString *appIdentifier = info[@"PWInfoAppIdentifier"];
 	if (appIdentifier == nil) appIdentifier = @"";
@@ -843,9 +904,10 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 			 @"enableActivation": enableActivation,
 			 @"iconFile": iconFile,
 			 @"maskFile": maskFile,
-			 @"hasPreference": @([preferenceFile length] > 0),
+			 @"hasPreference": @([preferenceFile length] > 0 || [preferenceBundle length] > 0),
 			 @"preferenceDefaults": preferenceDefaults,
 			 @"preferenceFile": preferenceFile,
+			 @"preferenceBundle": preferenceBundle,
 			 @"appIdentifier": appIdentifier,
 			 @"bundle": bundle,
 			 @"installedViaURL": installedViaURL
@@ -884,7 +946,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	if (![type isEqualToString:@"script"]) return nil; // invalid type
 	
 	// PWInfoDisplayName
-	NSString *displayName = info[@"PWInfoDisplayName"];
+	NSString *displayName = INFOT(info[@"PWInfoDisplayName"], bundle);
 	if (displayName == nil) displayName = scriptName;
 	
 	// PWInfoAuthor
@@ -892,10 +954,10 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	if (author == nil) author = @"";
 	
 	// PWInfoShortDescription
-	NSString *shortDescription = info[@"PWInfoShortDescription"];
+	NSString *shortDescription = INFOT(info[@"PWInfoShortDescription"], bundle);
 	
 	// PWInfoDescription
-	NSString *description = info[@"PWInfoDescription"];
+	NSString *description = INFOT(info[@"PWInfoDescription"], bundle);
 	if (description == nil) description = @"";
 	
 	// PWInfoPreferenceDefaults
@@ -905,6 +967,10 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	// PWInfoPreferenceFile
 	NSString *preferenceFile = info[@"PWInfoPreferenceFile"];
 	if (preferenceFile == nil) preferenceFile = @"";
+	
+	// PWInfoPreferenceBundle
+	NSString *preferenceBundle = info[@"PWInfoPreferenceBundle"];
+	if (preferenceBundle == nil) preferenceBundle = @"";
 	
 	// check if the widget is installed via URL
 	NSString *indicatorPath = [NSString stringWithFormat:@"%@/.installed", [bundle bundlePath]];
@@ -916,9 +982,10 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 			 @"author": author,
 			 @"shortDescription": (shortDescription == nil ? description : shortDescription),
 			 @"description": description,
-			 @"hasPreference": @([preferenceFile length] > 0),
+			 @"hasPreference": @([preferenceFile length] > 0 || [preferenceBundle length] > 0),
 			 @"preferenceDefaults": preferenceDefaults,
 			 @"preferenceFile": preferenceFile,
+			 @"preferenceBundle": preferenceBundle,
 			 @"bundle": bundle,
 			 @"installedViaURL": installedViaURL
 			 };
@@ -950,7 +1017,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	if (![type isEqualToString:@"theme"]) return nil; // invalid type
 	
 	// PWInfoDisplayName
-	NSString *displayName = info[@"PWInfoDisplayName"];
+	NSString *displayName = INFOT(info[@"PWInfoDisplayName"], bundle);
 	if (displayName == nil) displayName = themeName;
 	
 	// PWInfoAuthor
@@ -958,10 +1025,10 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	if (author == nil) author = @"";
 	
 	// PWInfoShortDescription
-	NSString *shortDescription = info[@"PWInfoShortDescription"];
+	NSString *shortDescription = INFOT(info[@"PWInfoShortDescription"], bundle);
 	
 	// PWInfoDescription
-	NSString *description = info[@"PWInfoDescription"];
+	NSString *description = INFOT(info[@"PWInfoDescription"], bundle);
 	if (description == nil) description = @"";
 	
 	// PWInfoIconFile
@@ -1010,7 +1077,7 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	if (![type isEqualToString:@"activationmethod"]) return nil; // invalid type
 	
 	// PWInfoDisplayName
-	NSString *displayName = info[@"PWInfoDisplayName"];
+	NSString *displayName = INFOT(info[@"PWInfoDisplayName"], bundle);
 	if (displayName == nil) displayName = methodName;
 	
 	// PWInfoAuthor
@@ -1018,15 +1085,19 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	if (author == nil) author = @"";
 	
 	// PWInfoShortDescription
-	NSString *shortDescription = info[@"PWInfoShortDescription"];
+	NSString *shortDescription = INFOT(info[@"PWInfoShortDescription"], bundle);
 	
 	// PWInfoDescription
-	NSString *description = info[@"PWInfoDescription"];
+	NSString *description = INFOT(info[@"PWInfoDescription"], bundle);
 	if (description == nil) description = @"";
 	
 	// PWInfoPreferenceFile
 	NSString *preferenceFile = info[@"PWInfoPreferenceFile"];
 	if (preferenceFile == nil) preferenceFile = @"";
+	
+	// PWInfoPreferenceBundle
+	NSString *preferenceBundle = info[@"PWInfoPreferenceBundle"];
+	if (preferenceBundle == nil) preferenceBundle = @"";
 	
 	return @{
 			 @"name": methodName,
@@ -1034,8 +1105,9 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 			 @"author": author,
 			 @"shortDescription": (shortDescription == nil ? description : shortDescription),
 			 @"description": description,
-			 @"hasPreference": @([preferenceFile length] > 0),
+			 @"hasPreference": @([preferenceFile length] > 0 || [preferenceBundle length] > 0),
 			 @"preferenceFile": preferenceFile,
+			 @"preferenceBundle": preferenceBundle,
 			 @"bundle": bundle
 			 };
 }
@@ -1174,6 +1246,42 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 		result = objc_getClass("SpringBoard") != nil;
 	}
 	return result;
+}
+
+- (BOOL)_showingWelcomeScreen {
+	return _showingWelcomeScreen;
+}
+
+- (void)_firstTimeShowWelcomeScreen {
+	
+	if (!_showedWelcomeScreen) {
+		
+		// update preference file
+		NSMutableDictionary *dict = [[NSMutableDictionary alloc] initWithContentsOfFile:PWPrefPath];
+		if (dict == nil) dict = [NSMutableDictionary new];
+		dict[@"showedWelcomeScreen"] = @(YES);
+		[dict writeToFile:PWPrefPath atomically:YES];
+		[dict release];
+		
+		// show welcome screen
+		[self _showWelcomeScreen];
+	}
+}
+
+- (void)_showWelcomeScreen {
+	if (!_showingWelcomeScreen) {
+		_showingWelcomeScreen = YES;
+		_welcomeScreen = [PWWSWindow new];
+		[_welcomeScreen show];
+	}
+}
+
+- (void)_hideWelcomeScreen {
+	if (_showingWelcomeScreen) {
+		_showingWelcomeScreen = NO;
+		[_welcomeScreen hide];
+		RELEASE(_welcomeScreen)
+	}
 }
 
 - (void)_recordInitialTime {

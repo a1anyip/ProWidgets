@@ -198,6 +198,7 @@
 			
 			// start date contains time
 			NSDate *startDate = event.startDate;
+			//NSDate *endDate = event.endDate;
 			
 			// extract only day information from it
 			NSDate *dateWithDayOnly = [calendar dateFromComponents:[calendar components:NSYearCalendarUnit | NSMonthCalendarUnit | NSDayCalendarUnit fromDate:startDate]];

@@ -25,7 +25,7 @@ extern CFNotificationCenterRef CFNotificationCenterGetDistributedCenter();
 
 static void handleException(NSException *exception) {
 	NSArray *symbols = [exception callStackSymbols];
-	NSLog(@"***** ProWidgets Uncaught Exception: %@ *****", [exception description]);
+	NSLog(@"***** Uncaught Exception: %@ *****", [exception description]);
 	unsigned i = 0;
 	for (i = 0; i < [symbols count]; i++) {
 		NSLog(@"***** %@", (NSString *)[symbols objectAtIndex:i]);
@@ -37,10 +37,19 @@ static void handleException(NSException *exception) {
 
 %group SpringBoard
 
+%hook SBWallpaperEffectView
+
++ (id)imageInRect:(CGRect)rect forVariant:(int)variant withStyle:(int)style zoomFactor:(float)factor mask:(id)mask masksBlur:(BOOL)blur masksTint:(BOOL)tint {
+	%log;
+	return %orig;
+}
+
+%end
+
 %hook SBBacklightController
 
 - (void)_lockScreenDimTimerFired {
-	if ([PWWidgetController isLocked]) {
+	if ([PWController sharedInstance]._showingWelcomeScreen || [PWWidgetController isLocked]) {
 		[self resetLockScreenIdleTimer];
 	} else {
 		%orig;
@@ -93,6 +102,15 @@ static void handleException(NSException *exception) {
 		[PWWidgetController minimizeAllControllers];
 	
 	%orig;
+}
+
+%end
+
+%hook SBUIController
+
+- (void)finishLaunching {
+	%orig;
+	[[PWController sharedInstance] _firstTimeShowWelcomeScreen];
 }
 
 %end
@@ -226,7 +244,6 @@ extern char PWWidgetItemTonePickerControllerThemeKey;
 - (void)_configureTextColorOfLabelInCell:(UITableViewCell *)cell checked:(BOOL)checked {
 	%orig;
 	if (cell != nil && [cell isKindOfClass:[PWThemableTableViewCell class]]) {
-		LOG(@"cell : %@", cell);
 		PWTheme *theme = (PWTheme *)objc_getAssociatedObject(self, &PWWidgetItemTonePickerControllerThemeKey);
 		if (theme != NULL) {
 			[(PWThemableTableViewCell *)cell setTheme:theme];
@@ -270,6 +287,7 @@ extern char PWWidgetItemTonePickerControllerThemeKey;
 
 %group Preferences
 
+/*
 %hook TKTonePicker
 
 - (id)initWithFrame:(CGRect)arg1 avController:(id)arg2 filter:(unsigned int)arg3 tonePicker:(BOOL)arg4 {
@@ -278,6 +296,7 @@ extern char PWWidgetItemTonePickerControllerThemeKey;
 }
 
 %end
+*/
 
 %hook PreferencesAppController
 

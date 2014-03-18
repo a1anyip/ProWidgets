@@ -62,9 +62,11 @@
 	
 	NSString *title = values[@"title"];
 	NSString *address = values[@"address"];
-	//NSString *location = values[@"location"];
+	NSDictionary *location = values[@"folder"];
+	NSUInteger parentIdentifier = [location[@"identifier"] unsignedIntegerValue];
 	
 	WebBookmark *bookmark = [[WebBookmark alloc] initWithTitle:title address:address];
+	[bookmark _setParentID:parentIdentifier];
 	[[WebBookmarkCollection safariBookmarkCollection] saveBookmark:bookmark];
 	
 	[self.widget popViewController];
@@ -73,6 +75,7 @@
 - (void)dealloc {
 	RELEASE(_titleItem)
 	RELEASE(_addressItem)
+	RELEASE(_folderItem)
 	[super dealloc];
 }
 

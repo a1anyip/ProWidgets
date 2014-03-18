@@ -70,6 +70,8 @@ typedef struct {
 + (BOOL)isPresentingWidget;
 + (BOOL)isPresentingMaximizedWidget;
 
++ (void)hideCenter;
+
 + (BOOL)isLocked;
 + (void)lock;
 + (void)releaseLock;

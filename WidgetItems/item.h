@@ -7,6 +7,7 @@
 //  Copyright 2014 Alan Yip. All rights reserved.
 //
 
+#import "struct.h"
 #import "../header.h"
 #import "../PWController.h"
 #import "../PWTheme.h"

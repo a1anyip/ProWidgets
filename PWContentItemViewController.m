@@ -168,7 +168,7 @@ static NSNumberFormatter *numberFormatter = nil;
 }
 
 - (BOOL)updateLastFirstResponder:(PWWidgetItem *)item {
-	LOG(@"updateLastFirstResponder =====> (%@) %@ / top vc: %@", _shouldUpdateLastFirstResponder ? @"YES" : @"NO", item, [self.navigationController topViewController]);
+	LOG(@"updateLastFirstResponder: (%@) %@ / top vc: %@", _shouldUpdateLastFirstResponder ? @"YES" : @"NO", item, [self.navigationController topViewController]);
 	if (_lastFirstResponder == nil || _shouldUpdateLastFirstResponder) {
 		_lastFirstResponder = item;
 		return YES;

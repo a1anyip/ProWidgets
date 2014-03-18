@@ -128,6 +128,7 @@
 - (instancetype)init {
 	if ((self = [super init])) {
 		_cellType = [self isKindOfClass:[PWWidgetItemTextArea class]] ? PWWidgetCellTypeTextArea : PWWidgetCellTypeNormal;
+		[self setValue:[self.class defaultValue]];
 	}
 	return self;
 }

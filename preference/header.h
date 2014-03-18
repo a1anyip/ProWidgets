@@ -5,6 +5,7 @@
 #import <Twitter/Twitter.h>
 #import <Accounts/Accounts.h>
 
+#define PTEXT(x) ([bundle localizedStringForKey:x value:nil table:nil])
 #define IMAGE(x) ([UIImage imageNamed:x inBundle:bundle])
 #define OPEN_URL(x) ([[UIApplication sharedApplication] openURL:[NSURL URLWithString:x]])
 

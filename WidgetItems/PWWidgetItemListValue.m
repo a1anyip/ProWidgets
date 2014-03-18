@@ -134,8 +134,32 @@
 	NSNumber *noneIndex = attributes[@"listNoneIndex"];
 	NSNumber *maxSelection = attributes[@"listMaxSelection"];
 	
-	if (listItemTitles != nil && listItemValues != nil)
+	if (listItemTitles != nil && listItemValues != nil) {
+		
+		// process localized titles
+		NSBundle *bundle = self.itemViewController.widget.bundle;
+		if (bundle != nil) {
+			
+			BOOL failed = NO;
+			NSMutableArray *localizedListItemTitles = [NSMutableArray array];
+			
+			for (NSString *rawTitle in listItemTitles) {
+				NSString *localizedTitle = T(rawTitle, bundle);
+				if (localizedTitle == nil) {
+					failed = YES;
+					break;
+				} else {
+					[localizedListItemTitles addObject:localizedTitle];
+				}
+			}
+			
+			if (!failed) {
+				listItemTitles = localizedListItemTitles;
+			}
+		}
+		
 		[self setListItemTitles:listItemTitles values:listItemValues];
+	}
 	
 	if (noneIndex != nil)
 		[self setNoneIndex:MAX(-1, [noneIndex integerValue])];
@@ -227,7 +251,7 @@
 }
 
 - (void)selectedTooManyItems {
-	[self.itemViewController.widget showMessage:[NSString stringWithFormat:@"Only %u items could be selected.", (unsigned int)_maximumNumberOfSelection]];
+	[self.itemViewController.widget showMessage:[NSString stringWithFormat:CT(@"ListValueSelectedTooManyItems"), (unsigned int)_maximumNumberOfSelection]];
 }
 
 - (void)selectedValuesChanged:(NSArray *)newValues oldValues:(NSArray *)oldValues {

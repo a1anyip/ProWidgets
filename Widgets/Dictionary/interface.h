@@ -47,3 +47,9 @@
 - (id)term;
 
 @end
+
+@interface ASAsset : NSObject
+
+- (NSInteger)state;
+
+@end

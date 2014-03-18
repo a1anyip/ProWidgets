@@ -157,6 +157,11 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	return NO;
 }
 
++ (void)hideCenter {
+	[[objc_getClass("SBNotificationCenterController") sharedInstance] dismissAnimated:NO];
+	[[objc_getClass("SBControlCenterController") sharedInstance] dismissAnimated:NO];
+}
+
 + (BOOL)isLocked {
 	return _lockCount > 0;
 }
@@ -383,6 +388,7 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	
 	LOG(@"_present");
 	
+	[self.class hideCenter];
 	[self.class lock];
 	[self _resetKeyboardHeight];
 	
@@ -449,7 +455,7 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 		
 		// show an error alert
 		if (topViewController == nil) {
-			UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Unable to present widget" message:[NSString stringWithFormat:@"The widget \"%@\" does not have a root view controller.", _widget.displayName] delegate:nil cancelButtonTitle:@"Dismiss" otherButtonTitles:nil];
+			UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:CT(@"UnablePresentWidget") message:[NSString stringWithFormat:CT(@"UnablePresentWidgetMessage"), _widget.displayName] delegate:nil cancelButtonTitle:CT(@"Dismiss") otherButtonTitles:nil];
 			[alertView show];
 			[alertView release];
 		}
@@ -825,6 +831,7 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	PWView *view = controller.mainView;
 	PWBackgroundView *backgroundView = view.backgroundView;
 	
+	[self.class hideCenter];
 	[self.class lock];
 	[self _resetKeyboardHeight];
 	
@@ -1328,7 +1335,7 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 			if (requiresProtectedDataAccess) {
 				
 				// show the message
-				PWAlertView *alertView = [[PWAlertView alloc] initWithTitle:@"Protected Data Unavailable" message:[NSString stringWithFormat:@"As this widget \"%@\" requires access to protected data on your device, it is now dismissed to prevent any data corruption.", _widget.displayName] buttonTitle:nil cancelButtonTitle:@"Dismiss" defaultValue:nil style:UIAlertViewStyleDefault completion:nil];
+				PWAlertView *alertView = [[PWAlertView alloc] initWithTitle:CT(@"ProtectedDataUnavailable") message:[NSString stringWithFormat:CT(@"ProtectedDataUnavailableDismissedMessage"), _widget.displayName] buttonTitle:nil cancelButtonTitle:CT(@"Dismiss") defaultValue:nil style:UIAlertViewStyleDefault completion:nil];
 				[alertView show];
 				[alertView release];
 			}
@@ -1337,7 +1344,7 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	} else {
 		
 		// show the message
-		PWAlertView *alertView = [[PWAlertView alloc] initWithTitle:@"Protected Data Unavailable" message:[NSString stringWithFormat:@"Unable to present widget \"%@\" because it requires access to protected data on your device.", _widget.displayName] buttonTitle:nil cancelButtonTitle:@"Dismiss" defaultValue:nil style:UIAlertViewStyleDefault completion:nil];
+		PWAlertView *alertView = [[PWAlertView alloc] initWithTitle:CT(@"ProtectedDataUnavailable") message:[NSString stringWithFormat:CT(@"ProtectedDataUnavailableUnablePresentMessage"), _widget.displayName] buttonTitle:nil cancelButtonTitle:CT(@"Dismiss") defaultValue:nil style:UIAlertViewStyleDefault completion:nil];
 		[alertView show];
 		[alertView release];
 	}

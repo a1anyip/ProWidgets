@@ -13,6 +13,8 @@
 #import "PWContentViewControllerDelegate.h"
 #import "PWWidgetNavigationController.h"
 
+#define TEXT(class,key) [class localizedStringForKey:key value:nil table:nil]
+
 @interface PWWidget : PWBase<UINavigationControllerDelegate, UIGestureRecognizerDelegate> {
 	
 	PWWidgetController *_widgetController;
@@ -22,6 +24,8 @@
 	BOOL _configured;
 	BOOL _configuredGestureRecognizers;
 	BOOL _isPresenting;
+	
+	NSMutableDictionary *_cachedLocalizations;
 	
 	PWWidgetLayout _layout;
 	NSString *_title;
@@ -155,7 +159,38 @@
  *
  *  @return The image object for the specified file, or nil if the method could not find the specified image.
  */
++ (UIImage *)imageNamed:(NSString *)name;
+
+/**
+ *  Retrieve the image in the widget bundle
+ *
+ *  @param name The name of the file.
+ *
+ *  @return The image object for the specified file, or nil if the method could not find the specified image.
+ */
 - (UIImage *)imageNamed:(NSString *)name;
+
+/**
+ *  Retrieve localized string from localization table
+ *
+ *  @param key   The key for a string in the table identified by tableName.
+ *  @param value The value to return if key is nil or if a localized string for key can’t be found in the table.
+ *  @param table The receiver’s string table to search. If tableName is nil or is an empty string, the method attempts to use the table in Localizable.strings.
+ *
+ *  @return A localized version of the string designated by key in table tableName. If value is nil or an empty string, and a localized string is not found in the table, returns key. If key and value are both nil, returns the empty string.
+ */
++ (NSString *)localizedStringForKey:(NSString *)key value:(NSString *)value table:(NSString *)tableName;
+
+/**
+ *  Retrieve localized string from localization table
+ *
+ *  @param key   The key for a string in the table identified by tableName.
+ *  @param value The value to return if key is nil or if a localized string for key can’t be found in the table.
+ *  @param table The receiver’s string table to search. If tableName is nil or is an empty string, the method attempts to use the table in Localizable.strings.
+ *
+ *  @return A localized version of the string designated by key in table tableName. If value is nil or an empty string, and a localized string is not found in the table, returns key. If key and value are both nil, returns the empty string.
+ */
+- (NSString *)localizedStringForKey:(NSString *)key value:(NSString *)value table:(NSString *)tableName;
 
 /**
  *  Set the navigation stack using the default fade animation.
@@ -261,6 +296,8 @@
  *  @param values All the item values with their keys in a dictionary form
  */
 - (void)submitEventHandler:(NSDictionary *)values;
+
+- (NSMutableDictionary *)_cachedLocalizationsForTable:(NSString *)table;
 
 - (void)_dealloc;
 

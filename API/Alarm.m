@@ -292,15 +292,15 @@ static NSDate *_alarmsLastModified = nil;
 }
 
 + (NSString *)defaultSound {
-	AlarmManager *manager = [self _alarmManager];
-	if (manager == nil) return @"";
-	return *(NSString **)instanceVar(manager, "_defaultSound");
+	NSString *defaultSound;
+	[self _retrieveDefaultSound:&defaultSound defaultSoundType:NULL];
+	return defaultSound;
 }
 
 + (AlarmSoundType)defaultSoundType {
-	AlarmManager *manager = [self _alarmManager];
-	if (manager == nil) return AlarmSoundTypeRingtone;
-	return (AlarmSoundType)(*(NSInteger *)instanceVar(manager, "_defaultSoundType"));
+	AlarmSoundType defaultSoundType;
+	[self _retrieveDefaultSound:NULL defaultSoundType:&defaultSoundType];
+	return defaultSoundType;
 }
 
 + (void)setDefaultSound:(NSString *)identifier ofType:(AlarmSoundType)type {
@@ -355,35 +355,38 @@ static NSDate *_alarmsLastModified = nil;
 		_alarmsLastModified = [lastModified retain];
 	}
 	
-	// load LastPickedAlarmSound, LastPickedAlarmSoundType
-	NSString *oldDefaultSound = *(NSString **)instanceVar(manager, "_defaultSound");
-	NSString *defaultSound = preference[@"LastPickedAlarmSound"];
+	return manager;
+}
+
++ (void)_retrieveDefaultSound:(NSString **)defaultSoundOut defaultSoundType:(AlarmSoundType *)defaultSoundTypeOut {
 	
-	if (![oldDefaultSound isEqualToString:defaultSound]) {
+	NSDictionary *preference = [NSDictionary dictionaryWithContentsOfFile:@"/var/mobile/Library/Preferences/com.apple.mobiletimer.plist"];
+	
+	if (defaultSoundOut != NULL) {
 		
-		AlarmSoundType defaultSoundType = [self soundTypeFromInteger:[preference[@"LastPickedAlarmSoundType"] unsignedIntegerValue]];
+		NSString *defaultSound = preference[@"LastPickedAlarmSound"];
 		
 		if (defaultSound == nil) {
 			TLToneManager *toneManager = [objc_getClass("TLToneManager") sharedRingtoneManager];
 			defaultSound = [toneManager defaultAlarmToneIdentifier];
+		}
+		
+		*defaultSoundOut = defaultSound;
+	}
+	
+	if (defaultSoundTypeOut != NULL) {
+		
+		NSNumber *_defaultSoundType = preference[@"LastPickedAlarmSoundType"];
+		AlarmSoundType defaultSoundType;
+		
+		if (_defaultSoundType != nil) {
+			defaultSoundType = [self soundTypeFromInteger:[_defaultSoundType unsignedIntegerValue]];
+		} else {
 			defaultSoundType = AlarmSoundTypeRingtone;
 		}
 		
-		if (oldDefaultSound != nil) {
-			[oldDefaultSound release];
-		}
-		object_setInstanceVariable(manager, "_defaultSound", [defaultSound copy]);
-		
-		Ivar defaultSoundTypeIvar = class_getInstanceVariable(object_getClass(manager), "");
-		if (defaultSoundTypeIvar) {
-			NSInteger *defaultSoundTypePointer = (NSInteger *)((uint8_t *)(void *)manager + ivar_getOffset(defaultSoundTypeIvar));
-			*defaultSoundTypePointer = defaultSoundType;
-		}
-		
-		LOG(@"Updated default sound identifier to <%@>, sound type to <%d>", defaultSound, (int)defaultSoundType);
+		*defaultSoundTypeOut = defaultSoundType;
 	}
-	
-	return manager;
 }
 
 + (void)_updateAlarmActiveStates {

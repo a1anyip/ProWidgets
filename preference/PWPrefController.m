@@ -43,7 +43,7 @@ NSBundle *bundle;
 	[shareBtnItem release];
 	
 	// set back button
-	self.navigationItem.backBarButtonItem = [[[UIBarButtonItem alloc] initWithTitle:@"Back" style:UIBarButtonItemStylePlain target:nil action:nil] autorelease];
+	self.navigationItem.backBarButtonItem = [[[UIBarButtonItem alloc] initWithTitle:PTEXT(@"Back") style:UIBarButtonItemStylePlain target:nil action:nil] autorelease];
 	
 	// reload preference
 	[self readPreference];
@@ -100,34 +100,34 @@ NSBundle *bundle;
 	if (section == 0) {
 		switch (row) {
 			case 0:
-				labelText = @"Widgets";
+				labelText = PTEXT(@"Widgets");
 				icon = IMAGE(@"icon_widgets");
 				break;
 			case 1:
-				labelText = @"Themes";
+				labelText = PTEXT(@"Themes");
 				icon = IMAGE(@"icon_themes");
 				break;
 			case 2:
-				labelText = @"Activation Methods";
+				labelText = PTEXT(@"ActivationMethods");
 				icon = IMAGE(@"icon_activation");
 				break;
 			case 3:
-				labelText = @"Configuration";
+				labelText = PTEXT(@"Configuration");
 				icon = IMAGE(@"icon_configuration");
 				break;
 		}
 	} else {
 		switch (row) {
 			case 0:
-				labelText = @"Website & Documentation";
+				labelText = PTEXT(@"WebsiteAndDocumentation");
 				icon = IMAGE(@"icon_website");
 				break;
 			case 1:
-				labelText = @"More by Alan Yip";
+				labelText = PTEXT(@"MoreByAuthor");
 				icon = IMAGE(@"icon_author");
 				break;
 			case 2:
-				labelText = @"Follow @tweakcc";
+				labelText = PTEXT(@"FollowTwitter");
 				icon = IMAGE(@"icon_twitter");
 				break;
 		}

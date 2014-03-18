@@ -10,13 +10,7 @@
 #import "../item.h"
 #import "../../PWContentViewController.h"
 #import "PWWidgetItemRecipientView.h"
-
-typedef enum {
-	
-	PWWidgetItemRecipientTypePhoneContact,
-	PWWidgetItemRecipientTypeMailContact,
-	
-} PWWidgetItemRecipientType;
+#import "interface.h"
 
 @protocol PWWidgetItemRecipientControllerDelegate <NSObject>
 
@@ -25,16 +19,15 @@ typedef enum {
 
 @end
 
-@interface PWWidgetItemRecipientController : PWContentViewController<MFMailComposeContactsSearchControllerDelegate, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource> {
+@interface PWWidgetItemRecipientController : PWContentViewController<UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource> {
 	
 	id<PWWidgetItemRecipientControllerDelegate> _delegate;
 	PWWidgetItemRecipientType _type;
 	
-	// for PWWidgetItemRecipientTypePhoneContact
-	
-	
-	// for PWWidgetItemRecipientTypeMailContact
-	MFMailComposeContactsSearchController *_mailContactSearchController;
+	MFContactsSearchManager *_searchManager;
+	MFContactsSearchResultsModel *_searchResultsModel;
+	NSNumber *_currentTaskID;
+	NSUInteger _pendingSearchTypes;
 	
 	NSMutableArray *_recipients;
 	NSArray *_searchResults;
@@ -51,6 +44,7 @@ typedef enum {
 - (NSString *)displayTextInMaxWidth:(CGFloat)maxWidth font:(UIFont *)font;
 
 - (void)resetState;
+- (void)cancelSearch;
 
 - (NSArray *)recipients;
 - (void)setRecipients:(NSArray *)recipients;

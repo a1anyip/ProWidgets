@@ -30,7 +30,7 @@
 - (void)select {
 	
 	if (_recipientController == nil) {
-		_recipientController = [[PWWidgetItemRecipientController alloc] initWithTitle:_titleWithoutColon delegate:self recipients:self.recipients type:_type forWidget:self.itemViewController.widget];
+		_recipientController = [[PWWidgetItemRecipientController alloc] initWithTitle:_titleWithoutColon delegate:self recipients:self.recipients type:_recipientType forWidget:self.itemViewController.widget];
 		RELEASE(_titleWithoutColon)
 	}
 	
@@ -41,16 +41,24 @@
 	
 	NSString *recipientType = attributes[@"recipientType"];
 	
-	_type = PWWidgetItemRecipientTypePhoneContact; // default is phone contact
+	_recipientType = PWWidgetItemRecipientTypeMessageContact; // default is message contact
 	
 	if (recipientType != nil) {
 		NSString *typeString = [recipientType lowercaseString];
-		if ([typeString isEqualToString:@"phone"]) {
-			_type = PWWidgetItemRecipientTypePhoneContact;
+		if ([typeString isEqualToString:@"message"]) {
+			_recipientType = PWWidgetItemRecipientTypeMessageContact;
 		} else if ([typeString isEqualToString:@"mail"]) {
-			_type = PWWidgetItemRecipientTypeMailContact;
+			_recipientType = PWWidgetItemRecipientTypeMailContact;
 		}
 	}
+}
+
+- (void)setRecipientType:(PWWidgetItemRecipientType)recipientType {
+	if (_recipientController != nil) {
+		LOG(@"PWWidgetItemRecipient: recipient type cannot be changed because the picker was created.");
+		return;
+	}
+	_recipientType = recipientType;
 }
 
 - (void)setTitle:(NSString *)title {

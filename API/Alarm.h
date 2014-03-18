@@ -93,6 +93,7 @@
 + (void)setDefaultSound:(NSString *)identifier ofType:(AlarmSoundType)type;
 
 + (AlarmManager *)_alarmManager;
++ (void)_retrieveDefaultSound:(NSString **)defaultSoundOut defaultSoundType:(AlarmSoundType *)defaultSoundTypeOut;
 + (void)_updateAlarmActiveStates;
 
 @end
