@@ -15,7 +15,7 @@
 	<key>PWInfoShortDescription</key>
 	<string>Manage and add reminders</string>
 	<key>PWInfoDescription</key>
-	<string>Reminders widget allows you to quickly add a new reminder, view the existing reminders and mark them as complete.
+	<string>Reminders widget allows you to quickly add a new reminder, view the previous reminders and mark them as complete.
 
 Tap on navigation bar once to switch between add and list interfaces.
 

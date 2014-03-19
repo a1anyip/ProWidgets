@@ -2,12 +2,15 @@
 #import "objc/runtime.h"
 #import "interface.h"
 
+#ifndef HEADER
+#define HEADER
+
 //////////////////////////////////////////////////////////////////////
 
 // Configuration
-#define DEBUG 1
-#define LOG_DEALLOC 1
-#define LOG_DURATION 1
+#define LOG_DEBUG 0
+#define LOG_DEALLOC 0
+#define LOG_DURATION 0
 
 #define VERSION 100
 #define PWPrefPath @"/var/mobile/Library/Preferences/cc.tweak.prowidgets.plist"
@@ -42,7 +45,7 @@
 #define RELEASE(x) [x release], x = nil;
 #define RELEASE_VIEW(x) [x removeFromSuperview], [x release], x = nil;
 
-#ifdef DEBUG
+#ifdef LOG_DEBUG
 #define LOG(x,...) NSLog(@"***** [ProWidgets] %@",[NSString stringWithFormat:(x), ##__VA_ARGS__])
 #define METHODLOG LOG(@"---> [%@ %@]", self.class, NSStringFromSelector(_cmd))
 #else
@@ -168,3 +171,5 @@ static inline void *instanceVar(id object, const char *name) {
 	}
 	return NULL;
 }
+
+#endif

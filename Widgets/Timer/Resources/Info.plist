@@ -16,7 +16,5 @@
 	<string>Quick start or pause a timer</string>
 	<key>PWInfoIconFile</key>
 	<string>icon.png</string>
-	<key>PWInfoPreferenceFile</key>
-	<string>Preference</string>
 </dict>
 </plist>

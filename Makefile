@@ -1,10 +1,11 @@
 #export THEOS_DEVICE_IP=192.168.1.15
 #export THEOS_DEVICE_IP=143.89.226.137
 export THEOS_DEVICE_IP=127.0.0.1
-export THEOS_DEVICE_PORT=2223
+export THEOS_DEVICE_PORT=2222
 
-export DEBUG = 1
-export DEBUGFLAG = -ggdb
+#export DEBUG = 1
+#export DEBUGFLAG = -ggdb
+export DEBUG = 0
 
 export TARGET = :clang
 export ARCHS = armv7 arm64
@@ -175,6 +176,10 @@ SUBPROJECTS = Substrate $(API_SUBSTRATES) $(ACTIVATION_METHODS) $(WIDGETS) $(WID
 include theos/makefiles/common.mk
 include $(THEOS_MAKE_PATH)/library.mk
 include $(THEOS_MAKE_PATH)/aggregate.mk
+
+#LIB_PATH = $(libprowidgets_INSTALL_PATH)$(LIBRARY_NAME).dylib
+#STUB_PATH = $(THEOS_STAGING_DIR)$(LIBRARY_NAME).stub.dylib
+#$(ECHO_LINKING)echo "" | $(TARGET_LD) $(TARGET_LDFLAGS) -dynamiclib -install_name $(LIB_PATH) -o $(STUB_PATH) -x c -; $(TARGET_STRIP) -c $(STUB_PATH)$(ECHO_END)
 
 after-stage::
 	$(ECHO_NOTHING)find $(THEOS_STAGING_DIR) -iname '*.psd' -exec rm -rfv {} + $(ECHO_END)

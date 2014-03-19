@@ -1,4 +1,10 @@
-@class _UIDictionaryManager, _UIDefinitionValue;
+@class _UIDefinitionDictionary, _UIDictionaryManager, _UIDefinitionValue, ASAsset;
+
+@interface _UIDefinitionDictionary : NSObject
+
+@property(readonly) ASAsset *rawAsset;
+
+@end
 
 @interface _UIDictionaryManager : NSObject {
     NSArray *_availableDefinitionDictionaries;
