@@ -69,29 +69,7 @@
 @end
 
 @implementation PWWidgetDictionary
-/*
-- (void)load {
-	
-	// check if the user has installed at least one dictionary asset
-	BOOL installed = NO;
-	
-	_UIDictionaryManager *manager = [objc_getClass("_UIDictionaryManager") assetManager];
-	NSArray *dictionaries = [manager _currentlyAvailableDefinitionDictionaries];
-	for (_UIDefinitionDictionary *dictionary in dictionaries) {
-		ASAsset *asset = dictionary.rawAsset;
-		NSInteger state = asset.state;
-		if (state != 0) {
-			installed = YES;
-			break;
-		}
-	}
-	
-	if (!installed) {
-		[self showMessage:@"You have not installed any dictionary asset yet. Manage dictionary assets in the preference page of Dictionary widget."];
-		[self dismiss];
-	}
-}
-*/
+
 - (void)submitEventHandler:(NSDictionary *)values {
 	
 	NSString *word = values[@"word"];

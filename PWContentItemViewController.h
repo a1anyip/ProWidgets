@@ -26,7 +26,6 @@
 }
 
 @property(nonatomic, readonly) UITableView *tableView;
-@property(nonatomic, copy) NSArray *items;
 
 @property(nonatomic, readonly) BOOL shouldUpdateLastFirstResponder;
 @property(nonatomic, readonly) PWWidgetItem *lastFirstResponder;

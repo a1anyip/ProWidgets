@@ -741,71 +741,86 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	// resign active state, and hide keyboard
 	[self resignActive:YES];
 	
-	// ask window to create a mini view with the snapshot image
-	PWMiniView *miniView = [self createMiniView];
-	miniView.scale = [PWController sharedInstance]._miniViewScale; // retrieve the scale from preference
+	[_widget.theme enterSnapshotMode];
+	[_containerView.layer displayIfNeeded];
 	
-	// hide container view
-	_containerView.hidden = YES;
+	// this little delay is to ensure that the new changes are applied in enterSnapshotMode
+	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.05 * NSEC_PER_SEC), dispatch_get_main_queue(), ^(void){
 	
-	// hide background view
-	[window resignKeyWindow];
-	[backgroundView hide];
-	
-	// animate the layer
-	CALayer *layer = miniView.layer;
-	CGFloat fadeTo = .9;
-	CGFloat viewScale = miniView.scale;
-	CGFloat initialExtraScale = .95;
-	CGPoint initialPosition = [self _miniViewCenter];
-	
-	[CATransaction begin];
-	[CATransaction setAnimationDuration:PWMaxMinimizationDuration];
-	[CATransaction setAnimationTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
-	[CATransaction setCompletionBlock:^{
+		// generate image for mini view
+		UIGraphicsBeginImageContextWithOptions(_containerView.bounds.size, NO, 0);
+		[_containerView drawViewHierarchyInRect:_containerView.bounds afterScreenUpdates:NO];
+		[_widget.theme exitSnapshotMode];
 		
-		[_miniView finishAnimation];
+		UIImage *snapshot = UIGraphicsGetImageFromCurrentImageContext();
+		UIGraphicsEndImageContext();
 		
-		// perform second animation
+		// ask window to create a mini view with the snapshot image
+		PWMiniView *miniView = [self createMiniView:snapshot];
+		miniView.scale = [PWController sharedInstance]._miniViewScale; // retrieve the scale from preference
+		
+		// hide container view
+		_containerView.hidden = YES;
+		
+		// hide background view
+		[window resignKeyWindow];
+		[backgroundView hide];
+		
+		// animate the layer
+		CALayer *layer = miniView.layer;
+		CGFloat fadeTo = .9;
+		CGFloat viewScale = miniView.scale;
+		CGFloat initialExtraScale = .95;
+		CGPoint initialPosition = [self _miniViewCenter];
+		
 		[CATransaction begin];
-		[CATransaction setAnimationDuration:.15];
+		[CATransaction setAnimationDuration:PWMaxMinimizationDuration];
 		[CATransaction setAnimationTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
 		[CATransaction setCompletionBlock:^{
-			_isAnimating = NO;
-			[self.class releaseLock];
+			
+			[_miniView finishAnimation];
+			
+			// perform second animation
+			[CATransaction begin];
+			[CATransaction setAnimationDuration:.15];
+			[CATransaction setAnimationTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
+			[CATransaction setCompletionBlock:^{
+				_isAnimating = NO;
+				[self.class releaseLock];
+			}];
+			
+			CABasicAnimation *scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
+			scale.fromValue = @(viewScale * initialExtraScale);
+			scale.toValue = @(viewScale);
+			
+			layer.transform = CATransform3DMakeScale(viewScale, viewScale, 1.0);
+			
+			[layer addAnimation:scale forKey:@"scale"];
+			[CATransaction commit];
 		}];
 		
+		CABasicAnimation *fade = [CABasicAnimation animationWithKeyPath:@"opacity"];
+		fade.fromValue = @1.0;
+		fade.toValue = @(fadeTo);
+		
 		CABasicAnimation *scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
-		scale.fromValue = @(viewScale * initialExtraScale);
-		scale.toValue = @(viewScale);
+		scale.fromValue = @1.0;
+		scale.toValue = @(viewScale * initialExtraScale);
 		
-		layer.transform = CATransform3DMakeScale(viewScale, viewScale, 1.0);
+		CABasicAnimation *position = [CABasicAnimation animationWithKeyPath:@"position"];
+		position.fromValue = [NSValue valueWithCGPoint:layer.position];
+		position.toValue = [NSValue valueWithCGPoint:initialPosition];
 		
+		layer.opacity = fadeTo;
+		layer.transform = CATransform3DMakeScale(viewScale * initialExtraScale, viewScale * initialExtraScale, 1.0);
+		layer.position = initialPosition;
+		
+		[layer addAnimation:fade forKey:@"fade"];
 		[layer addAnimation:scale forKey:@"scale"];
+		[layer addAnimation:position forKey:@"position"];
 		[CATransaction commit];
-	}];
-	
-	CABasicAnimation *fade = [CABasicAnimation animationWithKeyPath:@"opacity"];
-	fade.fromValue = @1.0;
-	fade.toValue = @(fadeTo);
-	
-	CABasicAnimation *scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
-	scale.fromValue = @1.0;
-	scale.toValue = @(viewScale * initialExtraScale);
-	
-	CABasicAnimation *position = [CABasicAnimation animationWithKeyPath:@"position"];
-	position.fromValue = [NSValue valueWithCGPoint:layer.position];
-	position.toValue = [NSValue valueWithCGPoint:initialPosition];
-	
-	layer.opacity = fadeTo;
-	layer.transform = CATransform3DMakeScale(viewScale * initialExtraScale, viewScale * initialExtraScale, 1.0);
-	layer.position = initialPosition;
-	
-	[layer addAnimation:fade forKey:@"fade"];
-	[layer addAnimation:scale forKey:@"scale"];
-	[layer addAnimation:position forKey:@"position"];
-	[CATransaction commit];
-	
+	});
+		
 	return YES;
 }
 
@@ -966,23 +981,11 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	RELEASE_VIEW(_containerView)
 }
 
-- (PWMiniView *)createMiniView {
+- (PWMiniView *)createMiniView:(UIImage *)snapshot {
 	
 	if (_miniView != nil) {
 		RELEASE_VIEW(_miniView);
 	}
-	
-	PWTheme *theme = _widget.theme;
-	
-	// generate image for mini view
-	UIGraphicsBeginImageContextWithOptions(_containerView.bounds.size, NO, 0);
-	
-	[theme enterSnapshotMode];
-	[_containerView drawViewHierarchyInRect:_containerView.bounds afterScreenUpdates:YES];
-	[theme exitSnapshotMode];
-	
-	UIImage *snapshot = UIGraphicsGetImageFromCurrentImageContext();
-	UIGraphicsEndImageContext();
 	
 	PWController *controller = [PWController sharedInstance];
 	PWView *view = controller.mainView;

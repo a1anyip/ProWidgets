@@ -1046,7 +1046,7 @@ static inline void showWelcomeScreen(CFNotificationCenterRef center, void *obser
 	
 	// PWInfoIconFile
 	NSString *iconFile = info[@"PWInfoIconFile"];
-	if (iconFile == nil) iconFile = @"";
+	if (iconFile == nil) iconFile = @"icon.png";
 	
 	// check if the widget is installed via URL
 	NSString *indicatorPath = [NSString stringWithFormat:@"%@/.installed", [bundle bundlePath]];

@@ -8,7 +8,7 @@
 //////////////////////////////////////////////////////////////////////
 
 // Configuration
-#define LOG_DEBUG 0
+#define LOG_DEBUG 1
 #define LOG_DEALLOC 0
 #define LOG_DURATION 0
 

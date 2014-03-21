@@ -150,6 +150,7 @@ THEMES = Themes/Blur
 THEMES += Themes/DarkBlur
 THEMES += Themes/PlainBlur
 THEMES += Themes/Plain
+THEMES += Themes/Grey
 
 ############################################################
 

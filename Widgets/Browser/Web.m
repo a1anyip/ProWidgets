@@ -25,7 +25,7 @@
 		PWTheme *theme = [PWWidgetBrowser theme];
 		
 		_textField = [[PWThemableTextField alloc] initWithFrame:CGRectZero theme:theme];
-		_textField.keyboardType = UIKeyboardTypeURL;
+		_textField.keyboardType = UIKeyboardTypeWebSearch; //UIKeyboardTypeURL;
 		_textField.returnKeyType = UIReturnKeyGo;
 		_textField.autocorrectionType = UITextAutocorrectionTypeNo;
 		_textField.autocapitalizationType = UITextAutocapitalizationTypeNone;

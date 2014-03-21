@@ -10,7 +10,9 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>footerText</key>
-			<string>Configure the visibility of this section in the preference page of CCLoader</string>
+			<string>Requires CCLoader tweak from Cydia in order to use this activation method in Control Center. (iPad is not supported yet)
+
+Configure the visibility of this section in the preference page of CCLoader.</string>
 		</dict>
 		<dict>
 			<key>cell</key>

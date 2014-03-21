@@ -37,15 +37,6 @@ static void handleException(NSException *exception) {
 
 %group SpringBoard
 
-%hook SBWallpaperEffectView
-
-+ (id)imageInRect:(CGRect)rect forVariant:(int)variant withStyle:(int)style zoomFactor:(float)factor mask:(id)mask masksBlur:(BOOL)blur masksTint:(BOOL)tint {
-	%log;
-	return %orig;
-}
-
-%end
-
 %hook SBBacklightController
 
 - (void)_lockScreenDimTimerFired {
