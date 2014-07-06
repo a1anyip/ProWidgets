@@ -17,6 +17,9 @@
 #define WEBVIEW_INACTIVE_ALPHA 0.0
 #define RICKROLL_URL @"http://www.youtube.com/watch?v=dQw4w9WgXcQ"
 
+@implementation PWURL
+@end
+
 @implementation PWWidgetBrowserWebView
 
 - (instancetype)init {
@@ -34,6 +37,7 @@
 		_textField.clearButtonMode = UITextFieldViewModeWhileEditing;
 		_textField.font = [UIFont systemFontOfSize:14.0];
 		_textField.alpha = .4;
+		_textField.placeholder = @"Enter URL or Search Google...";
 		[self addSubview:_textField];
 		
 		_actionButton = [UIButton new];
@@ -52,6 +56,7 @@
 		_webView.allowsInlineMediaPlayback = YES;
 		_webView.alpha = WEBVIEW_INACTIVE_ALPHA;
 		[self addSubview:_webView];
+		
 		/*
 		_messageLabel = [UILabel new];
 		//_messageLabel.text = @"Type  or\nTap on title to view bookmarks";
@@ -75,7 +80,7 @@
 	CGFloat textFieldHorizontalPadding = 10.0;
 	CGFloat textFieldHeight = 35.0;
 	CGFloat buttonSize = 25.0;
-	CGFloat messageLabelHeight = 60.0;
+	//CGFloat messageLabelHeight = 60.0;
 	
 	CGRect textFieldRect;
 	if (_buttonHidden) {
@@ -86,13 +91,13 @@
 	CGRect buttonRect = CGRectMake(width - textFieldHorizontalPadding - buttonSize, 0, buttonSize + textFieldHorizontalPadding, textFieldHeight);
 	CGRect separatorRect = CGRectMake(0, textFieldHeight - .5, width, .5);
 	CGRect webViewRect = CGRectMake(0, textFieldHeight, width, height - textFieldHeight);
-	CGRect messageLabelRect = CGRectMake(0, textFieldHeight, width, messageLabelHeight);
+	//CGRect messageLabelRect = CGRectMake(0, textFieldHeight, width, messageLabelHeight);
 	
 	_textField.frame = textFieldRect;
 	_actionButton.frame = buttonRect;
 	_separator.frame = separatorRect;
 	_webView.frame = webViewRect;
-	_messageLabel.frame = messageLabelRect;
+	//_messageLabel.frame = messageLabelRect;
 }
 
 - (void)setDelegate:(id<UITextFieldDelegate, UIWebViewDelegate>)delegate {
@@ -129,9 +134,11 @@
 	[self setNeedsLayout];
 }
 
+/*
 - (void)setMessageLabelText:(NSString *)text {
 	_messageLabel.text = text;
 }
+*/
 
 - (void)setWebViewActive:(BOOL)active {
 	
@@ -148,7 +155,7 @@
 	RELEASE_VIEW(_actionButton)
 	RELEASE_VIEW(_separator)
 	RELEASE_VIEW(_webView)
-	RELEASE_VIEW(_messageLabel)
+	//RELEASE_VIEW(_messageLabel)
 	[super dealloc];
 }
 
@@ -157,6 +164,9 @@
 @implementation PWWidgetBrowserWebViewController
 
 - (void)load {
+	
+	// retrieve preference values
+	_hideHTTP = [(PWWidgetBrowser *)self.widget boolValueForPreferenceKey:@"hideHTTP" defaultValue:YES];
 	
 	self.shouldAutoConfigureStandardButtons = NO;
 	self.wantsFullscreen = YES;
@@ -196,14 +206,19 @@
 }
 
 - (void)configureFirstResponder {
+	
 	// auto focus URL if it's empty
 	UITextField *textField = self.webView.textField;
-	if ([textField.text length] == 0 || [textField.text isEqualToString:@"http://"]) {
-		textField.text = @"http://";
+	
+	if ([PWWidgetBrowser widget].shouldAutoFocus && ([textField.text length] == 0 || [textField.text isEqualToString:@"http://"])) {
+		textField.text = _hideHTTP ? @"" : @"http://";
 		[textField becomeFirstResponder];
 	} else {
 		[textField resignFirstResponder];
 	}
+	
+	// reset state
+	[PWWidgetBrowser widget].shouldAutoFocus = YES;
 }
 
 - (void)loadURLString:(NSString *)urlString {
@@ -391,10 +406,20 @@
 	switch (buttonIndex) {
 		case 0:
 			{
+				PWWidgetBrowserDefault defaultBrowser = [(PWWidgetBrowser *)self.widget defaultBrowser];
+				
 				UIApplication *app = [UIApplication sharedApplication];
 				NSString *urlString = _lastURLString;
-				urlString = [urlString stringByAppendingString:@"***PWBROWSERWIDGET"];
-				NSURL *url = [NSURL URLWithString:urlString];
+				
+				NSURL *url = nil;
+				if (defaultBrowser == PWWidgetBrowserDefaultChrome) {
+					NSRange range = NSMakeRange(4, urlString.length - 4);
+					NSString *chromeURLString = [NSString stringWithFormat:@"googlechrome%@", [urlString substringWithRange:range]];
+					url = [PWURL URLWithString:chromeURLString];
+				} else {
+					url = [PWURL URLWithString:urlString];
+				}
+				
 				if ([app canOpenURL:url]) {
 					[app openURL:url];
 					[self.widget dismiss];
@@ -406,10 +431,18 @@
 			break;
 		case 2: // Add Bookmark...
 			{
-				NSString *title = _lastTitle;
-				NSString *url = _lastURLString;
-				PWWidgetBrowser *widget = (PWWidgetBrowser *)self.widget;
-				[widget addBookmarkFromWebInterfaceWithTitle:title url:url animated:YES];
+				PWWidgetBrowserDefault defaultBrowser = [(PWWidgetBrowser *)self.widget defaultBrowser];
+				
+				if (defaultBrowser == PWWidgetBrowserDefaultChrome) {
+					UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Error" message:@"Adding bookmark to Chrome is not supported yet." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+					[alert show];
+					[alert release];
+				} else {
+					NSString *title = _lastTitle;
+					NSString *url = _lastURLString;
+					PWWidgetBrowser *widget = (PWWidgetBrowser *)self.widget;
+					[widget addBookmarkFromWebInterfaceWithTitle:title url:url animated:YES];
+				}
 			}
 			break;
 		case 3: // Close Browser
@@ -438,8 +471,9 @@
 	
 	[self.webView.textField resignFirstResponder];
 	
+	PWWidgetBrowserDefault defaultBrowser = [(PWWidgetBrowser *)self.widget defaultBrowser];
 	NSString *defaultBrowserText = nil;
-	if (_defaultBrowser == 1) {
+	if (defaultBrowser == PWWidgetBrowserDefaultChrome) {
 		defaultBrowserText = @"Chrome";
 	} else {
 		defaultBrowserText = @"Safari";

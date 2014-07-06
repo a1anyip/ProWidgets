@@ -14,9 +14,8 @@ extern NSBundle *bundle;
 	UIView *view = (UIView *)[[self viewClass] new];
 	if ([view isKindOfClass:[UITableView class]]) {
 		UITableView *tableView = (UITableView *)view;
-		//tableView.delegate = (id<UITableViewDelegate>)self;
-		//tableView.dataSource = (id<UITableViewDataSource>)self;
 		tableView.allowsSelectionDuringEditing = YES;
+		CONFIGURE_TABLEVIEW_INSET(tableView);
 	}
 	self.view = view;
 	[view release];

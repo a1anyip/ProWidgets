@@ -18,7 +18,7 @@
 - (void)load {
 	
 	self.actionButtonText = @"Add";
-		
+	
 	self.shouldAutoConfigureStandardButtons = NO;
 	self.wantsFullscreen = YES;
 	
@@ -50,8 +50,20 @@
 }
 
 - (void)actionEventHandler {
-	PWWidgetBrowserAddBookmarkViewController *addViewController = [[[PWWidgetBrowserAddBookmarkViewController alloc] initForWidget:self.widget] autorelease];
-	[self.widget pushViewController:addViewController animated:YES];
+	
+	PWWidgetBrowserDefault defaultBrowser = [(PWWidgetBrowser *)self.widget defaultBrowser];
+	
+	if (defaultBrowser == PWWidgetBrowserDefaultChrome) {
+		
+		UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Error" message:@"Adding bookmark to Chrome is not supported yet." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+		[alert show];
+		[alert release];
+		
+	} else if (defaultBrowser == PWWidgetBrowserDefaultSafari) {
+		
+		PWWidgetBrowserAddBookmarkViewController *addViewController = [[[PWWidgetBrowserAddBookmarkViewController alloc] initForWidget:self.widget] autorelease];
+		[self.widget pushViewController:addViewController animated:YES];
+	}
 }
 
 - (void)titleTapped {
@@ -233,7 +245,8 @@
 		
 	} else if (defaultBrowser == PWWidgetBrowserDefaultChrome) {
 		
-		//NSDictionary *dict = [PWWidgetBrowser readChromeBookmarks];
+		NSDictionary *dict = [PWWidgetBrowser readChromeBookmarks];
+		LOG(@"%@", dict);
 	}
 	
 	[self.tableView reloadData];

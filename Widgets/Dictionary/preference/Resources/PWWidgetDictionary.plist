@@ -20,6 +20,64 @@
 			<key>label</key>
 			<string>Manage Dictionary Assets</string>
 		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Pronunciation</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>defaults</key>
+			<string>cc.tweak.prowidgets.widget.dictionary</string>
+			<key>key</key>
+			<string>pronunciationRate</string>
+			<key>label</key>
+			<string>Rate</string>
+			<key>default</key>
+			<real>0.3</real>
+			<key>detail</key>
+			<string>PSListItemsController</string>
+			<key>validTitles</key>
+			<array>
+				<string>Very Slow</string>
+				<string>Slow</string>
+				<string>Normal</string>
+				<string>Fast</string>
+				<string>Supersonic</string>
+			</array>
+			<key>validValues</key>
+			<array>
+				<real>0.1</real>
+				<real>0.2</real>
+				<real>0.3</real>
+				<real>0.5</real>
+				<real>10000.0</real>
+			</array>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Integration</string>
+			<key>footerText</key>
+			<string>Open dictionary widget when pressing "Define"</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>defaults</key>
+			<string>cc.tweak.prowidgets.widget.dictionary</string>
+			<key>PostNotification</key>
+			<string>cc.tweak.prowidgets.widget.dictionary.preferencechanged</string>
+			<key>key</key>
+			<string>enabledOpenFromDefine</string>
+			<key>label</key>
+			<string>Define</string>
+			<key>default</key>
+			<true/>
+		</dict>
 	</array>
 </dict>
 </plist>

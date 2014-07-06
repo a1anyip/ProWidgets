@@ -112,7 +112,7 @@ typedef struct {
 - (void)removeContainerView;
 
 // mini view
-- (PWMiniView *)createMiniView:(UIImage *)snapshot;
+- (PWMiniView *)createMiniView:(UIView *)containerView;
 - (void)removeMiniView;
 
 // adjust layout

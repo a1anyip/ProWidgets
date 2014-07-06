@@ -4,12 +4,12 @@
 #import "PWWidgetController.h"
 #import <objcipc/IPC.h>
 
-void PWPresentWidget(NSString *name, NSDictionary *userInfo) {
-	
-	if (name == nil) return;
-	
+inline BOOL PWPresentWidget(NSString *name, NSDictionary *userInfo) {
+
+	if (name == nil) return NO;
+
 	if (objc_getClass("SpringBoard") != nil) {
-		[PWWidgetController presentWidgetNamed:name userInfo:userInfo];
+		return [objc_getClass("PWWidgetController") presentWidgetNamed:name userInfo:userInfo];
 	} else {
 		NSDictionary *dictionary = nil;
 		if (userInfo != nil) {
@@ -17,6 +17,6 @@ void PWPresentWidget(NSString *name, NSDictionary *userInfo) {
 		} else {
 			dictionary = @{ @"name": name };
 		}
-		[OBJCIPC sendMessageToSpringBoardWithMessageName:@"prowidgets.presentwidget" dictionary:dictionary replyHandler:nil];
+		return [objc_getClass("OBJCIPC") sendMessageToSpringBoardWithMessageName:@"prowidgets.presentwidget" dictionary:dictionary replyHandler:nil];
 	}
 }

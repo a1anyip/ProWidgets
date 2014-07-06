@@ -47,6 +47,7 @@
 - (void)fetchCalendars:(NSString *)selectedIdentifier {
 	
 	NSArray *calendars = [self.store calendarsForEntityType:EKEntityTypeEvent];
+	EKCalendar *defaultCalendar = [self.store defaultCalendarForNewEvents];
 	
 	if ([calendars count] == 0) {
 		[self.widget showMessage:@"You need at least one calendar to save events."];
@@ -66,29 +67,27 @@
 			continue;
 		}
 		
-		if (selectedIdentifier != nil && [calendar.calendarIdentifier isEqualToString:selectedIdentifier]) {
-			selectedIndex = i;
+		if (selectedIdentifier != nil) {
+			if ([calendar.calendarIdentifier isEqualToString:selectedIdentifier]) {
+				selectedIndex = i;
+			}
+		} else if (defaultCalendar != nil) {
+			if ([defaultCalendar isEqual:calendar]) {
+				selectedIndex = i;
+			}
 		}
 		
 		[titles addObject:calendar.title];
 		[values addObject:@(i++)];
 	}
 	
-	NSUInteger defaultIndex = NSNotFound;
-	if (selectedIndex != NSNotFound) {
-		defaultIndex = selectedIndex;
-	} else {
-		
-		if (selectedIdentifier != nil) {
-			// cannot locate the new calendar
-			[self.widget showMessage:@"Unable to create calendar"];
-		}
-		
-		EKCalendar *defaultCalendar = [self.store defaultCalendarForNewEvents];
-		defaultIndex = [calendars indexOfObject:defaultCalendar];
+	if (selectedIdentifier != nil && selectedIndex == NSNotFound) {
+		// cannot locate the new calendar
+		[self.widget showMessage:@"Unable to create calendar"];
 	}
 	
-	if (defaultIndex == NSNotFound) defaultIndex = 0;
+	// fall back to the first item
+	if (selectedIndex == NSNotFound) selectedIndex = 0;
 	
 	// add "Create..." option
 	[titles addObject:@"Create..."];
@@ -96,7 +95,7 @@
 	
 	PWWidgetItemListValue *item = (PWWidgetItemListValue *)[self itemWithKey:@"calendar"];
 	[item setListItemTitles:titles values:values];
-	[item setValue:@(defaultIndex)];
+	[item setValue:@(selectedIndex)];
 	
 	_calendars = [calendars retain];
 	[calendars release];

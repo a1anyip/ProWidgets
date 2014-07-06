@@ -9,6 +9,7 @@
 
 #import "FolderItemController.h"
 #import "Browser.h"
+#import "FolderItemTableViewCell.h"
 #import "interface.h"
 #import "../../PWThemableTableView.h"
 #import "../../PWThemableTableViewCell.h"
@@ -111,14 +112,14 @@
 	
 	NSUInteger row = [indexPath row];
 	
-	NSString *reuseIdentifier = @"PWBrowserWidgetItemFolderControllerTableViewCell";
-	PWThemableTableViewCell *cell = (PWThemableTableViewCell *)[tableView dequeueReusableCellWithIdentifier:reuseIdentifier];
+	NSString *reuseIdentifier = @"PWBrowserWidgetItemFolderTableViewCell";
+	PWBrowserWidgetItemFolderTableViewCell *cell = (PWBrowserWidgetItemFolderTableViewCell *)[tableView dequeueReusableCellWithIdentifier:reuseIdentifier];
 	
 	if (!cell) {
 		
-		cell = [[[PWThemableTableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:reuseIdentifier theme:self.theme] autorelease];
+		cell = [[[PWBrowserWidgetItemFolderTableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:reuseIdentifier theme:self.theme] autorelease];
 	}
-	
+	//PWThemableTableViewCell
 	PWWidgetBrowser *widget = (PWWidgetBrowser *)self.widget;
 	NSDictionary *folder = _folders[row];
 	NSNumber *identifier = folder[@"identifier"];

@@ -27,42 +27,48 @@
 - (void)load {
 	
 	// get the preference of default browser
-	_defaultBrowser = [self intValueForPreferenceKey:@"defaultBrowser" defaultValue:(NSInteger)PWWidgetBrowserDefaultSafari] == (NSInteger)PWWidgetBrowserDefaultChrome ? PWWidgetBrowserDefaultChrome : PWWidgetBrowserDefaultSafari;
+	NSInteger defaultBrowserValue = (NSInteger)[self intValueForPreferenceKey:@"defaultBrowser" defaultValue:(NSInteger)PWWidgetBrowserDefaultSafari];
+	_defaultBrowser = defaultBrowserValue == PWWidgetBrowserDefaultChrome ? PWWidgetBrowserDefaultChrome : PWWidgetBrowserDefaultSafari;
 	
+	/*
 	if (_defaultBrowser == PWWidgetBrowserDefaultChrome) {
 		[self showMessage:@"Setting Chrome as the default browser is not supported yet."];
 		[self dismiss];
 		return;
 	}
+	*/
 	
 	NSDictionary *userInfo = self.userInfo;
 	NSString *url = userInfo[@"url"];
 	
 	if (url != nil) {
-		[self navigateToURL:url];
+		self.shouldAutoFocus = NO;
+	}
+	
+	PWWidgetBrowserInterface defaultInterface = PWWidgetBrowserInterfaceWeb;
+	if (defaultInterface == PWWidgetBrowserInterfaceWeb) {
+		[self switchToWebInterface];
 	} else {
-		PWWidgetBrowserInterface defaultInterface = PWWidgetBrowserInterfaceWeb;
-		if (defaultInterface == PWWidgetBrowserInterfaceWeb) {
-			[self switchToWebInterface];
-		} else {
-			[self switchToBookmarkInterface];
-		}
+		[self switchToBookmarkInterface];
 	}
 }
 
 - (void)userInfoChanged:(NSDictionary *)userInfo {
 	
 	NSString *from = userInfo[@"from"];
-	NSString *title = userInfo[@"title"];
-	NSString *url = userInfo[@"url"];
-	
-	if (url == nil) return;
+	NSURL *url = userInfo[@"url"];
+	NSString *urlString = [url absoluteString];
+	if (url == nil || urlString == nil) goto end;
 	
 	if ([from isEqualToString:@"addBookmark"]) {
-		[self addBookmarkFromWebInterfaceWithTitle:title url:url animated:NO];
+		NSString *title = userInfo[@"title"];
+		[self addBookmarkFromWebInterfaceWithTitle:title url:urlString animated:NO];
 	} else {
-		[self navigateToURL:url];
+		[self navigateToURL:urlString];
 	}
+	
+end:
+	self.userInfo = nil; // reset user info
 }
 
 - (NSBundle *)safariBundle {
@@ -93,13 +99,25 @@ ICON_GETTER(folderIcon, @"BookmarksListFolder")
 		[self switchToWebInterface];
 	}
 	
-	PWWidgetBrowserWebViewController *webViewController = (PWWidgetBrowserWebViewController *)_webViewControllers[0];
-	[webViewController configureBackButton];
+	if (_defaultBrowser == PWWidgetBrowserDefaultChrome) {
+		
+		UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Error" message:@"Adding bookmark to Chrome is not supported yet." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+		[alert show];
+		[alert release];
+		
+		PWWidgetBrowserWebViewController *controller = [_webViewControllers firstObject];
+		[controller.webView.textField resignFirstResponder];
+		
+	} else {
 	
-	PWWidgetBrowserAddBookmarkViewController *addViewController = [[[PWWidgetBrowserAddBookmarkViewController alloc] initForWidget:self] autorelease];
-	[addViewController updatePrefillTitle:title andAddress:url];
-	
-	[self pushViewController:addViewController animated:animated];
+		PWWidgetBrowserWebViewController *webViewController = (PWWidgetBrowserWebViewController *)_webViewControllers[0];
+		[webViewController configureBackButton];
+		
+		PWWidgetBrowserAddBookmarkViewController *addViewController = [[[PWWidgetBrowserAddBookmarkViewController alloc] initForWidget:self] autorelease];
+		[addViewController updatePrefillTitle:title andAddress:url];
+		
+		[self pushViewController:addViewController animated:animated];
+	}
 }
 
 - (void)switchToWebInterface {
@@ -134,7 +152,7 @@ ICON_GETTER(folderIcon, @"BookmarksListFolder")
 	[self setViewControllers:_bookmarkViewControllers animated:YES];
 	_currentInterface = PWWidgetBrowserInterfaceBookmark;
 }
-/*
+
 + (NSDictionary *)readChromeBookmarks {
 	
 	SBApplicationController *controller = [objc_getClass("SBApplicationController") sharedInstance];
@@ -162,7 +180,7 @@ ICON_GETTER(folderIcon, @"BookmarksListFolder")
 	
 	return nil;//json;
 }
-*/
+
 - (void)dealloc {
 	RELEASE(_webViewControllers)
 	RELEASE(_bookmarkViewControllers)

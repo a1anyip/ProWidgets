@@ -26,15 +26,68 @@
 
 - (void)userInfoChanged:(NSDictionary *)userInfo {
 	
+    BOOL fromApp = [userInfo[@"from"] isEqualToString:@"app"];
 	BOOL fromTodayView = [userInfo[@"from"] isEqualToString:@"todayview"];
-	BOOL initialTomorrow = [userInfo[@"type"] isEqualToString:@"tomorrow"];
 	
-	if (fromTodayView) {
-		[self switchToAddInterface];
-		PWWidgetCalendarAddViewController *addViewController = (PWWidgetCalendarAddViewController *)_addViewControllers[0];
+    PWWidgetCalendarAddViewController *addViewController = nil;
+    if (fromApp || fromTodayView) {
+        [self switchToAddInterface];
+		addViewController = (PWWidgetCalendarAddViewController *)_addViewControllers[0];
+    }
+    
+    if (fromApp) {
+        
+        NSString *title = userInfo[@"title"];
+        NSDate *startDate = userInfo[@"startDate"];
+        NSDate *endDate = userInfo[@"endDate"];
+        NSNumber *allDay = userInfo[@"allDay"];
+		
+#define checkNull(x) if ([x isKindOfClass:[NSNull class]]) x = nil;
+		
+		checkNull(title);
+		checkNull(startDate);
+		checkNull(endDate);
+		checkNull(allDay);
+		
+#undef checkNull
+		
+		// automatically set the end date to one hour later than the start date
+		if (startDate != nil && endDate == nil) {
+			
+			NSTimeInterval nextHourTime = [startDate timeIntervalSinceReferenceDate] + 60 * 60;
+			NSDate *nextHourDate = [NSDate dateWithTimeIntervalSinceReferenceDate:nextHourTime];
+			
+			NSCalendar *calendar = [NSCalendar currentCalendar];
+			NSDateComponents *nextHourComp = [calendar components:(NSYearCalendarUnit | NSMonthCalendarUnit | NSDayCalendarUnit | NSHourCalendarUnit) fromDate:nextHourDate];
+			
+			endDate = [calendar dateFromComponents:nextHourComp];
+		}
+        
+        // set values
+        [addViewController itemWithKey:@"title"].value = title;
+		
+		if (startDate != nil) {
+			[addViewController itemWithKey:@"starts"].value = startDate;
+			[addViewController itemWithKey:@"ends"].value = endDate;
+		} else {
+			[addViewController setInitialDates];
+		}
+		
+        [addViewController itemWithKey:@"allDay"].value = allDay;
+        
+        // reset all other fields
+        [addViewController itemWithKey:@"location"].value = nil;
+        [addViewController itemWithKey:@"repeat"].value = nil;
+		[addViewController itemWithKey:@"alerts"].value = nil;
+		[addViewController fetchCalendars:nil];
+        
+    } else if (fromTodayView) {
+        
+        BOOL initialTomorrow = [userInfo[@"type"] isEqualToString:@"tomorrow"];
 		if (initialTomorrow) {
 			[addViewController setInitialDates];
 		}
+        
 	}
 }
 

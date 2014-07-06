@@ -9,6 +9,9 @@
 
 #import "header.h"
 
+@interface PWURL : NSURL
+@end
+
 @interface PWWidgetBrowserWebView : UIView {
 	
 	BOOL _buttonHidden;
@@ -17,7 +20,7 @@
 	UIButton *_actionButton;
 	UIView *_separator;
 	UIWebView *_webView;
-	UILabel *_messageLabel;
+	//UILabel *_messageLabel;
 }
 
 @property(nonatomic, readonly) UITextField *textField;
@@ -28,14 +31,15 @@
 - (void)setTextFieldActive:(BOOL)active;
 - (void)setButtonState:(BOOL)loading;
 - (void)setButtonHidden:(BOOL)hidden;
-- (void)setMessageLabelText:(NSString *)text;
+//- (void)setMessageLabelText:(NSString *)text;
 - (void)setWebViewActive:(BOOL)active;
 
 @end
 
 @interface PWWidgetBrowserWebViewController : PWContentViewController<UIActionSheetDelegate, UITextFieldDelegate, UIWebViewDelegate> {
 	
-	int _defaultBrowser;
+	// preference value
+	BOOL _hideHTTP;
 	
 	BOOL _loading;
 	NSString *_lastTitle;

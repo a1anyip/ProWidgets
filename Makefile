@@ -166,7 +166,7 @@ WELCOME_SCREEN += WelcomeScreen/PWWSTipView.m
 ############################################################
 
 LIBRARY_NAME = libprowidgets
-libprowidgets_FILES = function.m $(LIB) $(API) $(WELCOME_SCREEN)
+libprowidgets_FILES = $(LIB) $(API) $(WELCOME_SCREEN)
 libprowidgets_FRAMEWORKS = CoreFoundation Foundation UIKit CoreGraphics CoreImage QuartzCore JavaScriptCore EventKit AddressBook MediaPlayer
 libprowidgets_PRIVATE_FRAMEWORKS = MobileKeyBag Calculate MobileTimer ToneKit ToneLibrary AddressBook MessageUI ChatKit MailServices Notes
 libprowidgets_INSTALL_PATH = /Library/ProWidgets/

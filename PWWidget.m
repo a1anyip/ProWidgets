@@ -20,7 +20,7 @@
 #import "PWWidgetItem.h"
 #import "PWWidgetItemCell.h"
 #import "PWContentItemViewController.h"
-#import "PWContentViewControllerDelegate.h"
+#import "PWContentViewControllerProtocol.h"
 #import "PWWidgetNavigationController.h"
 
 #define CHECK_CONFIGURED(x) if (![self _checkConfigured:_cmd]) return x;
@@ -330,7 +330,7 @@
 	[_navigationController popViewControllerAnimated:animated];
 }
 
-- (void)resizeWidgetAnimated:(BOOL)animated forContentViewController:(id<PWContentViewControllerDelegate>)viewController {
+- (void)resizeWidgetAnimated:(BOOL)animated forContentViewController:(id<PWContentViewControllerProtocol>)viewController {
 	if (_isPresenting) {
 		
 		if (viewController == nil || self.topViewController != viewController) {
@@ -357,6 +357,12 @@
 - (void)willDismiss {}
 - (void)didDismiss {}
 
+- (void)willMinimize {}
+- (void)didMinimize {}
+
+- (void)willMaximize {}
+- (void)didMaximize {}
+
 - (void)keyboardWillShow:(CGFloat)height {}
 - (void)keyboardWillHide {}
 
@@ -381,6 +387,8 @@
 
 - (void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated {
 	
+	if (self.widgetController.isMinimized) return;
+	
 	// resign first responder
 	[viewController.view endEditing:NO];
 	
@@ -397,9 +405,9 @@
 		[contentViewController _willBePresentedInNavigationController:navigationController];
 	}
 	
-	if ([viewController.class conformsToProtocol:@protocol(PWContentViewControllerDelegate)]) {
+	if ([viewController.class conformsToProtocol:@protocol(PWContentViewControllerProtocol)]) {
 		
-		id<PWContentViewControllerDelegate> contentViewController = (id<PWContentViewControllerDelegate>)viewController;
+		id<PWContentViewControllerProtocol> contentViewController = (id<PWContentViewControllerProtocol>)viewController;
 		
 		// auto resize
 		if (!self.widgetController.isAnimating)
@@ -418,6 +426,8 @@
 }
 
 - (void)navigationController:(UINavigationController *)navigationController didShowViewController:(UIViewController *)viewController animated:(BOOL)animated {
+	
+	if (self.widgetController.isMinimized) return;
 	
 	UINavigationBar *navigationBar = navigationController.navigationBar;
 	
@@ -528,7 +538,7 @@
 	LOG(@"PWWidget: _dealloc");
 	
 	// ask all pushed view controller to release
-	for (id<PWContentViewControllerDelegate> viewController in _navigationController.viewControllers) {
+	for (id<PWContentViewControllerProtocol> viewController in _navigationController.viewControllers) {
 		if ([viewController isKindOfClass:[PWContentViewController class]]) {
 			[(PWContentViewController *)viewController _dealloc];
 		}

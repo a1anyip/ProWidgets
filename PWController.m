@@ -57,6 +57,17 @@ static inline void showWelcomeScreen(CFNotificationCenterRef center, void *obser
 }
 
 + (instancetype)sharedInstance {
+	static PWController *instance = nil;
+	static dispatch_once_t onceToken;
+	dispatch_once(&onceToken, ^{
+		instance = [[self alloc] init];
+		LOG(@"PWController: allocated shared instance (%@)", sharedInstance);
+	});
+	return instance;
+}
+
+/*
++ (instancetype)sharedInstance {
 	
 	@synchronized(self) {
 		if (sharedInstance == nil)
@@ -78,7 +89,7 @@ static inline void showWelcomeScreen(CFNotificationCenterRef center, void *obser
 	
 	return nil;
 }
-
+*/
 - (void)activeInterfaceOrientationDidChangeToOrientation:(UIInterfaceOrientation)activeInterfaceOrientation willAnimateWithDuration:(double)duration fromOrientation:(UIInterfaceOrientation)orientation {
 	
 	LOG(@"PWController: activeInterfaceOrientationDidChangeToOrientation: %d", (int)activeInterfaceOrientation);
@@ -515,6 +526,10 @@ static inline void showWelcomeScreen(CFNotificationCenterRef center, void *obser
 	
 	// limit the scale (acceptable range: 0.2 to 0.5)
 	_miniViewScale = MAX(.2, MIN(_miniViewScale, .5));
+	
+	// Presentation Style
+	NSNumber *presentationStyle = dict[@"presentationStyle"];
+	_presentationStyle = presentationStyle == nil || ![presentationStyle isKindOfClass:[NSNumber class]] ? PWWidgetPresentationStyleZoom : (PWWidgetPresentationStyle)[presentationStyle integerValue];
 	
 	// Parallax Effect
 	NSNumber *enabledParallax = dict[@"enabledParallax"];
@@ -1302,7 +1317,7 @@ static inline void showWelcomeScreen(CFNotificationCenterRef center, void *obser
 }
 
 - (void)_outputDuration {
-	NSTimeInterval duration = [[NSDate date] timeIntervalSinceDate:_initialTime];
+	//NSTimeInterval duration = [[NSDate date] timeIntervalSinceDate:_initialTime];
 	DURATIONLOG(@"PWController: _outputDuration: %f", duration);
 	[_initialTime release], _initialTime = nil;
 }

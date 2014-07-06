@@ -37,7 +37,8 @@
 		
 		_timeLabel = [UILabel new];
 		_timeLabel.alpha = 0.0;
-		_timeLabel.font = [UIFont fontWithName:@"HelveticaNeue-UltraLight" size:60.0];
+		//_timeLabel.font = [UIFont fontWithName:@"HelveticaNeue-UltraLight" size:60.0];
+		_timeLabel.font = [UIFont fontWithName:@"HelveticaNeue-Light" size:70.0];
 		_timeLabel.textAlignment = NSTextAlignmentCenter;
 		_timeLabel.text = @"00:00";
 		[self.contentView addSubview:_timeLabel];

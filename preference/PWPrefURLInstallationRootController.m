@@ -202,11 +202,11 @@ extern NSBundle *bundle;
 	if (_extracted) return;
 	_extracted = YES;
 	
-	NSData *data = [notification userInfo][NSFileHandleNotificationDataItem];
-	NSString *output = [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] autorelease];
+	//NSData *data = [notification userInfo][NSFileHandleNotificationDataItem];
+	//NSString *output = [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] autorelease];
 	BOOL fail = NO;
 	
-	LOG(@"PWPrefURLInstallationRootController: Received extraction output from standard output.\n\n%@\n\n", output);
+	//LOG(@"PWPrefURLInstallationRootController: Received extraction output from standard output.\n\n%@\n\n", output);
 	
 	// the zip file is no longer necessary
 	[self _removeTempFile];

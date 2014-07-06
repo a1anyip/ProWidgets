@@ -20,6 +20,9 @@
 #import "PWMiniView.h"
 #import "PWAlertView.h"
 
+#define SettingPresentationStyle ([PWController sharedInstance].presentationStyle)
+//#define kPresentationStyleSlideFadeFrom .8
+
 #define IDLETIMER_DISABLED_REASON @"PW_IDLETIMER_DISABLED_REASON"
 
 static BOOL _isDragging = NO;
@@ -361,6 +364,7 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 }
 
 + (void)minimizeAllControllers {
+	
 	for (PWWidgetController *controller in [self allControllers]) {
 		[controller minimize];
 	}
@@ -487,6 +491,9 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	// begin animation
 	CALayer *layer = _containerView.layer;
 	
+	CGSize screenSize = [[UIScreen mainScreen] bounds].size;
+	CGFloat screenHeight = [PWController isLandscape] ? screenSize.width : screenSize.height;
+	
 	[CATransaction begin];
 	[CATransaction setAnimationDuration:PWAnimationDuration];
 	[CATransaction setAnimationTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
@@ -500,19 +507,64 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 		}
 	}];
 	
-	CABasicAnimation *fade = [CABasicAnimation animationWithKeyPath:@"opacity"];
-	fade.fromValue = @0.0;
-	fade.toValue = @1.0;
-	
-	CABasicAnimation *scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
-	scale.fromValue = @1.2;
-	scale.toValue = @1.0;
-	
-	layer.opacity = 1.0;
-	layer.transform = CATransform3DMakeScale(1.0, 1.0, 1.0);
-	
-	[layer addAnimation:fade forKey:@"fade"];
-	[layer addAnimation:scale forKey:@"scale"];
+	switch (SettingPresentationStyle) {
+		case PWWidgetPresentationStyleZoom:
+		{
+			CABasicAnimation *fade = [CABasicAnimation animationWithKeyPath:@"opacity"];
+			fade.fromValue = @0.0;
+			fade.toValue = @1.0;
+			
+			CABasicAnimation *scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
+			scale.fromValue = @1.2;
+			scale.toValue = @1.0;
+			
+			layer.opacity = 1.0;
+			layer.transform = CATransform3DMakeScale(1.0, 1.0, 1.0);
+			
+			[layer addAnimation:fade forKey:@"fade"];
+			[layer addAnimation:scale forKey:@"scale"];
+			
+		} break;
+		
+		case PWWidgetPresentationStyleFade:
+		{
+			CABasicAnimation *fade = [CABasicAnimation animationWithKeyPath:@"opacity"];
+			fade.fromValue = @0.0;
+			fade.toValue = @1.0;
+			
+			layer.opacity = 1.0;
+			
+			[layer addAnimation:fade forKey:@"fade"];
+			
+		} break;
+		
+		case PWWidgetPresentationStyleSlideUp:
+		{
+			CABasicAnimation *position = [CABasicAnimation animationWithKeyPath:@"position.y"];
+			position.fromValue = @(screenHeight + bounds.size.height / 2.0);
+			position.toValue = @(center.y);
+			
+			layer.opacity = 1.0;
+			
+			[layer addAnimation:position forKey:@"position"];
+			
+		} break;
+		
+		case PWWidgetPresentationStyleSlideDown:
+		{
+			CABasicAnimation *position = [CABasicAnimation animationWithKeyPath:@"position.y"];
+			position.fromValue = @(bounds.size.height / -2.0);
+			position.toValue = @(center.y);
+			
+			layer.opacity = 1.0;
+			
+			[layer addAnimation:position forKey:@"position"];
+			
+		} break;
+		
+		default: break;
+	}
+		
 	[CATransaction commit];
 	
 	return YES;
@@ -555,14 +607,20 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	CALayer *layer = _containerView.layer;
 	CGFloat scaleTo = .82;
 	
+	CGRect bounds = _containerView.bounds;
+	CGPoint center = _containerView.center;
+	
+	CGSize screenSize = [[UIScreen mainScreen] bounds].size;
+	CGFloat screenHeight = [PWController isLandscape] ? screenSize.width : screenSize.height;
+	
 	[CATransaction begin];
 	[CATransaction setAnimationDuration:PWAnimationDuration];
 	[CATransaction setCompletionBlock:^{
 		
+		[_widget didDismiss];
+		
 		// remove theme
 		[_widget.theme removeTheme];
-		
-		[_widget didDismiss];
 		
 		// remove container view
 		[self removeContainerView];
@@ -582,19 +640,69 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 		[_controllers removeObject:self];
 	}];
 	
-	CABasicAnimation *fade = [CABasicAnimation animationWithKeyPath:@"opacity"];
-	fade.fromValue = @1.0;
-	fade.toValue = @0.0;
+	switch (SettingPresentationStyle) {
+		
+		case PWWidgetPresentationStyleZoom:
+		{
+			CABasicAnimation *fade = [CABasicAnimation animationWithKeyPath:@"opacity"];
+			fade.fromValue = @1.0;
+			fade.toValue = @0.0;
+			
+			CABasicAnimation *scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
+			scale.fromValue = @1.0;
+			scale.toValue = @(scaleTo);
+			
+			layer.opacity = 0.0;
+			layer.transform = CATransform3DMakeScale(scaleTo, scaleTo, 1.0);
+			
+			[layer addAnimation:fade forKey:@"fade"];
+			[layer addAnimation:scale forKey:@"scale"];
+			
+		} break;
+			
+		case PWWidgetPresentationStyleFade:
+		{
+			CABasicAnimation *fade = [CABasicAnimation animationWithKeyPath:@"opacity"];
+			fade.fromValue = @1.0;
+			fade.toValue = @0.0;
+			
+			layer.opacity = 0.0;
+			
+			[layer addAnimation:fade forKey:@"fade"];
+			
+		} break;
+			
+		case PWWidgetPresentationStyleSlideUp:
+		{
+			CGFloat toY = screenHeight + bounds.size.height / 2.0;
+			
+			CABasicAnimation *position = [CABasicAnimation animationWithKeyPath:@"position.y"];
+			position.fromValue = @(center.y);
+			position.toValue = @(toY);
+			
+			layer.position = CGPointMake(center.x, toY);
+			
+			[layer addAnimation:position forKey:@"position"];
+			
+		} break;
+			
+		case PWWidgetPresentationStyleSlideDown:
+		{
+			CGFloat toY = bounds.size.height / -2.0;
+			
+			CABasicAnimation *position = [CABasicAnimation animationWithKeyPath:@"position.y"];
+			position.fromValue = @(center.y);
+			position.toValue = @(toY);
+			
+			layer.position = CGPointMake(center.x, toY);
+			
+			[layer addAnimation:position forKey:@"position"];
+			
+		} break;
+			
+		default: break;
+	}
 	
-	CABasicAnimation *scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
-	scale.fromValue = @1.0;
-	scale.toValue = @(scaleTo);
-	
-	layer.opacity = 0.0;
-	layer.transform = CATransform3DMakeScale(scaleTo, scaleTo, 1.0);
-	
-	[layer addAnimation:fade forKey:@"fade"];
-	[layer addAnimation:scale forKey:@"scale"];
 	[CATransaction commit];
 	
 	return YES;
@@ -627,12 +735,6 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	// notify widget
 	[_widget willDismiss];
 	
-	// remove theme
-	[_widget.theme removeTheme];
-	
-	// remove container view
-	[self removeContainerView];
-	
 	// perform animation
 	CALayer *layer = _miniView.layer;
 	CGFloat scaleTo = _miniView.scale * 0.8;
@@ -643,8 +745,14 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 		
 		[_widget didDismiss];
 		
+		// remove theme
+		[_widget.theme removeTheme];
+		
 		// remove mini view
 		[self removeMiniView];
+		
+		// remove container view
+		[self removeContainerView];
 		
 		// this is to force release all the event handlers that may retain widget instance (inside block)
 		// then widget will never get released
@@ -741,85 +849,59 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	// resign active state, and hide keyboard
 	[self resignActive:YES];
 	
+	// notify widget
+	[_widget willMinimize];
+	
 	[_widget.theme enterSnapshotMode];
-	[_containerView.layer displayIfNeeded];
+		
+	// ask window to create a mini view with the container view
+	PWMiniView *miniView = [self createMiniView:_containerView];
+	_containerView.userInteractionEnabled = NO;
+	miniView.scale = [PWController sharedInstance]._miniViewScale; // retrieve the scale from preference
 	
-	// this little delay is to ensure that the new changes are applied in enterSnapshotMode
-	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.05 * NSEC_PER_SEC), dispatch_get_main_queue(), ^(void){
+	// hide background view
+	[window resignKeyWindow];
+	[backgroundView hide];
 	
-		// generate image for mini view
-		UIGraphicsBeginImageContextWithOptions(_containerView.bounds.size, NO, 0);
-		[_containerView drawViewHierarchyInRect:_containerView.bounds afterScreenUpdates:NO];
-		[_widget.theme exitSnapshotMode];
+	// animate the layer
+	CALayer *layer = miniView.layer;
+	CGFloat fadeTo = .98;
+	CGFloat viewScale = miniView.scale;
+	CGPoint initialPosition = [self _miniViewCenter];
+	
+	[CATransaction begin];
+	[CATransaction setAnimationDuration:PWMaxMinimizationDuration];
+	[CATransaction setAnimationTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
+	[CATransaction setCompletionBlock:^{
 		
-		UIImage *snapshot = UIGraphicsGetImageFromCurrentImageContext();
-		UIGraphicsEndImageContext();
+		[_widget didMinimize];
 		
-		// ask window to create a mini view with the snapshot image
-		PWMiniView *miniView = [self createMiniView:snapshot];
-		miniView.scale = [PWController sharedInstance]._miniViewScale; // retrieve the scale from preference
+		_isAnimating = NO;
 		
-		// hide container view
-		_containerView.hidden = YES;
-		
-		// hide background view
-		[window resignKeyWindow];
-		[backgroundView hide];
-		
-		// animate the layer
-		CALayer *layer = miniView.layer;
-		CGFloat fadeTo = .9;
-		CGFloat viewScale = miniView.scale;
-		CGFloat initialExtraScale = .95;
-		CGPoint initialPosition = [self _miniViewCenter];
-		
-		[CATransaction begin];
-		[CATransaction setAnimationDuration:PWMaxMinimizationDuration];
-		[CATransaction setAnimationTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
-		[CATransaction setCompletionBlock:^{
-			
-			[_miniView finishAnimation];
-			
-			// perform second animation
-			[CATransaction begin];
-			[CATransaction setAnimationDuration:.15];
-			[CATransaction setAnimationTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
-			[CATransaction setCompletionBlock:^{
-				_isAnimating = NO;
-				[self.class releaseLock];
-			}];
-			
-			CABasicAnimation *scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
-			scale.fromValue = @(viewScale * initialExtraScale);
-			scale.toValue = @(viewScale);
-			
-			layer.transform = CATransform3DMakeScale(viewScale, viewScale, 1.0);
-			
-			[layer addAnimation:scale forKey:@"scale"];
-			[CATransaction commit];
-		}];
-		
-		CABasicAnimation *fade = [CABasicAnimation animationWithKeyPath:@"opacity"];
-		fade.fromValue = @1.0;
-		fade.toValue = @(fadeTo);
-		
-		CABasicAnimation *scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
-		scale.fromValue = @1.0;
-		scale.toValue = @(viewScale * initialExtraScale);
-		
-		CABasicAnimation *position = [CABasicAnimation animationWithKeyPath:@"position"];
-		position.fromValue = [NSValue valueWithCGPoint:layer.position];
-		position.toValue = [NSValue valueWithCGPoint:initialPosition];
-		
-		layer.opacity = fadeTo;
-		layer.transform = CATransform3DMakeScale(viewScale * initialExtraScale, viewScale * initialExtraScale, 1.0);
-		layer.position = initialPosition;
-		
-		[layer addAnimation:fade forKey:@"fade"];
-		[layer addAnimation:scale forKey:@"scale"];
-		[layer addAnimation:position forKey:@"position"];
-		[CATransaction commit];
-	});
+		[_miniView finishAnimation];
+		[self.class releaseLock];
+	}];
+	
+	CABasicAnimation *fade = [CABasicAnimation animationWithKeyPath:@"opacity"];
+	fade.fromValue = @1.0;
+	fade.toValue = @(fadeTo);
+	
+	CABasicAnimation *scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
+	scale.fromValue = @1.0;
+	scale.toValue = @(viewScale);
+	
+	CABasicAnimation *position = [CABasicAnimation animationWithKeyPath:@"position"];
+	position.fromValue = [NSValue valueWithCGPoint:layer.position];
+	position.toValue = [NSValue valueWithCGPoint:initialPosition];
+	
+	layer.opacity = fadeTo;
+	layer.transform = CATransform3DMakeScale(viewScale, viewScale, 1.0);
+	layer.position = initialPosition;
+	
+	[layer addAnimation:fade forKey:@"fade"];
+	[layer addAnimation:scale forKey:@"scale"];
+	[layer addAnimation:position forKey:@"position"];
+	[CATransaction commit];
 		
 	return YES;
 }
@@ -853,7 +935,11 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	//[window adjustLayout];
 	[window makeKeyAndVisible];
 	
+	// notify widget
+	[_widget willMaximize];
+	
 	[self _resizeAnimated:NO];
+	[_widget.theme exitSnapshotMode];
 	
 	_isAnimating = YES;
 	
@@ -861,7 +947,11 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	CGPoint miniViewCenter = _miniView.center;
 	
 	// show main view and container view
-	_containerView.hidden = NO;
+	[_containerView retain];
+	[_containerView removeFromSuperview];
+	[view addSubview:_containerView];
+	_containerView.userInteractionEnabled = YES;
+	[_containerView release];
 	
 	// make myself active
 	[self makeActive:NO];
@@ -881,6 +971,8 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	[CATransaction setAnimationDuration:PWMaxMinimizationDuration];
 	[CATransaction setAnimationTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
 	[CATransaction setCompletionBlock:^{
+		
+		[_widget didMaximize];
 		
 		// force main view to perform layoutSubviews
 		[_containerView setNeedsLayout];
@@ -981,7 +1073,7 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	RELEASE_VIEW(_containerView)
 }
 
-- (PWMiniView *)createMiniView:(UIImage *)snapshot {
+- (PWMiniView *)createMiniView:(UIView *)containerView {
 	
 	if (_miniView != nil) {
 		RELEASE_VIEW(_miniView);
@@ -990,12 +1082,9 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	PWController *controller = [PWController sharedInstance];
 	PWView *view = controller.mainView;
 	
-	PWContainerView *containerView = _containerView;
-	CGRect rect = containerView.frame;
-	
-	_miniView = [[PWMiniView alloc] initWithSnapshot:snapshot];
+	_miniView = [[PWMiniView alloc] initWithContainerView:containerView];
 	_miniView.clipsToBounds = YES;
-	_miniView.frame = rect;
+	_miniView.frame = containerView.frame;
 	
 	// configure gesture recognizers
 	UIPanGestureRecognizer *panRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleMiniViewPan:)];
@@ -1056,9 +1145,9 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	
 	PWController *controller = [PWController sharedInstance];
 	PWView *view = controller.mainView;
-	id<PWContentViewControllerDelegate> viewController = _widget.topViewController;
+	id<PWContentViewControllerProtocol> viewController = _widget.topViewController;
 	
-	if (_widget == nil || viewController == nil || ![viewController.class conformsToProtocol:@protocol(PWContentViewControllerDelegate)])
+	if (_widget == nil || viewController == nil || ![viewController.class conformsToProtocol:@protocol(PWContentViewControllerProtocol)])
 		return CGPointZero;
 	
 	PWWidgetOrientation orientation = [PWController currentOrientation];
@@ -1116,9 +1205,9 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	
 	PWController *controller = [PWController sharedInstance];
 	PWView *view = controller.mainView;
-	id<PWContentViewControllerDelegate> viewController = _widget.topViewController;
+	id<PWContentViewControllerProtocol> viewController = _widget.topViewController;
 	
-	if (_widget == nil || viewController == nil || ![viewController.class conformsToProtocol:@protocol(PWContentViewControllerDelegate)])
+	if (_widget == nil || viewController == nil || ![viewController.class conformsToProtocol:@protocol(PWContentViewControllerProtocol)])
 		return CGRectZero;
 	
 	PWWidgetOrientation orientation = [PWController currentOrientation];
@@ -1192,7 +1281,7 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	
 	CGFloat cornerRadius = [_widget.theme cornerRadius];
 	
-	[backgroundView setMaskRect:_containerView.frame fromRect:CGRectNull cornerRadius:cornerRadius animationType:PWBackgroundViewAnimationTypePresentation];
+	[backgroundView setMaskRect:_containerView.frame fromRect:CGRectNull cornerRadius:cornerRadius animationType:PWBackgroundViewAnimationTypePresentation presentationStyle:SettingPresentationStyle];
 }
 
 - (void)_updateBackgroundViewMaskForMaximization {
@@ -1216,7 +1305,7 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	
 	CGFloat cornerRadius = [_widget.theme cornerRadius];
 	
-	[backgroundView setMaskRect:_containerView.frame fromRect:fromRect cornerRadius:cornerRadius animationType:PWBackgroundViewAnimationTypeMaximization];
+	[backgroundView setMaskRect:_containerView.frame fromRect:fromRect cornerRadius:cornerRadius animationType:PWBackgroundViewAnimationTypeMaximization presentationStyle:SettingPresentationStyle];
 }
 
 - (void)_resizeAnimated:(BOOL)animated {
@@ -1239,7 +1328,7 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	if (CGPointEqualToPoint(currentCenter, center) && CGRectEqualToRect(currentBounds, bounds)) {
 		LOG(@"_resizeAnimated: center and rect remain unchanged");
 		if (shouldUpdateBackgroundViewMask) {
-			[backgroundView setMaskRect:_containerView.frame fromRect:CGRectNull cornerRadius:cornerRadius animationType:PWBackgroundViewAnimationTypeNone];
+			[backgroundView setMaskRect:_containerView.frame fromRect:CGRectNull cornerRadius:cornerRadius animationType:PWBackgroundViewAnimationTypeNone presentationStyle:SettingPresentationStyle];
 		}
 		return;
 	}
@@ -1252,7 +1341,7 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 		[_containerView layoutIfNeeded];
 		
 		if (shouldUpdateBackgroundViewMask) {
-			[backgroundView setMaskRect:_containerView.frame fromRect:CGRectNull cornerRadius:cornerRadius animationType:PWBackgroundViewAnimationTypeNone];
+			[backgroundView setMaskRect:_containerView.frame fromRect:CGRectNull cornerRadius:cornerRadius animationType:PWBackgroundViewAnimationTypeNone presentationStyle:SettingPresentationStyle];
 		}
 		
 	} else {
@@ -1282,7 +1371,7 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 		rect.origin.y = center.y - bounds.size.height / 2;
 		
 		if (shouldUpdateBackgroundViewMask) {
-			[backgroundView setMaskRect:rect fromRect:CGRectNull cornerRadius:cornerRadius animationType:PWBackgroundViewAnimationTypeResize];
+			[backgroundView setMaskRect:rect fromRect:CGRectNull cornerRadius:cornerRadius animationType:PWBackgroundViewAnimationTypeResize presentationStyle:SettingPresentationStyle];
 		}
 	}
 }
@@ -1412,7 +1501,7 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 				
 				CGFloat cornerRadius = [_widget.theme cornerRadius];
 				
-				[backgroundView setMaskRect:finalRect fromRect:CGRectNull cornerRadius:cornerRadius animationType:PWBackgroundViewAnimationTypeNone];
+				[backgroundView setMaskRect:finalRect fromRect:CGRectNull cornerRadius:cornerRadius animationType:PWBackgroundViewAnimationTypeNone presentationStyle:SettingPresentationStyle];
 			}
 			
 			[backgroundView show];
@@ -1490,6 +1579,8 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 			velocity = 1.0 - fabs(_miniView.center.x - midX) / midX;
 		}
 		
+		[_miniView setDragging:NO];
+		
 		[UIView animateWithDuration:PWTransitionAnimationDuration * velocity animations:^{
 			_miniView.center = center;
 		}];
@@ -1501,6 +1592,8 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 		if (state == UIGestureRecognizerStateBegan) {
 			[_miniView.superview bringSubviewToFront:_miniView];
 		}
+		
+		[_miniView setDragging:YES];
 		
 		[UIView animateWithDuration:PWTransitionAnimationDuration animations:^{
 			_miniView.center = center;

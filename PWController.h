@@ -66,6 +66,7 @@
 	CGFloat _miniViewScale;
 	
 	// Effect
+	PWWidgetPresentationStyle _presentationStyle;
 	BOOL _enabledParallax;
 	BOOL _disabledBlur;
 	BOOL _disabledMask;
@@ -102,6 +103,7 @@
 @property(nonatomic, readonly) NSArray *visibleWidgetOrder;
 @property(nonatomic, readonly) NSArray *hiddenWidgetOrder;
 @property(nonatomic, readonly) NSString *defaultThemeName;
+@property(nonatomic, readonly) PWWidgetPresentationStyle presentationStyle;
 @property(nonatomic, readonly) NSUInteger preferredSource; // 0 is iCloud, 1 is Local
 
 //////////////////////////////////////////////////////////////////////

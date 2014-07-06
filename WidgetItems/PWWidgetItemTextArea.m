@@ -15,11 +15,11 @@
 	return [PWWidgetItemTextAreaCell class];
 }
 
-- (void)textViewDidBeginEditing:(UITextView *)textView {
+- (void)textViewDidBeginEditing:(PWUITextView *)textView {
 	[self.itemViewController updateLastFirstResponder:self];
 }
 
-- (void)textViewDidEndEditing:(UITextView *)textView {
+- (void)textViewDidEndEditing:(PWUITextView *)textView {
 	
 	NSString *oldValue = [[self.value copy] autorelease];
 	NSString *value = textView.text;
@@ -32,10 +32,6 @@
 		[self.itemViewController itemValueChanged:self oldValue:oldValue];
 	}
 }
-
-@end
-
-@interface PWUITextView : UITextView
 
 @end
 

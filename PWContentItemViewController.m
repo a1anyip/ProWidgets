@@ -337,7 +337,7 @@ static NSNumberFormatter *numberFormatter = nil;
 	[_items release];
 	_items = [items mutableCopy];
 	
-	[self _updateItemsShouldFillHeight];
+	[self _updateFillHeight];
 	
 	// reload item table view, if the widget is presented
 	[self reload];
@@ -375,7 +375,7 @@ static NSNumberFormatter *numberFormatter = nil;
 	// insert the item to _items array
 	[_items insertObject:item atIndex:index];
 	
-	[self _updateItemsShouldFillHeight];
+	[self _updateFillHeight];
 	
 	// inert a row in sheet table view
 	UITableView *tableView = self.tableView;
@@ -418,7 +418,7 @@ static NSNumberFormatter *numberFormatter = nil;
 		i++;
 	}
 	
-	[self _updateItemsShouldFillHeight];
+	[self _updateFillHeight];
 	
 	UITableView *tableView = self.tableView;
 	if (animated) {
@@ -486,7 +486,7 @@ static NSNumberFormatter *numberFormatter = nil;
 	// remove the item at given index from _items array
 	[_items removeObjectAtIndex:index];
 	
-	[self _updateItemsShouldFillHeight];
+	[self _updateFillHeight];
 	
 	// inert a row in sheet table view
 	UITableView *tableView = self.tableView;
@@ -524,8 +524,6 @@ static NSNumberFormatter *numberFormatter = nil;
  **/
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-	
-	//LOG(@"====== heightForRowAtIndexPath <_fillHeight: %f>", _fillHeight);
 	
 	unsigned int row = [indexPath row];
 	PWWidgetItem *item = [self itemAtIndex:row];
@@ -676,143 +674,136 @@ static NSNumberFormatter *numberFormatter = nil;
 
 - (CGFloat)optimalContentHeightForOrientation:(PWWidgetOrientation)orientation {
 	
-	PWController *controller = [PWController sharedInstance];
-	CGFloat maxHeight = [controller availableHeightInOrientation:orientation fullscreen:self.wantsFullscreen withKeyboard:self.requiresKeyboard];
-	CGFloat navigationBarHeight = [controller heightOfNavigationBarInOrientation:orientation];
-	CGFloat availableHeight = MAX(1.0, maxHeight - navigationBarHeight);
+	// update fill height in case the orientation is changed
+	[self _updateFillHeight];
 	
-	// return the maximize height if it is set to maximize height
-	if (self.shouldMaximizeContentHeight) {
-		LOG(@"_itemsShouldFillHeight: <%@>", _itemsShouldFillHeight ? @"YES" : @"NO");
-		if (_itemsShouldFillHeight) {
-			
-			CGFloat accumulatedHeight = 0.0;
-			
-			for (PWWidgetItem *item in _items) {
-				
-				if (item.shouldFillHeight) {
-					[self _setFillHeight:availableHeight - accumulatedHeight forItem:item];
-					return availableHeight;
-				}
-				
-				CGFloat itemHeight = [item cellHeightForOrientation:orientation];
-				if (accumulatedHeight + itemHeight <= availableHeight) {
-					accumulatedHeight += itemHeight;
-				} else {
-					break;
-				}
-			}
-			[self _setFillHeight:0.0 forItem:nil];
-		}
-		
-		return availableHeight;
-	}
+	// reload the change in fill height, if any
+	[self reload];
 	
-	// parse the expression
-	CGFloat overriddenContentHeight = 0.0;
-	NSString *expression = orientation == PWWidgetOrientationPortrait ? _overrideContentHeightExpressionForPortrait : _overrideContentHeightExpressionForLandscape;
-	if (expression != nil && [expression length] > 0) {
-		
-		CGFloat normalCellHeight = [self.theme heightOfCellOfType:PWWidgetCellTypeNormal forOrientation:orientation];
-		CGFloat textAreaCellHeight = [self.theme heightOfCellOfType:PWWidgetCellTypeTextArea forOrientation:orientation];
-		
-		NSMutableString *_expression = [expression mutableCopy];
-		
-		// replace item keys
-		NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"\\[([a-zA-Z0-9]+)\\]"
-																			   options:0
-																				 error:nil];
-		[regex enumerateMatchesInString:expression
-								options:0
-								  range:NSMakeRange(0, [expression length])
-							 usingBlock:^(NSTextCheckingResult *match, NSMatchingFlags flags, BOOL *stop){
-								 if ([match numberOfRanges] == 2) {
-									 NSString *target = [expression substringWithRange:match.range];
-									 NSString *key = [expression substringWithRange:[match rangeAtIndex:1]];
-									 PWWidgetItem *item = [self itemWithKey:key];
-									 if (item != nil) {
-										 CGFloat cellHeight = [item cellHeightForOrientation:orientation];
-										 NSString *replacement = [NSString stringWithFormat:@"%f", cellHeight];
-										 LOG(@"Parsed expression (key: %@) (cell height: %f)", key, cellHeight);
-										 [_expression replaceOccurrencesOfString:target withString:replacement options:0 range:NSMakeRange(0, [_expression length])];
+	if (!self.shouldMaximizeContentHeight && !_itemsShouldFillHeight) {
+	
+		// parse the expression (overridden content height)
+		CGFloat overriddenContentHeight = 0.0;
+		NSString *expression = orientation == PWWidgetOrientationPortrait ? _overrideContentHeightExpressionForPortrait : _overrideContentHeightExpressionForLandscape;
+		if (expression != nil && [expression length] > 0) {
+			
+			CGFloat normalCellHeight = [self.theme heightOfCellOfType:PWWidgetCellTypeNormal forOrientation:orientation];
+			CGFloat textAreaCellHeight = [self.theme heightOfCellOfType:PWWidgetCellTypeTextArea forOrientation:orientation];
+			
+			NSMutableString *_expression = [expression mutableCopy];
+			
+			// replace item keys
+			NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"\\[([a-zA-Z0-9]+)\\]"
+																				   options:0
+																					 error:nil];
+			[regex enumerateMatchesInString:expression
+									options:0
+									  range:NSMakeRange(0, [expression length])
+								 usingBlock:^(NSTextCheckingResult *match, NSMatchingFlags flags, BOOL *stop){
+									 if ([match numberOfRanges] == 2) {
+										 NSString *target = [expression substringWithRange:match.range];
+										 NSString *key = [expression substringWithRange:[match rangeAtIndex:1]];
+										 PWWidgetItem *item = [self itemWithKey:key];
+										 if (item != nil) {
+											 CGFloat cellHeight = [item cellHeightForOrientation:orientation];
+											 NSString *replacement = [NSString stringWithFormat:@"%f", cellHeight];
+											 LOG(@"Parsed expression (key: %@) (cell height: %f)", key, cellHeight);
+											 [_expression replaceOccurrencesOfString:target withString:replacement options:0 range:NSMakeRange(0, [_expression length])];
+										 }
 									 }
-								 }
-							 }];
-		
-		// replace basic variabls
-		[_expression replaceOccurrencesOfString:@"normal" withString:[NSString stringWithFormat:@"%f", normalCellHeight] options:NSCaseInsensitiveSearch range:NSMakeRange(0, [_expression length])];
-		[_expression replaceOccurrencesOfString:@"textarea" withString:[NSString stringWithFormat:@"%f", textAreaCellHeight] options:NSCaseInsensitiveSearch range:NSMakeRange(0, [_expression length])];
-		
-		// solve the expression
-		char buffer[1024];
-		CalculatePerformExpression([_expression UTF8String], 100, 1, buffer);
-		NSString *resultString = [NSString stringWithCString:buffer encoding:NSASCIIStringEncoding];
-		[_expression release];
-		
-		// convert the resulting string to NSNumber
-		NSNumber *result = [numberFormatter numberFromString:resultString];
-		
-		// retrieve the number
-		CGFloat resultNumber = [result floatValue];
-		
-		// update final overridden value
-		overriddenContentHeight = MAX(0.0, resultNumber);
-	}
-	
-	if (overriddenContentHeight > 0) {
-		
-		[self _setFillHeight:0.0 forItem:nil];
-		return overriddenContentHeight;
-		
-	} else {
-		
-		CGFloat accumulatedHeight = 0.0;
-		
-		for (PWWidgetItem *item in _items) {
+								 }];
 			
-			if (item.shouldFillHeight) {
-				[self _setFillHeight:availableHeight - accumulatedHeight forItem:item];
-				return availableHeight;
-			}
+			// replace basic variabls
+			[_expression replaceOccurrencesOfString:@"normal" withString:[NSString stringWithFormat:@"%f", normalCellHeight] options:NSCaseInsensitiveSearch range:NSMakeRange(0, [_expression length])];
+			[_expression replaceOccurrencesOfString:@"textarea" withString:[NSString stringWithFormat:@"%f", textAreaCellHeight] options:NSCaseInsensitiveSearch range:NSMakeRange(0, [_expression length])];
 			
-			CGFloat itemHeight = [item cellHeightForOrientation:orientation];
-			if (accumulatedHeight + itemHeight <= availableHeight) {
-				accumulatedHeight += itemHeight;
-			} else {
-				break;
+			// solve the expression
+			char buffer[1024];
+			CalculatePerformExpression([_expression UTF8String], 100, 1, buffer);
+			NSString *resultString = [NSString stringWithCString:buffer encoding:NSASCIIStringEncoding];
+			[_expression release];
+			
+			// convert the resulting string to NSNumber
+			NSNumber *result = [numberFormatter numberFromString:resultString];
+			
+			// retrieve the number
+			CGFloat resultNumber = [result floatValue];
+			
+			// update final overridden value
+			overriddenContentHeight = MAX(0.0, resultNumber);
+			
+			if (overriddenContentHeight > 0.0) {
+				return overriddenContentHeight;
 			}
 		}
-		
-		// to prevent any unexpected behaviour
-		if (accumulatedHeight == 0.0)
-			accumulatedHeight = availableHeight;
-		
+	}
+	
+	CGFloat availableHeight = [self _calculateAvailableHeightForOrientation:orientation];
+	CGFloat accumulatedHeight = MIN([self _calculateAccumulatedHeightForOrientation:orientation], availableHeight);
+	
+	if (self.shouldMaximizeContentHeight || _itemsShouldFillHeight) {
+		return availableHeight;
+	} else {
 		return accumulatedHeight;
 	}
 }
 
-- (void)_setFillHeight:(CGFloat)fillHeight forItem:(PWWidgetItem *)item {
-	LOG(@"_setFillHeight: %f <item: %@>", fillHeight, item);
+- (void)_setFillHeight:(CGFloat)fillHeight {
+	LOG(@"_setFillHeight: %f", fillHeight);
 	_fillHeight = fillHeight;
-	NSUInteger index = [self indexOfItem:item];
-	if (index != NSNotFound) {
-		NSIndexPath *indexPath = [NSIndexPath indexPathForRow:index inSection:0];
-		if (indexPath != nil) {
-			[self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
+}
+
+- (void)_updateFillHeight {
+	
+	LOG(@"_updateFillHeight");
+	
+	PWWidgetOrientation orientation = [PWController currentOrientation];
+	CGFloat availableHeight = [self _calculateAvailableHeightForOrientation:orientation];
+	CGFloat accumulatedHeight = MIN([self _calculateAccumulatedHeightForOrientation:orientation], availableHeight);
+	
+	_itemsShouldFillHeight = NO;
+	
+	for (PWWidgetItem *item in _items) {
+		if (item.shouldFillHeight) {
+			_itemsShouldFillHeight = YES;
+			break;
 		}
+	}
+	
+	if (_itemsShouldFillHeight) {
+		[self _setFillHeight:MAX(0.0, availableHeight - accumulatedHeight)];
+	} else {
+		[self _setFillHeight:0.0];
 	}
 }
 
-- (void)_updateItemsShouldFillHeight {
-	LOG(@"_updateItemsShouldFillHeight");
-	_itemsShouldFillHeight = NO;
+- (CGFloat)_calculateAccumulatedHeightForOrientation:(PWWidgetOrientation)orientation {
+	
+	CGFloat accumulatedHeight = 0.0;
+	
 	for (PWWidgetItem *item in _items) {
-		LOG(@"item.shouldFillHeight: <%@>", item.shouldFillHeight ? @"YES" : @"NO");
-		if (item.shouldFillHeight) {
-			_itemsShouldFillHeight = YES;
-			return;
+		
+		// skip the item that should fill height
+		if (item.shouldFillHeight) continue;
+		
+		CGFloat itemHeight = [item cellHeightForOrientation:orientation];
+		if (accumulatedHeight + itemHeight) {
+			accumulatedHeight += itemHeight;
+		} else {
+			break;
 		}
 	}
+	
+	return accumulatedHeight;
+}
+
+- (CGFloat)_calculateAvailableHeightForOrientation:(PWWidgetOrientation)orientation {
+	
+	PWController *controller = [PWController sharedInstance];
+	CGFloat maxHeight = [controller availableHeightInOrientation:orientation fullscreen:self.wantsFullscreen withKeyboard:self.requiresKeyboard];
+	CGFloat navigationBarHeight = [controller heightOfNavigationBarInOrientation:orientation];
+	
+	return MAX(1.0, maxHeight - navigationBarHeight);
 }
 
 - (void)_willBePresentedInNavigationController:(UINavigationController *)navigationController {

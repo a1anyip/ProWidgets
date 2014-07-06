@@ -159,7 +159,7 @@ static inline void updateButton(NSString *widgetName) {
 	NSInteger style = [objc_getClass("_UILegibilitySettingsProvider") styleForContentColor:color];
 	NSInteger vibrantStyle = style == 2 ? 1 : 0;
 	*/
-	_SBFVibrantSettings *settings = [objc_getClass("_SBFVibrantSettings") vibrantSettingsWithReferenceColor:nil legibilitySettings:nil];
+	//_SBFVibrantSettings *settings = [objc_getClass("_SBFVibrantSettings") vibrantSettingsWithReferenceColor:nil legibilitySettings:nil];
 	/*
 	Ivar settingsStyle = class_getInstanceVariable(objc_getClass("_SBFVibrantSettings"), "_style");
 	if (settingsStyle) {
@@ -167,6 +167,7 @@ static inline void updateButton(NSString *widgetName) {
 		*settingsStylePointer = vibrantStyle;
 	}*/
 	
+    /*
 	UIView *colorCompositingView = [settings colorCompositingViewWithFrame:button.bounds];
 	[button addSubview:colorCompositingView];
 	
@@ -174,7 +175,7 @@ static inline void updateButton(NSString *widgetName) {
 	[button addSubview:darkTintView];
 	
 	UIView *lightTintView = [settings lightTintViewWithFrame:button.bounds];
-	[button addSubview:lightTintView];
+	[button addSubview:lightTintView];*/
 }
 
 %hook SBLockScreenBounceAnimator

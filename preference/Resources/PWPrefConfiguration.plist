@@ -76,6 +76,36 @@
 		</dict>
 		<dict>
 			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>defaults</key>
+			<string>cc.tweak.prowidgets</string>
+			<key>PostNotification</key>
+			<string>cc.tweak.prowidgets.preferencechanged</string>
+			<key>key</key>
+			<string>presentationStyle</string>
+			<key>label</key>
+			<string>PresentationStyle</string>
+			<key>default</key>
+			<integer>0</integer>
+			<key>detail</key>
+			<string>PSListItemsController</string>
+			<key>validTitles</key>
+			<array>
+				<string>Zoom</string>
+				<string>Fade</string>
+				<string>SlideUp</string>
+				<string>SlideDown</string>
+			</array>
+			<key>validValues</key>
+			<array>
+				<integer>0</integer>
+				<integer>1</integer>
+				<integer>2</integer>
+				<integer>3</integer>
+			</array>
+		</dict>
+		<dict>
+			<key>cell</key>
 			<string>PSSwitchCell</string>
 			<key>defaults</key>
 			<string>cc.tweak.prowidgets</string>
@@ -156,21 +186,17 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>footerText</key>
-			<string>TestModeFooterText</string>
+			<string>ExperimentalSettingsFooterText</string>
 		</dict>
 		<dict>
 			<key>cell</key>
-			<string>PSSwitchCell</string>
-			<key>defaults</key>
-			<string>cc.tweak.prowidgets</string>
-			<key>PostNotification</key>
-			<string>cc.tweak.prowidgets.preferencechanged</string>
-			<key>key</key>
-			<string>testMode</string>
+			<string>PSLinkListCell</string>
 			<key>label</key>
-			<string>TestMode</string>
-			<key>default</key>
-			<false/>
+			<string>ExperimentalSettings</string>
+			<key>action</key>
+			<string>showExperimentalSettings</string>
+			<key>detail</key>
+			<string>PWPrefExperimentalSettings</string>
 		</dict>
 		<dict>
 			<key>cell</key>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>title</key>
+	<string>Experimental Settings</string>
+	<key>items</key>
+	<array>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Widget Capabilities (iPhone)</string>
+			<key>footerText</key>
+			<string>These settings are originally designed for iPad, and so this section is for iPhone only. They take no effect on iPad (all enabled anyway).</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>defaults</key>
+			<string>cc.tweak.prowidgets</string>
+			<key>PostNotification</key>
+			<string>cc.tweak.prowidgets.preferencechanged</string>
+			<key>key</key>
+			<string>exDragging</string>
+			<key>label</key>
+			<string>Dragging</string>
+			<key>default</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>defaults</key>
+			<string>cc.tweak.prowidgets</string>
+			<key>PostNotification</key>
+			<string>cc.tweak.prowidgets.preferencechanged</string>
+			<key>key</key>
+			<string>exMultipleWidgets</string>
+			<key>label</key>
+			<string>Multiple Widgets</string>
+			<key>default</key>
+			<false/>
+		</dict>
+	</array>
+</dict>
+</plist>

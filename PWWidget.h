@@ -10,7 +10,7 @@
 #import "header.h"
 #import "PWBase.h"
 #import "PWAlertView.h"
-#import "PWContentViewControllerDelegate.h"
+#import "PWContentViewControllerProtocol.h"
 #import "PWWidgetNavigationController.h"
 
 #define TEXT(class,key) [class localizedStringForKey:key value:nil table:nil]
@@ -66,7 +66,7 @@
 @property(nonatomic, copy) NSString *defaultItemViewControllerPlist;
 @property(nonatomic, readonly) PWContentItemViewController *defaultItemViewController;
 
-@property(nonatomic, readonly) id<PWContentViewControllerDelegate> topViewController;
+@property(nonatomic, readonly) id<PWContentViewControllerProtocol> topViewController;
 
 /**
  *  Retrieve the presented instance of the widget.
@@ -243,7 +243,7 @@
  *  @param animated       If YES, the container view will be resized using an animation
  *  @param viewController The content view controller to be asked to provide size information, normally the top view controller in navigation stack
  */
-- (void)resizeWidgetAnimated:(BOOL)animated forContentViewController:(id<PWContentViewControllerDelegate>)viewController;
+- (void)resizeWidgetAnimated:(BOOL)animated forContentViewController:(id<PWContentViewControllerProtocol>)viewController;
 
 /**
  *  Override this method to perform custom tasks when the widget is ready to be presented.
@@ -268,6 +268,12 @@
  *  The default implementation does nothing.
  */
 - (void)didDismiss;
+
+- (void)willMinimize;
+- (void)didMinimize;
+
+- (void)willMaximize;
+- (void)didMaximize;
 
 - (void)keyboardWillShow:(CGFloat)height;
 - (void)keyboardWillHide;

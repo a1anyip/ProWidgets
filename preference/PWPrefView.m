@@ -11,6 +11,8 @@ extern NSBundle *bundle;
 - (instancetype)init {
 	if ((self = [super initWithFrame:CGRectZero style:UITableViewStyleGrouped])) {
 		
+		CONFIGURE_TABLEVIEW_INSET(self);
+		
 		// add logo in header
 		UIImage *logo = IMAGE(@"logo");
 		_headerView = [[UIImageView alloc] initWithImage:logo];
@@ -39,8 +41,8 @@ extern NSBundle *bundle;
 	CGSize size = self.bounds.size;
 	CGFloat padding = 15.0;
 	
-	_headerView.frame = CGRectMake(0, 0, 320.0, 90.0);
-	_copyright.frame = CGRectMake(padding, _copyright.frame.origin.y, size.width - padding * 2, 20.0);
+	_headerView.frame = CGRectMake(TABLEVIEW_INSET, 0, _headerView.image.size.width, 90.0);
+	_copyright.frame = CGRectMake(TABLEVIEW_INSET + padding, _copyright.frame.origin.y, size.width - TABLEVIEW_INSET * 2 - padding * 2, 20.0);
 }
 
 - (void)trigger {

@@ -32,7 +32,7 @@
 		// create overlay view
 		_overlayView = [UIView new];
 		_overlayView.userInteractionEnabled = YES;
-		_overlayView.backgroundColor = [UIColor colorWithWhite:0.0 alpha:.3];
+		_overlayView.backgroundColor = [UIColor colorWithWhite:0.0 alpha:.2];
 		_overlayView.alpha = 0.0;
 		[self addSubview:_overlayView];
 	}
@@ -65,13 +65,13 @@
 }
 
 - (void)showOverlay {
-	[UIView animateWithDuration:.1 animations:^{
+	[UIView animateWithDuration:.15 animations:^{
 		_overlayView.alpha = 1.0;
 	}];
 }
 
 - (void)hideOverlay {
-	[UIView animateWithDuration:.1 animations:^{
+	[UIView animateWithDuration:.15 animations:^{
 		_overlayView.alpha = 0.0;
 	}];
 }

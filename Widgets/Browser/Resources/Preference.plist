@@ -12,9 +12,7 @@
 			<key>label</key>
 			<string>General</string>
 			<key>footerText</key>
-			<string>Bookmarks will be retrieved from this browser.
-
-Chrome will be supported in the future updates.</string>
+			<string>Bookmarks will be retrieved from the default browser.</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -22,7 +20,7 @@ Chrome will be supported in the future updates.</string>
 			<key>defaults</key>
 			<string>cc.tweak.prowidgets.widget.browser</string>
 			<key>key</key>
-			<string>browser</string>
+			<string>defaultBrowser</string>
 			<key>label</key>
 			<string>Default Browser</string>
 			<key>default</key>
@@ -32,19 +30,13 @@ Chrome will be supported in the future updates.</string>
 			<key>validTitles</key>
 			<array>
 				<string>Safari</string>
+				<string>Chrome</string>
 			</array>
 			<key>validValues</key>
 			<array>
 				<integer>0</integer>
+				<integer>1</integer>
 			</array>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSGroupCell</string>
-			<key>label</key>
-			<string>Integration</string>
-			<key>footerText</key>
-			<string>Redirect web links from various sources to Browser widget.</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -54,9 +46,45 @@ Chrome will be supported in the future updates.</string>
 			<key>PostNotification</key>
 			<string>cc.tweak.prowidgets.widget.browser.preferencechanged</string>
 			<key>key</key>
-			<string>enabledOpenInApp</string>
+			<string>hideHTTP</string>
 			<key>label</key>
-			<string>Open in App</string>
+			<string>Hide "http://"</string>
+			<key>default</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Integration</string>
+			<key>footerText</key>
+			<string>Redirect web links that will be opened in a specific browser from various sources to Browser widget.</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>defaults</key>
+			<string>cc.tweak.prowidgets.widget.browser</string>
+			<key>PostNotification</key>
+			<string>cc.tweak.prowidgets.widget.browser.preferencechanged</string>
+			<key>key</key>
+			<string>enabledOpenInAppSafari</string>
+			<key>label</key>
+			<string>Open in App (Safari)</string>
+			<key>default</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>defaults</key>
+			<string>cc.tweak.prowidgets.widget.browser</string>
+			<key>PostNotification</key>
+			<string>cc.tweak.prowidgets.widget.browser.preferencechanged</string>
+			<key>key</key>
+			<string>enabledOpenInAppChrome</string>
+			<key>label</key>
+			<string>Open in App (Chrome)</string>
 			<key>default</key>
 			<true/>
 		</dict>
@@ -77,8 +105,6 @@ Chrome will be supported in the future updates.</string>
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
-			<key>label</key>
-			<string>Modification</string>
 			<key>footerText</key>
 			<string>Replace all "Add to Reading List" buttons with "Bookmark" function</string>
 		</dict>

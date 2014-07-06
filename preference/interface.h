@@ -69,6 +69,12 @@
 
 @end
 
+@interface UITableView ()
+
+- (void)_setSectionContentInset:(UIEdgeInsets)inset;
+
+@end
+
 @interface UIImage ()
 
 + (UIImage *)imageNamed:(NSString *)name inBundle:(NSBundle *)bundle;

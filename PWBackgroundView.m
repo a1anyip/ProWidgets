@@ -68,9 +68,9 @@
 	_finalPathCount = 0;
 }
 
-- (void)setMaskRect:(CGRect)rect fromRect:(CGRect)fromRect cornerRadius:(CGFloat)cornerRadius animationType:(PWBackgroundViewAnimationType)animationType {
+- (void)setMaskRect:(CGRect)rect fromRect:(CGRect)fromRect cornerRadius:(CGFloat)cornerRadius animationType:(PWBackgroundViewAnimationType)animationType presentationStyle:(PWWidgetPresentationStyle)presentationStyle {
 	
-	LOG(@"setMaskRect <rect: %@> <fromRect: %@> <animationType: %d>", NSStringFromCGRect(rect), NSStringFromCGRect(fromRect), (int)animationType);
+	LOG(@"setMaskRect <rect: %@> <fromRect: %@> <animationType: %d> <presentationStyle: %d>", NSStringFromCGRect(rect), NSStringFromCGRect(fromRect), (int)animationType, presentationStyle);
 	
 	// to ensure the mask is created
 	[self createMask];
@@ -98,14 +98,47 @@
 		
 		if (animationType == PWBackgroundViewAnimationTypePresentation) {
 			
-			// from rect
-			CGFloat scale = 1.2;
+			CGSize screenSize = [[UIScreen mainScreen] bounds].size;
+			CGFloat screenHeight = [PWController isLandscape] ? screenSize.width : screenSize.height;
 			
-			fromRect = rect;
-			fromRect.size.width *= scale;
-			fromRect.size.height *= scale;
-			fromRect.origin.x -= (fromRect.size.width - rect.size.width) / 2;
-			fromRect.origin.y -= (fromRect.size.height - rect.size.height) / 2;
+			switch (presentationStyle) {
+				
+				case PWWidgetPresentationStyleZoom:
+				{
+					// from rect
+					CGFloat scale = 1.2;
+					
+					fromRect = rect;
+					fromRect.size.width *= scale;
+					fromRect.size.height *= scale;
+					fromRect.origin.x -= (fromRect.size.width - rect.size.width) / 2;
+					fromRect.origin.y -= (fromRect.size.height - rect.size.height) / 2;
+					
+				} break;
+				
+				case PWWidgetPresentationStyleFade:
+				{
+					// rect unchanged
+					fromRect = rect;
+					
+				} break;
+					
+				case PWWidgetPresentationStyleSlideUp:
+				{
+					fromRect = rect;
+					fromRect.origin.y = screenHeight;
+					
+				} break;
+				
+				case PWWidgetPresentationStyleSlideDown:
+				{
+					fromRect = rect;
+					fromRect.origin.y = -fromRect.size.height;
+					
+				} break;
+				
+				default: break;
+			}
 		}
 		
 		fromRect.origin.x += PWSheetMotionEffectDistance; // correct the extra distance due to motion effect

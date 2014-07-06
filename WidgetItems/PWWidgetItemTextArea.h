@@ -14,6 +14,10 @@
 
 @end
 
+@interface PWUITextView : UITextView
+
+@end
+
 @interface PWWidgetItemTextAreaCell : PWWidgetItemCell {
 	
 	UITextView *_textView;

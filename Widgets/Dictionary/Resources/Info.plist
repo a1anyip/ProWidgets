@@ -18,5 +18,7 @@
 	<string>icon.png</string>
 	<key>PWInfoPreferenceBundle</key>
 	<string>PWWidgetDictionary</string>
+	<key>PWInfoPreferenceDefaults</key>
+	<string>cc.tweak.prowidgets.widget.dictionary</string>
 </dict>
 </plist>

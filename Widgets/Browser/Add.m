@@ -17,7 +17,7 @@
 - (void)load {
 	
 	self.actionButtonText = @"Save";
-		
+	
 	self.shouldAutoConfigureStandardButtons = NO;
 	self.wantsFullscreen = YES;
 	

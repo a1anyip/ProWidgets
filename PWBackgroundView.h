@@ -30,6 +30,6 @@ typedef enum {
 - (void)hide;
 
 - (void)clearMask;
-- (void)setMaskRect:(CGRect)rect fromRect:(CGRect)rect cornerRadius:(CGFloat)cornerRadius animationType:(PWBackgroundViewAnimationType)animationType;
+- (void)setMaskRect:(CGRect)rect fromRect:(CGRect)rect cornerRadius:(CGFloat)cornerRadius animationType:(PWBackgroundViewAnimationType)animationType presentationStyle:(PWWidgetPresentationStyle)presentationType;
 
 @end

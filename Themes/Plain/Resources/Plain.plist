@@ -12,9 +12,23 @@
 	Documentation and Tutorial at http://prowidgets.net.
 
 	-->
+	
+	<!-- Boolean values -->
+	
+	<key>wantsDarkKeyboard</key>
+	<false/>
 
 	<!-- Image name values
-	     Specify the file name with extension in values (@2x can be omitted)
+	
+	     Specify the file name with extension in "portrait" and "landscape" values (@2x can be omitted)
+	     Leave a value empty if you don't need that
+	
+	     Cap inset value format:
+	     <string>top,left,bottom,right</string>
+	
+	     Example:
+	     <key>portraitCapInsets</key>
+	     <string>2.0,1.0,2.0,1.0</string>
 	-->
 
 	<key>sheetBackgroundImage</key>
@@ -22,6 +36,10 @@
 		<key>portrait</key>
 		<string></string>
 		<key>landscape</key>
+		<string></string>
+		<key>portraitCapInsets</key>
+		<string></string>
+		<key>landscapeCapInsets</key>
 		<string></string>
 	</dict>
 
@@ -31,6 +49,10 @@
 		<string></string>
 		<key>landscape</key>
 		<string></string>
+		<key>portraitCapInsets</key>
+		<string></string>
+		<key>landscapeCapInsets</key>
+		<string></string>
 	</dict>
 
 	<key>cellBackgroundImage</key>
@@ -39,6 +61,10 @@
 		<string></string>
 		<key>landscape</key>
 		<string></string>
+		<key>portraitCapInsets</key>
+		<string></string>
+		<key>landscapeCapInsets</key>
+		<string></string>
 	</dict>
 
 	<key>cellSelectedBackgroundImage</key>
@@ -46,6 +72,10 @@
 		<key>portrait</key>
 		<string></string>
 		<key>landscape</key>
+		<string></string>
+		<key>portraitCapInsets</key>
+		<string></string>
+		<key>landscapeCapInsets</key>
 		<string></string>
 	</dict>
 	
@@ -65,6 +95,12 @@
 	     And all color names listed in the page, https://developer.apple.com/library/ios/documentation/uikit/reference/UIColor_Class/Reference/Reference.html
 	     (e.g. black, clear, lightText)
 	-->
+	
+	<key>tintColor</key>
+	<string>#000</string>
+	
+	<key>sheetForegroundColor</key>
+	<string>#000</string>
 
 	<key>sheetBackgroundColor</key>
 	<string>#FFF</string>
@@ -77,9 +113,9 @@
 	
 	<key>navigationButtonTextColor</key>
 	<string>#333</string>
-
-	<key>cellTintColor</key>
-	<string>#000</string>
+	
+	<key>cellSeparatorColor</key>
+	<string>#999</string>
 
 	<key>cellBackgroundColor</key>
 	<string>#FFF</string>
@@ -92,6 +128,12 @@
 
 	<key>cellButtonTextColor</key>
 	<string>#000</string>
+	
+	<key>cellInputTextColor</key>
+	<string>#333</string>
+	
+	<key>cellInputPlaceholderTextColor</key>
+	<string>#999</string>
 
 	<key>cellPlainTextColor</key>
 	<string>#CCC</string>
@@ -107,11 +149,20 @@
 
 	<key>cellSelectedButtonTextColor</key>
 	<string>#000</string>
+	
+	<key>cellHeaderFooterViewBackgroundColor</key>
+	<string>#DDD</string>
+	
+	<key>cellHeaderFooterViewTitleTextColor</key>
+	<string>#666</string>
 
-	<key>cellSwitchOnColor</key>
+	<key>switchThumbColor</key>
+	<string>#FFF</string>
+
+	<key>switchOnColor</key>
 	<string>#CCC</string>
 
-	<key>cellSwitchOffColor</key>
+	<key>switchOffColor</key>
 	<string>#CCC</string>
 
 	<!-- Numerical values -->
@@ -127,6 +178,13 @@
 			<real>44.0</real>
 			<key>textarea</key>
 			<real>132.0</real>
+		</dict>
+		<key>landscape</key>
+		<dict>
+			<key>normal</key>
+			<real>36.0</real>
+			<key>textarea</key>
+			<real>108.0</real>
 		</dict>
 	</dict>
 </dict>

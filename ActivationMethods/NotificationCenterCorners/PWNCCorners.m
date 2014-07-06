@@ -231,6 +231,24 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 
 %end
 
+%hook SBNotificationCenterController
+
+// only for iOS 7.1 (tapping the grabber will ignore the buttons and dismiss the NC)
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
+	
+	CGPoint leftButtonLocation = [gestureRecognizer locationInView:leftButton];
+	CGPoint rightButtonLocation = [gestureRecognizer locationInView:rightButton];
+	
+	if ((!leftButton.hidden && CGRectContainsPoint(leftButton.bounds, leftButtonLocation)) ||
+		(!rightButton.hidden && CGRectContainsPoint(rightButton.bounds, rightButtonLocation))) {
+		return NO;
+	} else {
+		return %orig;
+	}
+}
+
+%end
+
 __attribute__((constructor))
 static inline void init() {
 	// add observer to reload preference

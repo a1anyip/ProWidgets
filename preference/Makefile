@@ -15,6 +15,7 @@ PREF += PWPrefActivationView.m
 PREF += PWPrefActivationPreference.m
 
 PREF += PWPrefConfiguration.m
+PREF += PWPrefExperimentalSettings.m
 
 PREF += PWPrefPageViewController.m
 PREF += PWPrefListController.m

@@ -37,6 +37,11 @@ extern char PWWidgetRemindersTableViewCellReminderKey;
 	_noLabel.frame = self.view.bounds;
 	_noLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	[self.view addSubview:_noLabel];
+	
+	[self setActionEventBlockHandler:^(id object) {
+		NSURL *url = [NSURL URLWithString:@"x-apple-reminder://"];
+		[[UIApplication sharedApplication] openURL:url];
+	}];
 }
 
 - (NSString *)title {
@@ -193,8 +198,6 @@ extern char PWWidgetRemindersTableViewCellReminderKey;
 			
 			[_reminders release];
 			_reminders = [reminders mutableCopy];
-			
-			LOG(@"Reminder list: %@", reminders);
 			
 			dispatch_sync(dispatch_get_main_queue(), ^{
 				// reload table view

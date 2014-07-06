@@ -153,7 +153,7 @@ typedef enum {
 
 - (void)closeButtonPressed {
 	if (_state != TimerStateStopped) {
-		PWAlertView *alertView = [[PWAlertView alloc] initWithTitle:@"Timer is started" message:@"Do you want to cancel the timer or just close the widget?" buttonTitle:@"Cancel" cancelButtonTitle:@"Close" defaultValue:nil style:UIAlertViewStyleDefault completion:^(BOOL cancelled, NSString *firstValue, NSString *secondValue) {
+		PWAlertView *alertView = [[PWAlertView alloc] initWithTitle:@"Timer is started" message:@"Do you want to stop the timer or just close the widget?" buttonTitle:@"Stop" cancelButtonTitle:@"Close" defaultValue:nil style:UIAlertViewStyleDefault completion:^(BOOL cancelled, NSString *firstValue, NSString *secondValue) {
 			if (!cancelled) {
 				[self cancel];
 			}

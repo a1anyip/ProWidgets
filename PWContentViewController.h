@@ -8,9 +8,9 @@
 //
 
 #import "header.h"
-#import "PWContentViewControllerDelegate.h"
+#import "PWContentViewControllerProtocol.h"
 
-@interface PWContentViewController : UIViewController<PWContentViewControllerDelegate> {
+@interface PWContentViewController : UIViewController<PWContentViewControllerProtocol> {
 	
 	PWWidget *_widget;
 	

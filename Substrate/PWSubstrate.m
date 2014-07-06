@@ -37,6 +37,19 @@ static void handleException(NSException *exception) {
 
 %group SpringBoard
 
+%hook UITextEffectsWindow
+
+// this is to fix the too low window level (10.0) for web views
+- (void)setWindowLevel:(CGFloat)windowLevel {
+	if ([PWWidgetController isPresentingMaximizedWidget]) {
+		%orig(2100.0);
+	} else {
+		%orig;
+	}
+}
+
+%end
+
 %hook SBBacklightController
 
 - (void)_lockScreenDimTimerFired {
@@ -157,9 +170,9 @@ static void handleException(NSException *exception) {
 	return %orig;
 }
 
-- (void)applicationOpenURL:(NSURL *)url withApplication:(id)application sender:(id)sender publicURLsOnly:(BOOL)only animating:(BOOL)animating needsPermission:(BOOL)permission additionalActivationFlags:(id)flags activationHandler:(id)handler {
-	
-	if (IS_PROWIDGETS(url)) {
+static inline BOOL handleSBOpenURL(NSURL *url) {
+    
+    if (IS_PROWIDGETS(url)) {
 		
 		NSString *callURL = [url absoluteString];
 		
@@ -187,7 +200,7 @@ static void handleException(NSException *exception) {
 																options:0
 																  range:NSMakeRange(0, [callURL length])];
 				
-				if (match == nil) return;
+				if (match == nil) return YES;
 				
 				NSString *installType = nil;
 				NSString *installURL = nil;
@@ -213,11 +226,32 @@ static void handleException(NSException *exception) {
 				}
 			}
 		}
+        
+        return YES;
+        
 	} else {
+        
 		// minimize all controllers when a URL is being opened
 		[PWWidgetController minimizeAllControllers];
-		%orig;
-	}
+        
+        return NO;
+    }
+}
+
+// 7.0
+//- (void)_applicationOpenURL:(NSURL *)url withApplication:(id)application sender:(id)sender publicURLsOnly:(BOOL)only animating:(BOOL)animating additionalActivationFlags:(id)flags activationHandler:(id)handler {
+- (void)_openURLCore:(NSURL *)url display:(id)display animating:(BOOL)animating sender:(id)sender additionalActivationFlags:(id)flags activationHandler:(id)handler {
+    if (!handleSBOpenURL(url)) {
+        %orig;
+    }
+}
+
+// 7.1
+//- (void)_applicationOpenURL:(NSURL *)url withApplication:(id)application sender:(id)sender publicURLsOnly:(BOOL)only animating:(BOOL)animating activationContext:(id)context activationHandler:(id)handler {
+- (void)_openURLCore:(NSURL *)url display:(id)display animating:(BOOL)animating sender:(id)sender activationContext:(id)context activationHandler:(id)handler {
+    if (!handleSBOpenURL(url)) {
+        %orig;
+    }
 }
 
 %end
@@ -421,9 +455,21 @@ static char PWPreparedWidgetInfoKey;
 %end
 
 %end
+/*
+CFTypeRef SecTaskCopyValueForEntitlement(void *task, CFStringRef entitlement, CFErrorRef *error);
 
+static CFTypeRef (*orig_SecTaskCopyValueForEntitlement)(void *task, CFStringRef entitlement, CFErrorRef *error);
+
+static CFTypeRef replaced_SecTaskCopyValueForEntitlement(void *task, CFStringRef entitlement, CFErrorRef *error) {
+    NSLog(@"SecTaskCopyValueForEntitlement: %@", (NSString *)entitlement);
+    return orig_SecTaskCopyValueForEntitlement(task, entitlement, error);
+}
+*/
 static inline __attribute__((constructor)) void init() {
 	@autoreleasepool {
+        
+        //MSHookFunction((void **)SecTaskCopyValueForEntitlement, replaced_SecTaskCopyValueForEntitlement, (void **)*orig_SecTaskCopyValueForEntitlement);
+        
 		NSSetUncaughtExceptionHandler(&handleException);
 		if (objc_getClass("SpringBoard") != nil) {
 			%init(SpringBoard);

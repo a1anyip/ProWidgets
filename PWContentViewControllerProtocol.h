@@ -9,7 +9,7 @@
 
 #import "header.h"
 
-@protocol PWContentViewControllerDelegate <NSObject>
+@protocol PWContentViewControllerProtocol <NSObject>
 
 @required
 - (BOOL)shouldMaximizeContentHeight;

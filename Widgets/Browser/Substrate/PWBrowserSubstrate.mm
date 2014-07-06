@@ -8,12 +8,14 @@
 //
 
 #import "header.h"
+#import "function.h"
 #import "interface.h"
 #import "PWController.h"
 #import "PWWidgetController.h"
 #import <objcipc/IPC.h>
 
 #define PREF_PATH @"/var/mobile/Library/Preferences/cc.tweak.prowidgets.widget.browser.plist"
+#define SCHEME_ENABLED(scheme) ((enabledOpenInAppSafari && [scheme hasPrefix:@"http"]) || (enabledOpenInAppChrome && [scheme hasPrefix:@"googlechrome"]))
 
 @interface UIWebClip : NSObject
 
@@ -27,13 +29,14 @@
 
 @end
 
-static BOOL enabledOpenInApp = NO;
+static BOOL enabledOpenInAppSafari = NO;
+static BOOL enabledOpenInAppChrome = NO;
 static BOOL enabledOpenFromIcon = NO;
 static BOOL enabledAddToBookmark = NO;
 
-static inline BOOL openBrowserWithURL(NSString *url, NSString *from) {
-	if (url == nil) return NO;
-	NSDictionary *userInfo = @{ @"from": @"app", @"url": url };
+static inline BOOL openBrowserWithURL(NSURL *url, NSString *from) {
+	if (url == nil || from == nil) return NO;
+	NSDictionary *userInfo = @{ @"from": from, @"url": url };
 	return [objc_getClass("PWWidgetController") presentWidgetNamed:@"Browser" userInfo:userInfo];
 }
 
@@ -50,6 +53,21 @@ static inline NSString *ReplaceReadingListTitle(NSString *title) {
 
 %group App
 
+%hook UIApplication
+
+- (BOOL)openURL:(NSURL *)url {
+	
+	BOOL result = %orig;
+	
+	if (SCHEME_ENABLED(url.scheme)) {
+		return YES;
+	} else {
+		return result;
+	}
+}
+
+%end
+
 %hook UIActionSheet
 
 - (void)addButtonWithTitle:(NSString *)title {
@@ -58,24 +76,45 @@ static inline NSString *ReplaceReadingListTitle(NSString *title) {
 
 %end
 
+static inline BOOL handleAddReadingListItem(NSURL *url, NSString *title) {
+	
+	LOG(@"handleAddReadingListItem: %@", [url absoluteString]);
+	
+	if (enabledAddToBookmark) {
+		
+		if (url != nil) {
+			NSDictionary *userInfo = @{
+									   @"from": @"addBookmark",
+									   @"title": (title == nil ? @"" : title),
+									   @"url": url
+									   };
+			PWPresentWidget(@"Browser", userInfo);
+		}
+		
+		return YES;
+		
+	} else {
+		
+		return NO;
+	}
+}
+
+// for public use
 %hook SSReadingList
 
-- (void)_addReadingListItemWithURL:(NSURL *)url title:(NSString *)title previewText:(NSString *)previewText {
-	if (enabledAddToBookmark) {
-		NSString *urlString = [url absoluteString];
-		if (urlString != nil) {
-			dispatch_sync(dispatch_get_main_queue(), ^{
-				NSDictionary *userInfo = @{ @"from": @"addBookmark", @"title": (title == nil ? @"" : title), @"url": urlString };
-				if (objc_getClass("SpringBoard") != nil) {
-					[objc_getClass("PWWidgetController") presentWidgetNamed:@"Browser" userInfo:userInfo];
-				} else {
-					[objc_getClass("OBJCIPC") sendMessageToSpringBoardWithMessageName:@"prowidgets.presentwidget" dictionary:@{ @"name": @"Browser", @"userInfo":userInfo } replyHandler:nil];
-				}
-			});
-		}
-	} else {
-		%orig;
-	}
+- (BOOL)addReadingListItemWithURL:(NSURL *)url title:(NSString *)title previewText:(id)arg3 error:(id *)arg4 {
+	if (handleAddReadingListItem(url, title)) return YES;
+	else return %orig;
+}
+
+%end
+
+// for internal use
+%hook WBReadingList
+
+- (BOOL)addReadingListItemWithURL:(NSURL *)url title:(NSString *)title previewText:(id)arg3 error:(id*)arg4 {
+	if (handleAddReadingListItem(url, title)) return YES;
+	else return %orig;
 }
 
 %end
@@ -84,28 +123,83 @@ static inline NSString *ReplaceReadingListTitle(NSString *title) {
 
 %group SpringBoard
 
-%hook SpringBoard
+static inline NSString *decodeURIComponent(NSString *string) {
+	
+	NSMutableString *resultString = [NSMutableString stringWithString:string];
+	[resultString replaceOccurrencesOfString:@"+"
+								  withString:@" "
+									 options:NSLiteralSearch
+									   range:NSMakeRange(0, [resultString length])];
+	
+	return [[[resultString stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] copy] autorelease];
+}
 
-- (void)applicationOpenURL:(NSURL *)url withApplication:(id)application sender:(id)sender publicURLsOnly:(BOOL)only animating:(BOOL)animating needsPermission:(BOOL)permission additionalActivationFlags:(id)flags activationHandler:(id)handler {
+static inline BOOL handleSBOpenURL(NSURL *url) {
 	
-	// restore to original URL
-	BOOL fromWidget = NO;
-	NSString *urlString = url.absoluteString;
-	if ([urlString hasSuffix:@"***PWBROWSERWIDGET"]) {
-		fromWidget = YES;
-		urlString = [urlString substringToIndex:[urlString length] - [@"***PWBROWSERWIDGET" length]];
-		url = [NSURL URLWithString:urlString];
-	}
+	LOG(@"handleSBOpenURL: %@", url);
 	
-	if (enabledOpenInApp && !fromWidget) {
+	// a much more reliable way to determine where the URL is opened from
+	BOOL fromWidget = [url isKindOfClass:objc_getClass("PWURL")];
+	if (!fromWidget && url != nil) {
 		NSString *scheme = [[url scheme] lowercaseString];
-		if (([scheme isEqualToString:@"http"] || [scheme isEqualToString:@"https"]) && urlString != nil) {
-			openBrowserWithURL(urlString, @"app");
-			return;
+		if (SCHEME_ENABLED(scheme)) {
+			
+			// replace the googlechrome scheme to http
+			if ([scheme hasPrefix:@"googlechrome"]) {
+				if ([scheme isEqualToString:@"googlechrome-x-callback"]) {
+					
+					NSString *query = url.query;
+					NSString *encodedURLString = nil;
+					
+					for (NSString *param in [query componentsSeparatedByString:@"&"]) {
+						NSArray *parts = [param componentsSeparatedByString:@"="];
+						if([parts count] < 2) continue;
+						if ([parts[0] isEqualToString:@"url"]) {
+							encodedURLString = parts[1];
+							break;
+						}
+					}
+					
+					if (encodedURLString != nil && [encodedURLString length] > 0) {
+						NSString *decodedURLString = decodeURIComponent(encodedURLString);
+						url = [NSURL URLWithString:decodedURLString];
+					} else {
+						// cannot parse the URL / empty address
+						return YES;
+					}
+					
+				} else {
+					NSURLComponents *components = [NSURLComponents componentsWithURL:url resolvingAgainstBaseURL:NO];
+					components.scheme = [scheme hasSuffix:@"s"] ? @"https" : @"http";
+					url = components.URL;
+				}
+			}
+			
+			openBrowserWithURL(url, @"app");
+			
+			return YES;
 		}
 	}
 	
-	%orig;
+	return NO;
+}
+
+%hook SpringBoard
+
+// 7.0
+//- (void)_applicationOpenURL:(NSURL *)url withApplication:(id)application sender:(id)sender publicURLsOnly:(BOOL)only animating:(BOOL)animating additionalActivationFlags:(id)flags activationHandler:(id)handler {
+- (void)_openURLCore:(NSURL *)url display:(id)display animating:(BOOL)animating sender:(id)sender additionalActivationFlags:(id)flags activationHandler:(id)handler {
+    if (!handleSBOpenURL(url)) {
+        %orig;
+    }
+}
+
+// 7.1
+//- (void)_applicationOpenURL:(NSURL *)url withApplication:(id)application sender:(id)sender publicURLsOnly:(BOOL)only animating:(BOOL)animating activationContext:(id)context activationHandler:(id)handler {
+- (void)_openURLCore:(NSURL *)url display:(id)display animating:(BOOL)animating sender:(id)sender activationContext:(id)context activationHandler:(id)handler {
+    if (!handleSBOpenURL(url)) {
+        %orig;
+    }
 }
 
 %end
@@ -117,8 +211,7 @@ static inline NSString *ReplaceReadingListTitle(NSString *title) {
 	if (enabledOpenFromIcon) {
 		UIWebClip *webClip = icon.webClip;
 		NSURL *url = webClip.pageURL;
-		NSString *urlString = [url absoluteString];
-		return openBrowserWithURL(urlString, @"icon");
+		return openBrowserWithURL(url, @"icon");
 	}
 	
 	return %orig;
@@ -136,7 +229,8 @@ static inline void loadPref() {
 #define PREF_BOOL(x,y) NSNumber *_##x = pref[@#x];\
 	x = _##x == nil || ![_##x isKindOfClass:[NSNumber class]] ? y : [_##x boolValue];
 	
-	PREF_BOOL(enabledOpenInApp, YES)
+	PREF_BOOL(enabledOpenInAppSafari, YES)
+	PREF_BOOL(enabledOpenInAppChrome, YES)
 	PREF_BOOL(enabledOpenFromIcon, YES)
 	PREF_BOOL(enabledAddToBookmark, YES)
 	

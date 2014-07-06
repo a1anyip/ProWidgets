@@ -19,8 +19,6 @@
 - (NSString *)parseDate:(NSDate *)date allDay:(BOOL)allDay shortForm:(BOOL)shortForm {
 	
 	NSInteger dayDifference = [self calculateDayDifference:[NSDate date] toDate:date];
-	
-	///// Process date to string /////
 	NSString *result = nil;
 	
 	// parse the date

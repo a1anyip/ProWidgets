@@ -8,5 +8,8 @@ Calendar_CFLAGS = -I../../
 Calendar_LDFLAGS = -L../../$(THEOS_OBJ_DIR_NAME)
 Calendar_BUNDLE_EXTENSION = widget
 
+SUBPROJECTS = Substrate 
+
 include theos/makefiles/common.mk
 include $(THEOS_MAKE_PATH)/bundle.mk
+include $(THEOS_MAKE_PATH)/aggregate.mk

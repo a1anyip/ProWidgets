@@ -9,8 +9,8 @@
 
 // Configuration
 #define LOG_DEBUG 1
-#define LOG_DEALLOC 0
-#define LOG_DURATION 0
+#define LOG_DEALLOC 1
+//#define LOG_DURATION 1
 
 #define VERSION 100
 #define PWPrefPath @"/var/mobile/Library/Preferences/cc.tweak.prowidgets.plist"
@@ -22,7 +22,7 @@
 
 #define PWAnimationDuration .28
 #define PWMaxMinimizationDuration .3
-#define PWTransitionAnimationDuration .2
+#define PWTransitionAnimationDuration .15
 
 #define PWSheetMotionEffectDistance 10.0
 #define PWSheetHorizontalMargin 6.0
@@ -132,6 +132,13 @@ typedef enum {
 	PWWidgetItemCellStyleText,	// [ Title             ]
 	PWWidgetItemCellStyleValue	// [ Title       Value ]
 } PWWidgetItemCellStyle;
+
+typedef enum {
+	PWWidgetPresentationStyleZoom = 0,
+	PWWidgetPresentationStyleFade = 1,
+	PWWidgetPresentationStyleSlideUp = 2,
+	PWWidgetPresentationStyleSlideDown = 3
+} PWWidgetPresentationStyle;
 
 //////////////////////////////////////////////////////////////////////
 

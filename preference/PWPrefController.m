@@ -4,15 +4,18 @@
 #import "PWPrefThemes.h"
 #import "PWPrefActivation.h"
 #import "PWPrefConfiguration.h"
+#import "../PWController.h"
 
 #define TWEET_CONTENT @"I love #ProWidgets, a revolutionary widget suite and framework for iOS! http://prowidgets.net via @tweakcc"
 
 NSBundle *bundle;
+CGFloat tableViewInset;
 
 @implementation PWPrefController
 
 + (void)initialize {
 	bundle = [[NSBundle bundleForClass:[self class]] retain];
+	tableViewInset = [PWController isIPad] ? 28.0 : 0.0;
 }
 
 - (id)table { return self.view; }

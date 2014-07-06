@@ -18,6 +18,16 @@
 	return self;
 }
 
+- (void)viewDidLoad {
+	
+	[super viewDidLoad];
+	
+	UITableView *tableView = *(UITableView **)instanceVar(self, "_table");
+	if (tableView != NULL) {
+		CONFIGURE_TABLEVIEW_INSET(tableView);
+	}
+}
+
 - (NSArray *)specifiers {
 	if (_specifiers == nil) {
 		_specifiers = [[self loadSpecifiersFromPlistName:self.plist target:self] retain];

@@ -66,6 +66,28 @@
 				<integer>30</integer>
 			</array>
 		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Integration</string>
+			<key>footerText</key>
+			<string>Open calendar widget when pressing "Create Event"</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>defaults</key>
+			<string>cc.tweak.prowidgets.widget.calendar</string>
+			<key>PostNotification</key>
+			<string>cc.tweak.prowidgets.widget.calendar.preferencechanged</string>
+			<key>key</key>
+			<string>enabledOpenFromCreateEvent</string>
+			<key>label</key>
+			<string>Create Event</string>
+			<key>default</key>
+			<true/>
+		</dict>
 	</array>
 </dict>
 </plist>

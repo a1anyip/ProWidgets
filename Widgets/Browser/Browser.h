@@ -24,6 +24,8 @@
 	NSArray *_bookmarkViewControllers;
 }
 
+@property(nonatomic, assign) BOOL shouldAutoFocus;
+
 @property(nonatomic, readonly) PWWidgetBrowserDefault defaultBrowser;
 
 - (NSBundle *)safariBundle;
@@ -38,6 +40,6 @@
 - (void)switchToWebInterface;
 - (void)switchToBookmarkInterface;
 
-//+ (NSDictionary *)readChromeBookmarks;
++ (NSDictionary *)readChromeBookmarks;
 
 @end

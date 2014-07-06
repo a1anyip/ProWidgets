@@ -11,13 +11,16 @@
 
 @interface PWMiniView : UIImageView {
 	
+	BOOL _dragging;
+	UIView *_containerView;
 	UIView *_overlayView;
 	CGFloat _scale;
 }
 
 @property(nonatomic, assign) CGFloat scale;
 
-- (instancetype)initWithSnapshot:(UIImage *)snapshot;
+- (instancetype)initWithContainerView:(UIView *)containerView;
+- (void)setDragging:(BOOL)dragging;
 - (void)finishAnimation;
 
 @end

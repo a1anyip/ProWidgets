@@ -45,6 +45,7 @@
 	
 	PWWidgetReminders *widget = (PWWidgetReminders *)self.widget;
 	NSArray *lists = [self.store calendarsForEntityType:EKEntityTypeReminder];
+	EKCalendar *defaultList = [self.store defaultCalendarForNewReminders];
 	
 	if ([lists count] == 0) {
 		[widget showMessage:@"You need at least one list to save reminders."];
@@ -64,29 +65,27 @@
 			continue;
 		}
 		
-		if (selectedIdentifier != nil && [list.calendarIdentifier isEqualToString:selectedIdentifier]) {
-			selectedIndex = i;
+		if (selectedIdentifier != nil) {
+			if ([list.calendarIdentifier isEqualToString:selectedIdentifier]) {
+				selectedIndex = i;
+			}
+		} else if (defaultList != nil) {
+			if ([defaultList isEqual:list]) {
+				selectedIndex = i;
+			}
 		}
 		
 		[titles addObject:list.title];
 		[values addObject:@(i++)];
 	}
 	
-	NSUInteger defaultIndex = NSNotFound;
-	if (selectedIndex != NSNotFound) {
-		defaultIndex = selectedIndex;
-	} else {
-		
-		if (selectedIdentifier != nil) {
-			// cannot locate the new calendar
-			[widget showMessage:@"Unable to create list"];
-		}
-		
-		EKCalendar *defaultList = [self.store defaultCalendarForNewReminders];
-		defaultIndex = [lists indexOfObject:defaultList];
+	if (selectedIdentifier != nil && selectedIndex == NSNotFound) {
+		// cannot locate the new calendar
+		[widget showMessage:@"Unable to create list"];
 	}
 	
-	if (defaultIndex == NSNotFound) defaultIndex = 0;
+	// fall back to the first item
+	if (selectedIndex == NSNotFound) selectedIndex = 0;
 	
 	// add "Create..." option
 	[titles addObject:@"Create..."];
@@ -94,7 +93,7 @@
 	
 	PWWidgetItemListValue *item = (PWWidgetItemListValue *)[self itemWithKey:@"list"];
 	[item setListItemTitles:titles values:values];
-	[item setValue:@(defaultIndex)];
+	[item setValue:@(selectedIndex)];
 	
 	_lists = [lists retain];
 	[lists release];
