@@ -1,5 +1,6 @@
 #import "../header.h"
 #import "PWPrefConfiguration.h"
+#import "PWPrefController.h"
 #import "PWController.h"
 #import "PWAlertView.h"
 
@@ -36,6 +37,24 @@ static BOOL isIPhone4 = NO;
 		}
 	}
 	return cell;
+}
+
+- (void)enableAllLivePreviewSettings {
+	
+	NSMutableDictionary *settings = [NSMutableDictionary dictionary];
+	NSArray *widgets = [[PWController sharedInstance] installedWidgets];
+	for (NSDictionary *info in widgets) {
+		NSString *name = info[@"name"];
+		if (name != nil) {
+			settings[name] = @YES;
+		}
+	}
+	
+	[(PWPrefController *)self.parentController updateValue:settings forKey:@"livePreviewSettings"];
+}
+
+- (void)disableAllLivePreviewSettings {
+	[(PWPrefController *)self.parentController updateValue:@{} forKey:@"livePreviewSettings"];
 }
 
 - (void)showWelcomeScreen {

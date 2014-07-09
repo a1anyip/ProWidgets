@@ -44,7 +44,6 @@
 
 // inherit from PWBase
 @property(nonatomic) BOOL requiresProtectedDataAccess;
-//@property(nonatomic) BOOL requiresLivePreview;
 
 @property(nonatomic, readonly) BOOL isPresenting;
 @property(nonatomic, copy) NSString *name;

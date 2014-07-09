@@ -29,6 +29,23 @@
 		_containerBackgroundView.userInteractionEnabled = NO;
 		[self addSubview:_containerBackgroundView];
 		
+		// create resizer
+		UIImage *resizerImage = [[[PWController sharedInstance] imageResourceNamed:@"resizer"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+		
+		_resizer = [[UIImageView alloc] initWithImage:resizerImage];
+		_resizer.contentMode = UIViewContentModeCenter;
+		_resizer.alpha = .3;
+		_resizer.tintColor = [PWTheme darkenColor:widgetController.widget.theme.preferredTintColor];
+		_resizer.userInteractionEnabled = YES;
+		
+		UIPanGestureRecognizer *panRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:widgetController action:@selector(handleResizerPan:)];
+		[panRecognizer setMinimumNumberOfTouches:1];
+		[panRecognizer setMaximumNumberOfTouches:1];
+		[_resizer addGestureRecognizer:panRecognizer];
+		[panRecognizer release];
+		
+		[self addSubview:_resizer];
+		
 		// create overlay view
 		_overlayView = [UIView new];
 		_overlayView.userInteractionEnabled = YES;
@@ -44,6 +61,18 @@
 	_containerBackgroundView.frame = self.bounds;
 	[_containerBackgroundView setNeedsLayout];
 	[_containerBackgroundView layoutIfNeeded];
+	
+	const CGFloat resizerPadding = 6.0;
+	CGSize size = self.bounds.size;
+	CGSize resizerSize = _resizer.image.size;
+	resizerSize.width += resizerPadding * 2;
+	resizerSize.height += resizerPadding * 2;
+	
+	_resizer.frame = CGRectMake(size.width - resizerSize.width,
+								size.height - resizerSize.height,
+								resizerSize.width,
+								resizerSize.height);
+	[self bringSubviewToFront:_resizer];
 	
 	_overlayView.frame = self.bounds;
 	[self bringSubviewToFront:_overlayView];
@@ -82,6 +111,7 @@
 	
 	_widgetController = nil;
 	RELEASE_VIEW(_containerBackgroundView)
+	RELEASE_VIEW(_resizer)
 	RELEASE_VIEW(_overlayView)
 	[_navigationControllerView removeFromSuperview], _navigationControllerView = nil;
 	

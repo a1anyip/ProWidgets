@@ -12,7 +12,9 @@
 			<key>label</key>
 			<string>Widget Capabilities (iPhone)</string>
 			<key>footerText</key>
-			<string>These settings are originally designed for iPad, and so this section is for iPhone only. They take no effect on iPad (all enabled anyway).</string>
+			<string>These settings are originally designed for iPad, and so this section is for iPhone only. They take no effect on iPad (all enabled anyway).
+
+Press "Respring" in the previous page to apply these settings.</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -39,6 +41,20 @@
 			<string>exMultipleWidgets</string>
 			<key>label</key>
 			<string>Multiple Widgets</string>
+			<key>default</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>defaults</key>
+			<string>cc.tweak.prowidgets</string>
+			<key>PostNotification</key>
+			<string>cc.tweak.prowidgets.preferencechanged</string>
+			<key>key</key>
+			<string>exShowShadow</string>
+			<key>label</key>
+			<string>Show Shadow</string>
 			<key>default</key>
 			<false/>
 		</dict>

@@ -152,6 +152,30 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
+			<string>LivePreview</string>
+			<key>footerText</key>
+			<string>LivePreviewSettingsFooterText</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSButtonCell</string>
+			<key>label</key>
+			<string>EnableAllLivePreviewSettings</string>
+			<key>action</key>
+			<string>enableAllLivePreviewSettings</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSButtonCell</string>
+			<key>label</key>
+			<string>DisableAllLivePreviewSettings</string>
+			<key>action</key>
+			<string>disableAllLivePreviewSettings</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
 			<string>GlobalPreference</string>
 			<key>footerText</key>
 			<string>GlobalPreferenceFooterText</string>

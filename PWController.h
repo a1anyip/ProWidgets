@@ -56,6 +56,7 @@
 	
 	NSArray *_visibleWidgetOrder;
 	NSArray *_hiddenWidgetOrder;
+	NSDictionary *_livePreviewSettings;
 	NSString *_defaultThemeName;
 	
 	// Welcome Screen
@@ -82,6 +83,12 @@
 	PWWidget *_pendingWidget;
 	NSDictionary *_pendingUserInfo;
 	
+	// Experimental settings
+	BOOL _loadedExperimentalSettings;
+	BOOL _exDragging;
+	BOOL _exMultipleWidgets;
+	BOOL _exShowShadow;
+	
 	/////////////////////////
 	///// Private stuff /////
 	/////////////////////////
@@ -106,13 +113,18 @@
 @property(nonatomic, readonly) PWWidgetPresentationStyle presentationStyle;
 @property(nonatomic, readonly) NSUInteger preferredSource; // 0 is iCloud, 1 is Local
 
+// Experiemental settings
+@property(nonatomic, readonly) BOOL exDragging;
+@property(nonatomic, readonly) BOOL exMultipleWidgets;
+@property(nonatomic, readonly) BOOL exShowShadow;
+
 //////////////////////////////////////////////////////////////////////
 
 /**
  * Singleton accessor
  **/
 
-+ (instancetype)sharedInstance;
++ (PWController *)sharedInstance;
 
 //////////////////////////////////////////////////////////////////////
 
@@ -130,6 +142,7 @@
 
 + (BOOL)shouldShowBackgroundView;
 + (BOOL)shouldMaskBackgroundView;
++ (BOOL)shouldShowShadowView;
 + (BOOL)shouldMinimizeAllControllersAutomatically;
 + (BOOL)supportsDragging;
 + (BOOL)supportsMultipleWidgetsOnScreen;
@@ -241,6 +254,8 @@
 - (NSArray *)installedScripts;
 - (NSArray *)installedThemes;
 - (NSArray *)activationMethods;
+
+- (BOOL)getLivePreviewSettingForWidget:(PWWidget *)widget;
 
 //////////////////////////////////////////////////////////////////////
 

@@ -20,6 +20,8 @@
 #define PWBackgroundViewFadeDuration 0.1
 #define PWBackgroundViewAlpha 0.5
 
+#define PWShadowViewRadius shadowViewRadius
+
 #define PWAnimationDuration .28
 #define PWMaxMinimizationDuration .3
 #define PWTransitionAnimationDuration .15
@@ -82,7 +84,7 @@
 @class PWController, PWWidgetController, PWWidgetNavigationController;
 
 // Core
-@class PWTestBar, PWMiniView, PWBase, PWWindow, PWWSWindow, PWBackgroundView, PWView, PWContainerView, PWContentViewController, PWContentItemViewController, PWContentListViewController, PWEventHandler, PWThemableTableView, PWThemableTableViewCell, PWAlertView;
+@class PWTestBar, PWMiniView, PWShadowView, PWBase, PWWindow, PWWSWindow, PWBackgroundView, PWView, PWContainerView, PWContentViewController, PWContentItemViewController, PWContentListViewController, PWEventHandler, PWThemableTableView, PWThemableTableViewCell, PWAlertView;
 
 // Widget
 @class PWWidget, PWWidgetJS, PWWidgetPlistParser, PWWidgetItem, PWWidgetItemCell;
@@ -155,6 +157,8 @@ enum  {
 	DeviceLockStateTemporarilyUnlockedWithPasscode = 2, // still locked technically; will change to 1 soon
 	DeviceLockStateUnlockedWithoutPasscode = 3
 };
+
+extern CGFloat shadowViewRadius;
 
 extern int MKBGetDeviceLockState(void *unknown);
 

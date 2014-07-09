@@ -47,6 +47,8 @@ typedef struct {
 	PWBackgroundView *_backgroundView;
 	PWContainerView *_containerView;
 	PWMiniView *_miniView;
+	PWShadowView *_shadowView;
+	UIImageView *_resizer;
 	
 	PWWidget *_widget;
 }
@@ -62,11 +64,14 @@ typedef struct {
 @property(nonatomic, readonly) PWBackgroundView *backgroundView;
 @property(nonatomic, readonly) PWContainerView *containerView;
 @property(nonatomic, readonly) PWMiniView *miniView;
+@property(nonatomic, readonly) PWShadowView *shadowView;
+@property(nonatomic, readonly) UIImageView *resizer;
 
 @property(nonatomic, readonly) PWWidget *widget;
 
 + (BOOL)shouldDisableNotificationCenterPresentation;
 + (BOOL)isDragging;
++ (BOOL)isResizing;
 + (BOOL)isPresentingWidget;
 + (BOOL)isPresentingMaximizedWidget;
 
@@ -112,8 +117,12 @@ typedef struct {
 - (void)removeContainerView;
 
 // mini view
-- (PWMiniView *)createMiniView:(UIView *)containerView;
+- (PWMiniView *)createMiniView;
 - (void)removeMiniView;
+
+// shadow view
+- (PWShadowView *)createShadowView;
+- (void)removeShadowView;
 
 // adjust layout
 - (void)adjustLayout;
@@ -133,6 +142,7 @@ typedef struct {
 
 // gesture recognizer handlers
 - (void)handleNavigationBarPan:(UIPanGestureRecognizer *)sender;
+- (void)handleResizerPan:(UIPanGestureRecognizer *)sender;
 - (void)handleMiniViewPan:(UIPanGestureRecognizer *)sender;
 - (void)handleMiniViewSingleTap:(UITapGestureRecognizer *)sender;
 - (void)handleMiniViewDoubleTap:(UITapGestureRecognizer *)sender;

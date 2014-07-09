@@ -84,7 +84,7 @@
 	[_completionHandler release], _completionHandler = nil;
 	
 	_useJSBridge = NO;
-	_completionHandler = [completionHandler retain];
+	_completionHandler = [completionHandler copy];
 }
 
 - (void)_sendRequestWithURL:(NSURL *)url method:(NSString *)method params:(id)params headers:(NSDictionary *)headers {
@@ -319,7 +319,9 @@
 		}
 		
 	} else {
-		_completionHandler(YES, _statusCode, _headers, responseString, nil);
+		if (_completionHandler != nil) {
+			_completionHandler(YES, _statusCode, _headers, responseString, nil);
+		}
 	}
 	
 	[self _finishConnection];

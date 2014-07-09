@@ -11,6 +11,8 @@
 #import "Browser.h"
 #import "PrivateWebView.h"
 #import "PWThemableTextField.h"
+#import "PWThemableTableView.h"
+#import "PWThemableTableViewCell.h"
 #import "PWView.h"
 #import "PWWebRequest.h"
 
@@ -57,6 +59,10 @@
 		_webView.alpha = WEBVIEW_INACTIVE_ALPHA;
 		[self addSubview:_webView];
 		
+		_suggestionView = [[PWThemableTableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain theme:theme];
+		_suggestionView.hidden = YES;
+		[self addSubview:_suggestionView];
+		
 		/*
 		_messageLabel = [UILabel new];
 		//_messageLabel.text = @"Type  or\nTap on title to view bookmarks";
@@ -91,20 +97,26 @@
 	CGRect buttonRect = CGRectMake(width - textFieldHorizontalPadding - buttonSize, 0, buttonSize + textFieldHorizontalPadding, textFieldHeight);
 	CGRect separatorRect = CGRectMake(0, textFieldHeight - .5, width, .5);
 	CGRect webViewRect = CGRectMake(0, textFieldHeight, width, height - textFieldHeight);
+	CGRect suggestionViewRect = webViewRect;
 	//CGRect messageLabelRect = CGRectMake(0, textFieldHeight, width, messageLabelHeight);
 	
 	_textField.frame = textFieldRect;
 	_actionButton.frame = buttonRect;
 	_separator.frame = separatorRect;
 	_webView.frame = webViewRect;
+	_suggestionView.frame = suggestionViewRect;
 	//_messageLabel.frame = messageLabelRect;
 }
 
-- (void)setDelegate:(id<UITextFieldDelegate, UIWebViewDelegate>)delegate {
+- (void)setDelegate:(id<UITextFieldDelegate, UIWebViewDelegate, UITableViewDelegate, UITableViewDataSource>)delegate {
 	_textField.delegate = delegate;
+	[_textField removeTarget:nil action:NULL forControlEvents:UIControlEventEditingChanged];
+	[_textField addTarget:delegate action:@selector(textFieldValueDidChange:) forControlEvents:UIControlEventEditingChanged];
 	[_actionButton removeTarget:nil action:NULL forControlEvents:UIControlEventTouchUpInside];
 	[_actionButton addTarget:delegate action:@selector(actionButtonPressed) forControlEvents:UIControlEventTouchUpInside];
 	_webView.delegate = delegate;
+	_suggestionView.delegate = delegate;
+	_suggestionView.dataSource = delegate;
 }
 
 - (void)setTextFieldActive:(BOOL)active {
@@ -149,12 +161,21 @@
 	[self setButtonHidden:!active];
 }
 
+- (void)updateSuggestionView:(BOOL)hidden {
+	
+	[_suggestionView reloadData];
+	
+	_webView.hidden = !hidden;
+	_suggestionView.hidden = hidden;
+}
+
 - (void)dealloc {
 	[self setDelegate:nil];
 	RELEASE_VIEW(_textField)
 	RELEASE_VIEW(_actionButton)
 	RELEASE_VIEW(_separator)
 	RELEASE_VIEW(_webView)
+	RELEASE_VIEW(_suggestionView)
 	//RELEASE_VIEW(_messageLabel)
 	[super dealloc];
 }
@@ -269,6 +290,48 @@
 	[self.webView setButtonState:loading];
 }
 
+#pragma mark - UITextFieldDelegate
+
+- (void)textFieldValueDidChange:(UITextField *)textField {
+	
+	NSString *text = textField.text;
+	NSString *apiPath = [NSString stringWithFormat:@"http://suggestqueries.google.com/complete/search?client=firefox&q=%@", [PWWebRequest encodeURIComponent:text]];
+	NSURL *apiURL = [NSURL URLWithString:apiPath];
+	
+	if (_currentSuggestionRequest != nil) {
+		[_currentSuggestionRequest cancel];
+		RELEASE(_currentSuggestionRequest);
+	}
+	
+	_currentSuggestionRequest = [[PWWebRequest sendRequestWithURL:apiURL completionHandler:^(BOOL success, int statusCode, NSDictionary *headers, NSString *response, NSError *error) {
+		
+		// release request and suggestion data
+		RELEASE(_currentSuggestionRequest);
+		RELEASE(_suggestionData);
+		
+		NSError *jsonError;
+		NSArray *root = [NSJSONSerialization JSONObjectWithData:[response dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:&jsonError];
+		
+		if (jsonError != nil && [root isKindOfClass:[NSArray class]] && root.count > 0) {
+			
+			NSArray *results = root[1];
+			
+			// update suggestion data
+			_suggestionData = [results isKindOfClass:[NSArray class]] ? [results copy] : nil;
+			
+			BOOL hidden = [_suggestionData count] == 0;
+			[self.webView updateSuggestionView:hidden];
+			
+		} else {
+			// unknown error occurs
+			[self.webView updateSuggestionView:YES];
+		}
+		
+	}] retain];
+	
+	[self.webView.suggestionView reloadData];
+}
+
 - (void)textFieldDidBeginEditing:(UITextField *)textField {
 	[self.webView setTextFieldActive:YES];
 }
@@ -295,6 +358,8 @@
 		[self.webView.webView reload];
 	}
 }
+
+#pragma mark - UIWebViewDelegate
 
 - (void)webView:(WebView *)webView didStartProvisionalLoadForFrame:(WebFrame *)frame {
 	if ([frame isMainFrame]) {
@@ -401,6 +466,8 @@
 	[alert release];
 }
 
+#pragma mark - UIActionSheetDelegate
+
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
 	
 	switch (buttonIndex) {
@@ -457,6 +524,68 @@
 	RELEASE(_actionSheet)
 }
 
+#pragma mark - UITableViewDelegate
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+	return 38.0;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+	
+	NSUInteger row = [indexPath row];
+	NSString *urlString = nil;
+	
+	if (row == 0) {
+		// Navigate to the URL
+		urlString = self.webView.textField.text;
+	} else {
+		NSString *searchTerm = _suggestionData[row - 1];
+		urlString = searchTerm;
+	}
+	
+	[self loadURLString:urlString];
+	
+	[_currentSuggestionRequest cancel];
+	RELEASE(_currentSuggestionRequest);
+	
+	RELEASE(_suggestionData);
+	[self.webView updateSuggestionView:YES];
+}
+
+#pragma mark - UITableViewDataSource
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+	NSUInteger count = [_suggestionData count];
+	return count == 0 ? 0 : count + 1;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+	
+	static NSString *identifier = @"PWBrowserSuggestionCell";
+	PWThemableTableViewCell *cell = (PWThemableTableViewCell *)[tableView dequeueReusableCellWithIdentifier:identifier];
+	
+	if (cell == nil) {
+		cell = [[PWThemableTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier theme:[PWWidgetBrowser theme]];
+		cell.alpha = .8;
+		cell.textLabel.font = [UIFont systemFontOfSize:16.0];
+	}
+	
+	NSUInteger row = [indexPath row];
+	
+	if (row == 0) {
+		cell.textLabel.text = [NSString stringWithFormat:@"Navigate to %@", self.webView.textField.text];
+		cell.imageView.image = nil;
+	} else {
+		NSString *suggestion = _suggestionData[row - 1];
+		cell.textLabel.text = suggestion;
+		cell.imageView.image = [[PWWidgetBrowser widget] imageNamed:@"search"];
+	}
+	
+	return cell;
+}
+
+#pragma mark - Others
+
 - (void)previousButtonPressed {
 	[self.webView.webView goBack];
 }
@@ -504,6 +633,10 @@
 	
 	[_actionSheet dismissWithClickedButtonIndex:0 animated:NO];
 	RELEASE(_actionSheet)
+	
+	[_currentSuggestionRequest cancel];
+	RELEASE(_currentSuggestionRequest);
+	RELEASE(_suggestionData);
 	
 	[super dealloc];
 }

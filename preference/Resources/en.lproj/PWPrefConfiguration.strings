@@ -29,6 +29,11 @@
 "ExperimentalSettingsFooterText" = "Play with some internal-use or not-tested settings in this section :)";
 "ExperimentalSettings" = "Experimental Settings";
 
+"LivePreview" = "Live Preview";
+"LivePreviewSettingsFooterText" = "Live preview is disabled for all widgets by default. Configure the enabled state here or by tapping on their icons in Widgets page.";
+"EnableAllLivePreviewSettings" = "Enable All";
+"DisableAllLivePreviewSettings" = "Disable All";
+
 "ShowWelcomeScreenFooterText" = "Show the welcome screen that was presented after you installed ProWidgets again.";
 "ShowWelcomeScreen" = "Show Welcome Screen";
 

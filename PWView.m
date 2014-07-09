@@ -48,6 +48,11 @@
 		return self;
 	}
 	
+	// resizing
+	if ([PWWidgetController isResizing]) {
+		return self;
+	}
+	
 	// background view
 	if (result == _backgroundView) {
 		return result;

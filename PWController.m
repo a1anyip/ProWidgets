@@ -33,7 +33,8 @@
 #import "PWWidgetController.h"
 
 static BOOL configured = NO;
-static PWController *sharedInstance = nil;
+
+CGFloat shadowViewRadius = 0.0;
 
 static inline void reloadPref(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
 	[[PWController sharedInstance] _reloadPreference];
@@ -54,6 +55,8 @@ static inline void showWelcomeScreen(CFNotificationCenterRef center, void *obser
 	if (objc_getClass("SpringBoard")) {
 		CFNotificationCenterAddObserver(center, NULL, &showWelcomeScreen, CFSTR(PWShowWelcomeScreenNotification), NULL, 0);
 	}
+	
+	shadowViewRadius = ([PWController isIPad] ? 24.0 : 4.0);
 }
 
 + (instancetype)sharedInstance {
@@ -61,35 +64,11 @@ static inline void showWelcomeScreen(CFNotificationCenterRef center, void *obser
 	static dispatch_once_t onceToken;
 	dispatch_once(&onceToken, ^{
 		instance = [[self alloc] init];
-		LOG(@"PWController: allocated shared instance (%@)", sharedInstance);
+		LOG(@"PWController: allocated shared instance (%@)", instance);
 	});
 	return instance;
 }
 
-/*
-+ (instancetype)sharedInstance {
-	
-	@synchronized(self) {
-		if (sharedInstance == nil)
-			[self new];
-	}
-	
-	return sharedInstance;
-}
-
-+ (id)allocWithZone:(NSZone *)zone {
-	
-	@synchronized(self) {
-		if (sharedInstance == nil) {
-			sharedInstance = [super allocWithZone:zone];
-			LOG(@"PWController: allocated shared instance (%@)", sharedInstance);
-			return sharedInstance;
-		}
-	}
-	
-	return nil;
-}
-*/
 - (void)activeInterfaceOrientationDidChangeToOrientation:(UIInterfaceOrientation)activeInterfaceOrientation willAnimateWithDuration:(double)duration fromOrientation:(UIInterfaceOrientation)orientation {
 	
 	LOG(@"PWController: activeInterfaceOrientationDidChangeToOrientation: %d", (int)activeInterfaceOrientation);
@@ -127,6 +106,7 @@ static inline void showWelcomeScreen(CFNotificationCenterRef center, void *obser
 }
 
 - (void)activeInterfaceOrientationWillChangeToOrientation:(UIInterfaceOrientation)activeInterfaceOrientation {
+	
 	LOG(@"PWController: activeInterfaceOrientationWillChangeToOrientation: %d", (int)activeInterfaceOrientation);
 	
 	// prevent this from being called for multiple times
@@ -206,12 +186,18 @@ static inline void showWelcomeScreen(CFNotificationCenterRef center, void *obser
 
 //////////////////////////////////////////////////////////////////////
 
+// either background or shadow view will be shown
+
 + (BOOL)shouldShowBackgroundView {
-	return ![self isIPad];
+	return ![self isIPad] && ![self sharedInstance].exShowShadow;
 }
 
 + (BOOL)shouldMaskBackgroundView {
-	return !IS_IPHONE4 && ![PWController sharedInstance]._disabledMask;
+	return [self shouldShowBackgroundView] && (!IS_IPHONE4 && ![PWController sharedInstance]._disabledMask);
+}
+
++ (BOOL)shouldShowShadowView {
+	return ![self shouldShowBackgroundView];
 }
 
 + (BOOL)shouldMinimizeAllControllersAutomatically {
@@ -219,11 +205,11 @@ static inline void showWelcomeScreen(CFNotificationCenterRef center, void *obser
 }
 
 + (BOOL)supportsDragging {
-	return [self isIPad];
+	return [self isIPad] || [self sharedInstance].exDragging;
 }
 
 + (BOOL)supportsMultipleWidgetsOnScreen {
-	return [self isIPad];
+	return [self isIPad] || [self sharedInstance].exMultipleWidgets;
 }
 
 + (BOOL)protectedDataAvailable {
@@ -509,6 +495,15 @@ static inline void showWelcomeScreen(CFNotificationCenterRef center, void *obser
  * Preference loader
  **/
 
+#define PREF_BOOL(x,y) NSNumber *__##x = dict[@#x];\
+_##x = __##x == nil || ![__##x isKindOfClass:[NSNumber class]] ? y : [__##x boolValue];
+
+#define PREF_INT(x, y) NSNumber *__##x = dict[@#x];\
+_##x = __##x == nil || ![__##x isKindOfClass:[NSNumber class]] ? y : [__##x integerValue];
+
+#define PREF_DOUBLE(x, y) NSNumber *__##x = dict[@#x];\
+_##x = __##x == nil || ![__##x isKindOfClass:[NSNumber class]] ? y : [__##x doubleValue];
+
 - (void)_loadPreference {
 	
 	NSDictionary *dict = [[NSDictionary alloc] initWithContentsOfFile:PWPrefPath];
@@ -521,23 +516,19 @@ static inline void showWelcomeScreen(CFNotificationCenterRef center, void *obser
 	_lockAction = [lockAction unsignedIntegerValue] == 1 ? PWLockActionDismiss : PWLockActionMinimize;
 	
 	// Minimization View Size (miniViewScale)
-	NSNumber *miniViewScale = dict[@"miniViewScale"];
-	_miniViewScale = miniViewScale == nil || ![miniViewScale isKindOfClass:[NSNumber class]] ? .3 : [miniViewScale doubleValue];
+	PREF_DOUBLE(miniViewScale, .3);
 	
 	// limit the scale (acceptable range: 0.2 to 0.5)
 	_miniViewScale = MAX(.2, MIN(_miniViewScale, .5));
 	
 	// Presentation Style
-	NSNumber *presentationStyle = dict[@"presentationStyle"];
-	_presentationStyle = presentationStyle == nil || ![presentationStyle isKindOfClass:[NSNumber class]] ? PWWidgetPresentationStyleZoom : (PWWidgetPresentationStyle)[presentationStyle integerValue];
+	PREF_INT(presentationStyle, PWWidgetPresentationStyleZoom);
 	
 	// Parallax Effect
-	NSNumber *enabledParallax = dict[@"enabledParallax"];
-	_enabledParallax = enabledParallax == nil || ![enabledParallax isKindOfClass:[NSNumber class]] ? YES : [enabledParallax boolValue];
+	PREF_BOOL(enabledParallax, YES);
 	
 	// Disable Blur Effect
-	NSNumber *disabledBlur = dict[@"disabledBlur"];
-	_disabledBlur = disabledBlur == nil || ![disabledBlur isKindOfClass:[NSNumber class]] ? NO : [disabledBlur boolValue];
+	PREF_BOOL(disabledBlur, NO);
 	
 	if (IS_IPHONE4) {
 		// On iPhone 4, all blur effects must be disabled to have better perfomance
@@ -545,16 +536,14 @@ static inline void showWelcomeScreen(CFNotificationCenterRef center, void *obser
 	}
 	
 	// Better Blur Quality (disabledMask)
-	NSNumber *disabledMask = dict[@"disabledMask"];
-	_disabledMask = disabledMask == nil || ![disabledMask isKindOfClass:[NSNumber class]] ? NO : [disabledMask boolValue];
+	PREF_BOOL(disabledMask, NO);
 	
 	// Preferred Source
 	NSNumber *preferredSource = dict[@"preferredSource"];
 	_preferredSource = preferredSource == nil || ![preferredSource isKindOfClass:[NSNumber class]] ? 0 : [preferredSource unsignedIntegerValue]; // default is iCloud
 	
 	// Test Mode
-	NSNumber *testMode = dict[@"testMode"];
-	_testMode = testMode == nil || ![testMode isKindOfClass:[NSNumber class]] ? NO : [testMode boolValue];
+	PREF_BOOL(testMode, NO);
 	
 	// Visible widget order
 	NSArray *visibleWidgetOrder = dict[@"visibleWidgetOrder"];
@@ -571,10 +560,23 @@ static inline void showWelcomeScreen(CFNotificationCenterRef center, void *obser
 	[_hiddenWidgetOrder release];
 	_hiddenWidgetOrder = [hiddenWidgetOrder copy];
 	
+	// Live preview settings
+	NSArray *livePreviewSettings = dict[@"livePreviewSettings"];
+	[_livePreviewSettings release];
+	_livePreviewSettings = [livePreviewSettings copy];
+	
 	// Default theme name
 	NSString *defaultThemeName = dict[@"defaultThemeName"];
 	[_defaultThemeName release];
 	_defaultThemeName = [defaultThemeName copy];
+	
+	// Experimental settings (only load once)
+	if (!_loadedExperimentalSettings) {
+		_loadedExperimentalSettings = YES;
+		PREF_BOOL(exDragging, NO);
+		PREF_BOOL(exMultipleWidgets, NO);
+		PREF_BOOL(exShowShadow, NO);
+	}
 	
 	[dict release];
 }
@@ -590,6 +592,10 @@ static inline void showWelcomeScreen(CFNotificationCenterRef center, void *obser
 		[self _removeParallaxEffect];
 	}
 }
+
+#undef PREF_BOOL
+#undef PREF_INT
+#undef PREF_DOUBLE
 
 /**
  * Notification handlers
@@ -651,32 +657,6 @@ static inline void showWelcomeScreen(CFNotificationCenterRef center, void *obser
 - (void)_protectedDataDidBecomeAvailableHandler:(NSNotification *)notification {
 	LOG(@"PWController: _protectedDataDidBecomeAvailableHandler");
 }
-
-/*
-- (void)_presentWidgetHandler:(NSNotification *)notification {
-	
-	NSObject *object = [notification object];
-	NSDictionary *userInfo = [notification userInfo];
-	
-	LOG(@"PWController: _presentWidgetHandler: %@, %@", object, userInfo);
-	
-	BOOL isString = [object isKindOfClass:[NSString class]];
-	BOOL isBundle = [object isKindOfClass:[NSBundle class]];
-	BOOL isWidget = [object isKindOfClass:[PWWidget class]];
-	
-	if (object == nil || !(isString || isBundle || isWidget)) {
-		LOG(@"Unable to present widget through notification. Reason: Invalid notification object, must be any of (string, bundle, PWWidget) (%@)", object);
-		return;
-	}
-	
-	if (isString)
-		[PWWidgetController presentWidgetNamed:(NSString *)object userInfo:userInfo];
-	else if (isBundle)
-		[PWWidgetController presentWidgetFromBundle:(NSBundle *)object userInfo:userInfo];
-	else if (isWidget)
-		[PWWidgetController presentWidget:(PWWidget *)object userInfo:userInfo];
-}
-*/
 
 //////////////////////////////////////////////////////////////////////
 
@@ -923,6 +903,10 @@ static inline void showWelcomeScreen(CFNotificationCenterRef center, void *obser
 	NSString *indicatorPath = [NSString stringWithFormat:@"%@/.installed", [bundle bundlePath]];
 	NSNumber *installedViaURL = @([[NSFileManager defaultManager] fileExistsAtPath:indicatorPath]);
 	
+	// check if the widget requires live preview
+	NSNumber *requiresLivePreviewSetting = _livePreviewSettings[widgetName];
+	NSNumber *requiresLivePreview = @(requiresLivePreviewSetting == nil ? NO : [requiresLivePreviewSetting boolValue]);
+	
 	return @{
 			 @"name": widgetName,
 			 @"displayName": displayName,
@@ -938,7 +922,8 @@ static inline void showWelcomeScreen(CFNotificationCenterRef center, void *obser
 			 @"preferenceBundle": preferenceBundle,
 			 @"appIdentifier": appIdentifier,
 			 @"bundle": bundle,
-			 @"installedViaURL": installedViaURL
+			 @"installedViaURL": installedViaURL,
+			 @"requiresLivePreview": requiresLivePreview
 			 };
 }
 
@@ -1258,6 +1243,11 @@ static inline void showWelcomeScreen(CFNotificationCenterRef center, void *obser
 
 - (NSArray *)activationMethods {
 	return [self _installedBundlesOfType:@"ActivationMethods" extension:@"bundle" infoSelector:@selector(infoOfActivationMethodInBundle:)];
+}
+
+- (BOOL)getLivePreviewSettingForWidget:(PWWidget *)widget {
+	NSNumber *requiresLivePreview = widget.info[@"requiresLivePreview"];
+	return [requiresLivePreview boolValue];
 }
 
 //////////////////////////////////////////////////////////////////////

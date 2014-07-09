@@ -8,14 +8,18 @@
 //
 
 #import "PWMiniView.h"
+#import "PWController.h"
 
 #define kOverlayViewActiveAlpha 0.15
 #define kOverlayViewInactiveAlpha 0.0
 
 @implementation PWMiniView
 
-- (instancetype)initWithContainerView:(UIView *)containerView {
+- (instancetype)initWithContainerView:(UIView *)containerView requiresLivePreview:(BOOL)requiresLivePreview {
 	if ((self = [super init])) {
+		
+		// for snapshot
+		BOOL requiresLivePreview = NO;
 		
 		_containerView = containerView;
 		[containerView retain];
@@ -35,6 +39,10 @@
 		[UIView animateWithDuration:.3 animations:^{
 			_overlayView.alpha = kOverlayViewActiveAlpha;
 		}];
+		
+		if (!requiresLivePreview) {
+			[self prepareSnapshot];
+		}
 	}
 	return self;
 }
@@ -43,6 +51,27 @@
 	[super layoutSubviews];
 	_containerView.frame = self.bounds;
 	_overlayView.frame = self.bounds;
+}
+
+- (void)prepareSnapshot {
+	
+	[_containerView.layer displayIfNeeded];
+	
+	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.0 * NSEC_PER_SEC), dispatch_get_main_queue(), ^(void){
+		
+		// mini view is removed (widget is maximized)
+		if (self.superview == nil) return;
+		
+		// generate image for mini view
+		UIGraphicsBeginImageContextWithOptions(_containerView.bounds.size, YES, 0);
+		[_containerView drawViewHierarchyInRect:_containerView.bounds afterScreenUpdates:NO];
+		
+		UIImage *snapshot = UIGraphicsGetImageFromCurrentImageContext();
+		UIGraphicsEndImageContext();
+		
+		self.image = snapshot;
+		_containerView.hidden = YES;
+	});
 }
 
 - (void)setDragging:(BOOL)dragging {
@@ -79,8 +108,11 @@
 	CALayer *layer = self.layer;
 	
 	layer.cornerRadius = 10.0;//20.0;
-	layer.borderColor = [UIColor colorWithWhite:.3 alpha:.6].CGColor;
-	layer.borderWidth = 2.0;
+	
+	if (![PWController shouldShowShadowView]) {
+		layer.borderColor = [UIColor colorWithWhite:.3 alpha:.6].CGColor;
+		layer.borderWidth = 2.0;
+	}
 	
 	/*
 	layer.shadowColor = [UIColor blackColor].CGColor;

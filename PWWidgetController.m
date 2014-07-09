@@ -18,6 +18,7 @@
 #import "PWView.h"
 #import "PWBackgroundView.h"
 #import "PWMiniView.h"
+#import "PWShadowView.h"
 #import "PWAlertView.h"
 
 #define SettingPresentationStyle ([PWController sharedInstance].presentationStyle)
@@ -26,6 +27,7 @@
 #define IDLETIMER_DISABLED_REASON @"PW_IDLETIMER_DISABLED_REASON"
 
 static BOOL _isDragging = NO;
+static BOOL _isResizing = NO;
 static NSUInteger _lockCount = 0;
 static PWWidgetController *_activeController = nil;
 static NSMutableSet *_controllers = nil;
@@ -142,6 +144,10 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 
 + (BOOL)isDragging {
 	return _isDragging;
+}
+
++ (BOOL)isResizing {
+	return _isResizing;
 }
 
 + (BOOL)isPresentingWidget {
@@ -420,6 +426,10 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	
 	[_widget _setConfigured];
 	
+	// create shadow view
+	PWShadowView *shadowView = [self createShadowView];
+	if (shadowView != nil) [view addSubview:shadowView];
+	
 	// create container view
 	[view addSubview:[self createContainerView]];
 	
@@ -484,12 +494,17 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	_containerView.bounds = bounds;
 	_containerView.center = center;
 	
+	// mirror the change to shadow view
+	_shadowView.bounds = CGRectInset(bounds, -PWShadowViewRadius, -PWShadowViewRadius);
+	_shadowView.center = center;
+	
 	// update mask and show background view
 	[self _updateBackgroundViewMaskForPresentation];
 	[backgroundView show];
 	
 	// begin animation
 	CALayer *layer = _containerView.layer;
+	CALayer *shadowLayer = _shadowView.layer;
 	
 	CGSize screenSize = [[UIScreen mainScreen] bounds].size;
 	CGFloat screenHeight = [PWController isLandscape] ? screenSize.width : screenSize.height;
@@ -521,8 +536,13 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 			layer.opacity = 1.0;
 			layer.transform = CATransform3DMakeScale(1.0, 1.0, 1.0);
 			
+			shadowLayer.opacity = layer.opacity;
+			shadowLayer.transform = layer.transform;
+			
 			[layer addAnimation:fade forKey:@"fade"];
 			[layer addAnimation:scale forKey:@"scale"];
+			[shadowLayer addAnimation:fade forKey:@"fade"];
+			[shadowLayer addAnimation:scale forKey:@"scale"];
 			
 		} break;
 		
@@ -533,8 +553,10 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 			fade.toValue = @1.0;
 			
 			layer.opacity = 1.0;
+			shadowLayer.opacity = layer.opacity;
 			
 			[layer addAnimation:fade forKey:@"fade"];
+			[shadowLayer addAnimation:fade forKey:@"fade"];
 			
 		} break;
 		
@@ -545,8 +567,10 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 			position.toValue = @(center.y);
 			
 			layer.opacity = 1.0;
+			shadowLayer.opacity = layer.opacity;
 			
 			[layer addAnimation:position forKey:@"position"];
+			[shadowLayer addAnimation:position forKey:@"position"];
 			
 		} break;
 		
@@ -557,8 +581,10 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 			position.toValue = @(center.y);
 			
 			layer.opacity = 1.0;
+			shadowLayer.opacity = layer.opacity;
 			
 			[layer addAnimation:position forKey:@"position"];
+			[shadowLayer addAnimation:position forKey:@"position"];
 			
 		} break;
 		
@@ -605,6 +631,7 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	
 	// begin animation
 	CALayer *layer = _containerView.layer;
+	CALayer *shadowLayer = _shadowView.layer;
 	CGFloat scaleTo = .82;
 	
 	CGRect bounds = _containerView.bounds;
@@ -622,8 +649,9 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 		// remove theme
 		[_widget.theme removeTheme];
 		
-		// remove container view
+		// remove container and shadow view
 		[self removeContainerView];
+		[self removeShadowView];
 		
 		// this is to force release all the event handlers that may retain widget instance (inside block)
 		// then widget will never get released
@@ -655,8 +683,13 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 			layer.opacity = 0.0;
 			layer.transform = CATransform3DMakeScale(scaleTo, scaleTo, 1.0);
 			
+			shadowLayer.opacity = layer.opacity;
+			shadowLayer.transform = layer.transform;
+			
 			[layer addAnimation:fade forKey:@"fade"];
 			[layer addAnimation:scale forKey:@"scale"];
+			[shadowLayer addAnimation:fade forKey:@"fade"];
+			[shadowLayer addAnimation:scale forKey:@"scale"];
 			
 		} break;
 			
@@ -667,8 +700,10 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 			fade.toValue = @0.0;
 			
 			layer.opacity = 0.0;
+			shadowLayer.opacity = layer.opacity;
 			
 			[layer addAnimation:fade forKey:@"fade"];
+			[shadowLayer addAnimation:fade forKey:@"fade"];
 			
 		} break;
 			
@@ -681,8 +716,10 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 			position.toValue = @(toY);
 			
 			layer.position = CGPointMake(center.x, toY);
+			shadowLayer.position = layer.position;
 			
 			[layer addAnimation:position forKey:@"position"];
+			[shadowLayer addAnimation:position forKey:@"position"];
 			
 		} break;
 			
@@ -695,8 +732,10 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 			position.toValue = @(toY);
 			
 			layer.position = CGPointMake(center.x, toY);
+			shadowLayer.position = layer.position;
 			
 			[layer addAnimation:position forKey:@"position"];
+			[shadowLayer addAnimation:position forKey:@"position"];
 			
 		} break;
 			
@@ -737,6 +776,7 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	
 	// perform animation
 	CALayer *layer = _miniView.layer;
+	CALayer *shadowLayer = _shadowView.layer;
 	CGFloat scaleTo = _miniView.scale * 0.8;
 	
 	[CATransaction begin];
@@ -753,6 +793,9 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 		
 		// remove container view
 		[self removeContainerView];
+		
+		// remove shadow view
+		[self removeShadowView];
 		
 		// this is to force release all the event handlers that may retain widget instance (inside block)
 		// then widget will never get released
@@ -778,8 +821,15 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	layer.opacity = 0.0;
 	layer.transform = CATransform3DMakeScale(scaleTo, scaleTo, 1.0);
 	
+	shadowLayer.opacity = layer.opacity;
+	shadowLayer.transform = layer.transform;
+	
 	[layer addAnimation:fade forKey:@"fade"];
 	[layer addAnimation:scale forKey:@"scale"];
+	
+	[shadowLayer addAnimation:fade forKey:@"fade"];
+	[shadowLayer addAnimation:scale forKey:@"scale"];
+	
 	[CATransaction commit];
 	
 	return YES;
@@ -802,8 +852,10 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	// remove theme
 	[_widget.theme removeTheme];
 	
-	// remove container view
+	// remove views
+	[self removeMiniView];
 	[self removeContainerView];
+	[self removeShadowView];
 	
 	// this is to force release all the event handlers that may retain widget instance (inside block)
 	// then widget will never get released
@@ -855,7 +907,7 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	[_widget.theme enterSnapshotMode];
 		
 	// ask window to create a mini view with the container view
-	PWMiniView *miniView = [self createMiniView:_containerView];
+	PWMiniView *miniView = [self createMiniView];
 	_containerView.userInteractionEnabled = NO;
 	miniView.scale = [PWController sharedInstance]._miniViewScale; // retrieve the scale from preference
 	
@@ -865,6 +917,7 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	
 	// animate the layer
 	CALayer *layer = miniView.layer;
+	CALayer *shadowLayer = _shadowView.layer;
 	CGFloat fadeTo = .98;
 	CGFloat viewScale = miniView.scale;
 	CGPoint initialPosition = [self _miniViewCenter];
@@ -898,9 +951,18 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	layer.transform = CATransform3DMakeScale(viewScale, viewScale, 1.0);
 	layer.position = initialPosition;
 	
+	shadowLayer.opacity = layer.opacity;
+	shadowLayer.transform = layer.transform;
+	shadowLayer.position = layer.position;
+	
 	[layer addAnimation:fade forKey:@"fade"];
 	[layer addAnimation:scale forKey:@"scale"];
 	[layer addAnimation:position forKey:@"position"];
+	
+	[shadowLayer addAnimation:fade forKey:@"fade"];
+	[shadowLayer addAnimation:scale forKey:@"scale"];
+	[shadowLayer addAnimation:position forKey:@"position"];
+	
 	[CATransaction commit];
 		
 	return YES;
@@ -950,6 +1012,7 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	[_containerView retain];
 	[_containerView removeFromSuperview];
 	[view addSubview:_containerView];
+	_containerView.hidden = NO;
 	_containerView.userInteractionEnabled = YES;
 	[_containerView release];
 	
@@ -965,6 +1028,7 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	
 	// animate the layer
 	CALayer *layer = _containerView.layer;
+	CALayer *shadowLayer = _shadowView.layer;
 	CGFloat fadeFrom = .6;
 	
 	[CATransaction begin];
@@ -998,10 +1062,16 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	position.toValue = [NSValue valueWithCGPoint:layer.position];
 	
 	layer.transform = CATransform3DMakeScale(1.0, 1.0, 1.0);
+	shadowLayer.transform = layer.transform;
 	
 	[layer addAnimation:fade forKey:@"fade"];
 	[layer addAnimation:scale forKey:@"scale"];
 	[layer addAnimation:position forKey:@"position"];
+	
+	[shadowLayer addAnimation:fade forKey:@"fade"];
+	[shadowLayer addAnimation:scale forKey:@"scale"];
+	[shadowLayer addAnimation:position forKey:@"position"];
+	
 	[CATransaction commit];
 	
 	return YES;
@@ -1030,6 +1100,7 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	_isActive = YES;
 	[self.class updateActiveController:self];
 	[_containerView hideOverlay];
+	[_shadowView.superview bringSubviewToFront:_shadowView];
 	[_containerView.superview bringSubviewToFront:_containerView];
 	if (configureFirstResponder) {
 		[_widget.topViewController configureFirstResponder];
@@ -1073,7 +1144,7 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	RELEASE_VIEW(_containerView)
 }
 
-- (PWMiniView *)createMiniView:(UIView *)containerView {
+- (PWMiniView *)createMiniView {
 	
 	if (_miniView != nil) {
 		RELEASE_VIEW(_miniView);
@@ -1082,9 +1153,10 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	PWController *controller = [PWController sharedInstance];
 	PWView *view = controller.mainView;
 	
-	_miniView = [[PWMiniView alloc] initWithContainerView:containerView];
+	BOOL requiresLivePreview = [[PWController sharedInstance] getLivePreviewSettingForWidget:_widget];
+	_miniView = [[PWMiniView alloc] initWithContainerView:_containerView requiresLivePreview:requiresLivePreview];
 	_miniView.clipsToBounds = YES;
-	_miniView.frame = containerView.frame;
+	_miniView.frame = _containerView.frame;
 	
 	// configure gesture recognizers
 	UIPanGestureRecognizer *panRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleMiniViewPan:)];
@@ -1113,6 +1185,25 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	RELEASE_VIEW(_miniView)
 }
 
+- (PWShadowView *)createShadowView {
+	
+	// always return nil to avoid creation of shadow view
+	if (![PWController shouldShowShadowView]) return nil;
+	
+	if (_shadowView != nil) {
+		RELEASE_VIEW(_shadowView);
+	}
+	
+	CGFloat cornerRadius = _widget.theme.cornerRadius;
+	_shadowView = [[PWShadowView alloc] initWithCornerRadius:cornerRadius];
+	
+	return _shadowView;
+}
+
+- (void)removeShadowView {
+	RELEASE_VIEW(_shadowView);
+}
+
 - (void)adjustLayout {
 	
 	if (!_isPresented) return;
@@ -1134,7 +1225,9 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	
 	if (_isMinimized) {
 		// re-position mini view
-		_miniView.center = [self _miniViewCenter];
+		CGPoint center = [self _miniViewCenter];
+		_miniView.center = center;
+		_shadowView.center = center;
 	} else {
 		// resize widget
 		[self _resizeAnimated:NO];
@@ -1322,6 +1415,7 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	
 	CGRect bounds = [self _containerBounds];
 	CGPoint center = [self _containerCenterForBounds:bounds];
+	CGRect shadowBounds = CGRectInset(bounds, -PWShadowViewRadius, -PWShadowViewRadius);
 	
 	CGFloat cornerRadius = [_widget.theme cornerRadius];
 	
@@ -1335,6 +1429,9 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	
 	if (_isAnimating || !animated) {
 		
+		_shadowView.center = center;
+		_shadowView.bounds = shadowBounds;
+		
 		_containerView.center = center;
 		_containerView.bounds = bounds;
 		[_containerView setNeedsLayout];
@@ -1347,6 +1444,9 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	} else {
 		
 		[UIView animateWithDuration:PWAnimationDuration delay:0.0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionTransitionNone animations:^{
+			
+			_shadowView.center = center;
+			_shadowView.bounds = shadowBounds;
 			
 			// must not call layoutIfNeeded here, otherwise the navigation controller view
 			// will animate as well (as a result the navigation bar and cells animate in a weird way)
@@ -1508,6 +1608,7 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 		}
 		
 		[UIView animateWithDuration:PWTransitionAnimationDuration animations:^{
+			_shadowView.center = center;
 			_containerView.center = center;
 			_containerView.alpha = 1.0;
 		}];
@@ -1517,6 +1618,7 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 		_isDragging = YES;
 		
 		[UIView animateWithDuration:PWTransitionAnimationDuration animations:^{
+			_shadowView.center = center;
 			_containerView.center = center;
 			_containerView.alpha = .8;
 		}];
@@ -1527,6 +1629,112 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	
 	_hasContainerViewLocation = YES;
 	_containerViewLocation = location;
+}
+
+- (void)handleResizerPan:(UIPanGestureRecognizer *)sender {
+	
+	LOG(@"handleResizerPan: %@", sender);
+	
+	UIGestureRecognizerState state = [sender state];
+	
+	PWView *view = [PWController sharedInstance].mainView;
+	PWBackgroundView *backgroundView = view.backgroundView;
+	
+	CGSize viewSize = view.bounds.size;
+	CGSize containerViewSize = _containerView.bounds.size;
+	
+	CGFloat margin = 2.0;
+	CGFloat minX = containerViewSize.width / 2;
+	CGFloat maxX = viewSize.width - minX;
+	CGFloat minY = containerViewSize.height / 2;
+	CGFloat maxY = viewSize.height - minY;
+	
+	minX += margin;
+	maxX -= margin;
+	minY += margin;
+	maxY -= margin;
+	
+	// limit the moving bounds
+	CGPoint delta = [sender translationInView:view];
+	CGRect bounds = _containerView.bounds;
+	bounds.size.width += delta.x;
+	bounds.size.height += delta.y;
+	
+	const CGFloat minimizeSize = 200.0;
+	if (bounds.size.width <= minimizeSize) {
+		bounds.size.width = minimizeSize;
+		delta.x = minimizeSize - _containerView.bounds.size.width;
+	}
+	
+	if (bounds.size.height <= minimizeSize) {
+		bounds.size.height = minimizeSize;
+		delta.y = minimizeSize - _containerView.bounds.size.height;
+	}
+	
+	CGPoint center = _containerView.center;
+	center.x += delta.x / 2.0;
+	center.y += delta.y / 2.0;
+	
+	[sender setTranslation:CGPointZero inView:view];
+	
+	if (state == UIGestureRecognizerStateBegan || state == UIGestureRecognizerStateEnded) {
+		[self makeActive:YES];
+	}
+	
+	// hide background view when start dragging
+	if (state == UIGestureRecognizerStateBegan) {
+		if ([PWController shouldShowBackgroundView]) {
+			[backgroundView hide];
+		}
+	}
+	
+	if (state == UIGestureRecognizerStateEnded || state == UIGestureRecognizerStateCancelled || state == UIGestureRecognizerStateFailed) {
+		
+		_isResizing = NO;
+		
+		// show background view when stop dragging
+		// and adjust the mask rect
+		if ([PWController shouldShowBackgroundView]) {
+			
+			if ([PWController shouldMaskBackgroundView]) {
+				
+				CGFloat cornerRadius = [_widget.theme cornerRadius];
+				
+				[backgroundView setMaskRect:bounds fromRect:CGRectNull cornerRadius:cornerRadius animationType:PWBackgroundViewAnimationTypeNone presentationStyle:SettingPresentationStyle];
+			}
+			
+			[backgroundView show];
+		}
+		
+		_shadowView.center = center;
+		_shadowView.bounds = CGRectInset(bounds, -PWShadowViewRadius, -PWShadowViewRadius);
+		_containerView.center = center;
+		_containerView.bounds = bounds;
+		
+		[UIView animateWithDuration:PWTransitionAnimationDuration animations:^{
+			_containerView.alpha = 1.0;
+		}];
+		
+	} else {
+		
+		_isResizing = YES;
+		
+		_shadowView.center = center;
+		_shadowView.bounds = CGRectInset(bounds, -PWShadowViewRadius, -PWShadowViewRadius);
+		_containerView.center = center;
+		_containerView.bounds = bounds;
+		
+		[UIView animateWithDuration:PWTransitionAnimationDuration animations:^{
+			_containerView.alpha = .8;
+		}];
+	}
+	
+	/*
+	CGPoint centerMinusMargin = CGPointMake(center.x - margin, center.y - margin);
+	ReferenceLocation location = ReferenceLocationFromSizeAndCenter(containerViewSize, centerMinusMargin, viewSize);
+	
+	_hasContainerViewLocation = YES;
+	_containerViewLocation = location;*/
 }
 
 - (void)handleMiniViewPan:(UIPanGestureRecognizer *)sender {
@@ -1583,6 +1791,7 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 		
 		[UIView animateWithDuration:PWTransitionAnimationDuration * velocity animations:^{
 			_miniView.center = center;
+			_shadowView.center = center;
 		}];
 		
 	} else {
@@ -1597,6 +1806,7 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 		
 		[UIView animateWithDuration:PWTransitionAnimationDuration animations:^{
 			_miniView.center = center;
+			_shadowView.center = center;
 		}];
 	}
 	
@@ -1623,6 +1833,7 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	RELEASE_VIEW(_backgroundView)
 	RELEASE_VIEW(_containerView)
 	RELEASE_VIEW(_miniView)
+	RELEASE_VIEW(_shadowView)
 	[super dealloc];
 }
 

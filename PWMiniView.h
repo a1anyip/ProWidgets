@@ -19,7 +19,7 @@
 
 @property(nonatomic, assign) CGFloat scale;
 
-- (instancetype)initWithContainerView:(UIView *)containerView;
+- (instancetype)initWithContainerView:(UIView *)containerView requiresLivePreview:(BOOL)requiresLivePreview;
 - (void)setDragging:(BOOL)dragging;
 - (void)finishAnimation;
 

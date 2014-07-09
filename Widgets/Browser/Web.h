@@ -20,23 +20,26 @@
 	UIButton *_actionButton;
 	UIView *_separator;
 	UIWebView *_webView;
+	UITableView *_suggestionView;
 	//UILabel *_messageLabel;
 }
 
 @property(nonatomic, readonly) UITextField *textField;
 @property(nonatomic, readonly) UIWebView *webView;
+@property(nonatomic, readonly) UITableView *suggestionView;
 
-- (void)setDelegate:(id<UITextFieldDelegate, UIWebViewDelegate>)delegate;
+- (void)setDelegate:(id<UITextFieldDelegate, UIWebViewDelegate, UITableViewDelegate, UITableViewDataSource>)delegate;
 
 - (void)setTextFieldActive:(BOOL)active;
 - (void)setButtonState:(BOOL)loading;
 - (void)setButtonHidden:(BOOL)hidden;
 //- (void)setMessageLabelText:(NSString *)text;
 - (void)setWebViewActive:(BOOL)active;
+- (void)updateSuggestionView:(BOOL)hidden;
 
 @end
 
-@interface PWWidgetBrowserWebViewController : PWContentViewController<UIActionSheetDelegate, UITextFieldDelegate, UIWebViewDelegate> {
+@interface PWWidgetBrowserWebViewController : PWContentViewController<UIActionSheetDelegate, UITextFieldDelegate, UIWebViewDelegate, UITableViewDelegate, UITableViewDataSource> {
 	
 	// preference value
 	BOOL _hideHTTP;
@@ -49,6 +52,9 @@
 	UIBarButtonItem *_previous;
 	UIBarButtonItem *_next;
 	UIBarButtonItem *_more;
+	
+	PWWebRequest *_currentSuggestionRequest;
+	NSArray *_suggestionData;
 }
 
 - (PWWidgetBrowserWebView *)webView;

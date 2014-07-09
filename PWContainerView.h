@@ -16,6 +16,7 @@
 	UIImageView *_containerBackgroundView;
 	UIView *_overlayView;
 	UIView *_navigationControllerView;
+	UIImageView *_resizer;
 }
 
 @property(nonatomic, readonly) UIImageView *containerBackgroundView;
