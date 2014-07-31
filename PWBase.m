@@ -18,7 +18,6 @@
 #import "PWWidgetItemCell.h"
 #import "PWAlertView.h"
 #import "PWContentItemViewController.h"
-#import "PWContentViewControllerProtocol.h"
 
 #define PW_IMP_PREF_GETTER_OBJECT(name,type) - (type)name##ValueForPreferenceKey:(NSString *)key defaultValue:(type)defaultValue {\
 	if (key == nil) {\

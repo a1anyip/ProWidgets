@@ -44,6 +44,14 @@ typedef struct {
 	BOOL _hasMiniViewLocation;
 	ReferenceLocation _miniViewLocation;
 	
+	// translation
+	BOOL _touchingEdge;
+	CGPoint _movingCenter;
+	
+	// resize
+	BOOL _resized;
+	CGSize _resizedSize;
+	
 	PWBackgroundView *_backgroundView;
 	PWContainerView *_containerView;
 	PWMiniView *_miniView;
@@ -60,6 +68,9 @@ typedef struct {
 
 @property(nonatomic, assign) BOOL pendingDismissalRequest;
 @property(nonatomic, assign) CGFloat keyboardHeight;
+
+@property(nonatomic, readonly) BOOL resized;
+@property(nonatomic, readonly) CGSize resizedSize;
 
 @property(nonatomic, readonly) PWBackgroundView *backgroundView;
 @property(nonatomic, readonly) PWContainerView *containerView;
@@ -128,11 +139,13 @@ typedef struct {
 - (void)adjustLayout;
 
 // private methods
+- (CGSize)_autoAdjustSize:(CGSize)size;
 - (CGPoint)_containerCenterForBounds:(CGRect)bounds;
 - (CGRect)_containerBounds;
 - (CGPoint)_miniViewCenter;
 - (void)_updateBackgroundViewMaskForPresentation;
 - (void)_updateBackgroundViewMaskForMaximization;
+- (void)_repositionAnimated:(BOOL)animated;
 - (void)_resizeAnimated:(BOOL)animated;
 - (void)_resetKeyboardHeight;
 - (void)_keyboardWillShowHandler:(CGFloat)height;

@@ -8,9 +8,8 @@
 //
 
 #import "header.h"
-#import "PWContentViewControllerProtocol.h"
 
-@interface PWContentViewController : UIViewController<PWContentViewControllerProtocol> {
+@interface PWContentViewController : UIViewController {
 	
 	PWWidget *_widget;
 	
@@ -27,7 +26,6 @@
 	
 	NSMutableDictionary *_eventHandlers;
 }
-
 
 /**
  *  Indicates whether this content view controller should configure the standard buttons automatically.
@@ -257,6 +255,8 @@
  *  @return The content height for this content view controller in the specified orientation.
  */
 - (CGFloat)contentHeightForOrientation:(PWWidgetOrientation)orientation;
+
+- (void)willBePresentedInNavigationController:(UINavigationController *)navigationController;
 
 // this will be called internally
 - (void)_willBePresentedInNavigationController:(UINavigationController *)navigationController;

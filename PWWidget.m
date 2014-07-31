@@ -20,7 +20,6 @@
 #import "PWWidgetItem.h"
 #import "PWWidgetItemCell.h"
 #import "PWContentItemViewController.h"
-#import "PWContentViewControllerProtocol.h"
 #import "PWWidgetNavigationController.h"
 
 #define CHECK_CONFIGURED(x) if (![self _checkConfigured:_cmd]) return x;
@@ -330,7 +329,7 @@
 	[_navigationController popViewControllerAnimated:animated];
 }
 
-- (void)resizeWidgetAnimated:(BOOL)animated forContentViewController:(id<PWContentViewControllerProtocol>)viewController {
+- (void)resizeWidgetAnimated:(BOOL)animated forContentViewController:(PWContentViewController *)viewController {
 	if (_isPresenting) {
 		
 		if (viewController == nil || self.topViewController != viewController) {
@@ -405,17 +404,17 @@
 		[contentViewController _willBePresentedInNavigationController:navigationController];
 	}
 	
-	if ([viewController.class conformsToProtocol:@protocol(PWContentViewControllerProtocol)]) {
+	if ([viewController isKindOfClass:[PWContentViewController class]]) {
 		
-		id<PWContentViewControllerProtocol> contentViewController = (id<PWContentViewControllerProtocol>)viewController;
+		PWContentViewController *contentViewController = (PWContentViewController *)viewController;
 		
 		// auto resize
 		if (!self.widgetController.isAnimating)
 			[self resizeWidgetAnimated:YES forContentViewController:contentViewController];
 		
 		// delegate method
-		if ([contentViewController respondsToSelector:@selector(willBePresentedInNavigationController:)])
-			[contentViewController willBePresentedInNavigationController:navigationController];
+		//if ([contentViewController respondsToSelector:@selector(willBePresentedInNavigationController:)])
+		[contentViewController willBePresentedInNavigationController:navigationController];
 	}
 	
 	// auto set first responder
@@ -538,10 +537,8 @@
 	LOG(@"PWWidget: _dealloc");
 	
 	// ask all pushed view controller to release
-	for (id<PWContentViewControllerProtocol> viewController in _navigationController.viewControllers) {
-		if ([viewController isKindOfClass:[PWContentViewController class]]) {
-			[(PWContentViewController *)viewController _dealloc];
-		}
+	for (PWContentViewController *viewController in _navigationController.viewControllers) {
+		[viewController _dealloc];
 	}
 	
 	// release all view controllers on stack

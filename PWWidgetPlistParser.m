@@ -30,6 +30,12 @@
 		[widget setRequiresProtectedDataAccess:[requiresProtectedDataAccess boolValue]];
 	}
 	
+	// supportResizing
+	NSNumber *supportResizing = dict[@"supportResizing"];
+	if (supportResizing != nil) {
+		[widget setSupportResizing:[supportResizing boolValue]];
+	}
+	
 	// title
 	NSString *title = dict[@"title"];
 	if (title != nil) widget.title = T(title, bundle);

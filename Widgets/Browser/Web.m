@@ -191,6 +191,7 @@
 	
 	self.shouldAutoConfigureStandardButtons = NO;
 	self.wantsFullscreen = YES;
+	self.requiresKeyboard = YES;
 	
 	[self setHandlerForEvent:[PWContentViewController titleTappedEventName] target:self selector:@selector(titleTapped)];
 }
@@ -270,6 +271,7 @@
 	
 	NSURLRequest *request = [NSURLRequest requestWithURL:url];
 	[self.webView.webView loadRequest:request];
+	[self.webView updateSuggestionView:YES];
 }
 
 - (void)updateTitle {

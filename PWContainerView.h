@@ -27,4 +27,6 @@
 - (void)showOverlay;
 - (void)hideOverlay;
 
+- (void)setResizerEnabled:(BOOL)enabled;
+
 @end

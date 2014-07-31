@@ -245,11 +245,26 @@
 
 // content width
 - (CGFloat)contentWidthForOrientation:(PWWidgetOrientation)orientation {
+	
 	if (self.wantsFullscreen && ![PWController isIPad]) {
+		
 		CGRect screenRect = [[UIScreen mainScreen] bounds];
 		return orientation == PWWidgetOrientationLandscape ? screenRect.size.height : screenRect.size.width;
+		
 	} else {
-		return [[PWController sharedInstance] availableWidthInOrientation:orientation fullscreen:self.wantsFullscreen];
+		
+		CGFloat availableWidth = [[PWController sharedInstance] maximumWidthInOrientation:orientation];
+		
+		// just to make sure the sheet on iPad is not too large
+		if ([PWController isIPad]) {
+			if (self.wantsFullscreen) {
+				availableWidth *= 2.0  / 3.0;
+			} else {
+				availableWidth /= 2.0;
+			}
+		}
+		
+		return MAX(1.0, availableWidth - PWSheetHorizontalMargin * 2);
 	}
 }
 
@@ -261,7 +276,7 @@
 		return orientation == PWWidgetOrientationLandscape ? screenRect.size.width : screenRect.size.height;
 	} else if (self.shouldMaximizeContentHeight || (self.wantsFullscreen && [PWController isIPad])) {
 		PWController *controller = [PWController sharedInstance];
-		CGFloat maxHeight = [controller availableHeightInOrientation:orientation fullscreen:self.wantsFullscreen withKeyboard:self.requiresKeyboard];
+		CGFloat maxHeight = [controller availableHeightInOrientation:orientation fullscreen:self.wantsFullscreen withKeyboard:(self.requiresKeyboard && !self.wantsFullscreen)];
 		CGFloat navigationBarHeight = [controller heightOfNavigationBarInOrientation:orientation];
 		CGFloat availableHeight = MAX(1.0, maxHeight - navigationBarHeight);
 		return availableHeight;
@@ -291,7 +306,8 @@
 }
 
 - (BOOL)requiresKeyboard {
-	return _requiresKeyboard && !_wantsFullscreen;
+	//return _requiresKeyboard && !_wantsFullscreen;
+	return _requiresKeyboard;
 }
 
 - (void)setRequiresKeyboard:(BOOL)requiresKeyboard {
@@ -301,6 +317,8 @@
 		[widget resizeWidgetAnimated:YES forContentViewController:self];
 	}
 }
+
+- (void)willBePresentedInNavigationController:(UINavigationController *)navigationController {}
 
 - (void)_willBePresentedInNavigationController:(UINavigationController *)navigationController {
 	

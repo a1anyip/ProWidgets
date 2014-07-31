@@ -282,21 +282,16 @@ static inline void showWelcomeScreen(CFNotificationCenterRef center, void *obser
 	}
 }
 
-- (CGFloat)availableWidthInOrientation:(PWWidgetOrientation)orientation fullscreen:(BOOL)fullscreen {
-	
+- (CGFloat)maximumWidthInOrientation:(PWWidgetOrientation)orientation {
 	CGSize screenSize = [[UIScreen mainScreen] bounds].size;
 	CGFloat width = orientation == PWWidgetOrientationPortrait ? screenSize.width : screenSize.height;
-	
-	// just to make sure the sheet on iPad is not too large
-	if ([PWController isIPad]) {
-		if (fullscreen) {
-			width *= 2.0  / 3.0;
-		} else {
-			width /= 2.0;
-		}
-	}
-	
-	return MAX(1.0, width - PWSheetHorizontalMargin * 2);
+	return width;
+}
+
+- (CGFloat)maximumHeightInOrientation:(PWWidgetOrientation)orientation {
+	CGSize screenSize = [[UIScreen mainScreen] bounds].size;
+	CGFloat height = orientation == PWWidgetOrientationPortrait ? screenSize.height : screenSize.width;
+	return height;
 }
 
 - (CGFloat)availableHeightInOrientation:(PWWidgetOrientation)orientation fullscreen:(BOOL)fullscreen withKeyboard:(BOOL)withKeyboard {
@@ -312,11 +307,12 @@ static inline void showWelcomeScreen(CFNotificationCenterRef center, void *obser
 	// just to make sure the sheet on iPad is not too large
 	if ([PWController isIPad]) {
 		if (fullscreen) {
-			if (orientation == PWWidgetOrientationPortrait) {
+			/*if (orientation == PWWidgetOrientationPortrait) {
 				availableHeight *= 4.0 / 5.0;
 			} else if (orientation == PWWidgetOrientationLandscape) {
 				availableHeight *= 4.0 / 5.0;
-			}
+			}*/
+			availableHeight = 350.0; // fixed
 		} else {
 			if (orientation == PWWidgetOrientationPortrait) {
 				availableHeight /= 2.0;

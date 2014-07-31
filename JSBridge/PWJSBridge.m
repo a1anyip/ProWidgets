@@ -113,6 +113,21 @@
 	
 	// point "pw" to JSBridge
 	_context[@"pw"] = self;
+	
+	// alert
+	_context[@"alert"] = ^(NSString *content) {
+		PWBase *base = _scriptRef != nil ? _scriptRef : _widgetRef;
+		[base showMessage:content];
+	};
+	
+	// prompt
+	/*
+	_context[@"prompt"] = ^(NSString *content, JSValue *defaultValue) {
+		NSString *_defaultValue = [defaultValue isUndefined] ? nil : [defaultValue toString];
+		PWBase *base = _scriptRef != nil ? _scriptRef : _widgetRef;
+		[base prompt:content buttonTitle:@"OK" defaultValue:defaultValue style:UIAlertViewStylePlainTextInput completion:nil];
+	}
+	*/
 }
 
 - (void)setupAPI {

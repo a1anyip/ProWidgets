@@ -1234,17 +1234,32 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	}
 }
 
+- (CGSize)_autoAdjustSize:(CGSize)size {
+	
+	//PWContentViewController *viewController = (PWContentViewController *)_widget.topViewController;
+	PWWidgetOrientation orientation = [PWController currentOrientation];
+	
+	CGFloat maxWidth = [[PWController sharedInstance] maximumWidthInOrientation:orientation] - PWSheetHorizontalMargin * 2;
+	//CGFloat maxHeight = [[PWController sharedInstance] availableHeightInOrientation:orientation fullscreen:viewController.wantsFullscreen withKeyboard:viewController.requiresKeyboard];
+	CGFloat maxHeight = [[PWController sharedInstance] maximumHeightInOrientation:orientation] - PWSheetHorizontalMargin * 2;
+	
+	size.width = MAX(1.0, MIN(size.width, maxWidth));
+	size.height = MAX(1.0, MIN(size.height, maxHeight));
+	
+	return size;
+}
+
 - (CGPoint)_containerCenterForBounds:(CGRect)bounds {
 	
 	PWController *controller = [PWController sharedInstance];
 	PWView *view = controller.mainView;
-	id<PWContentViewControllerProtocol> viewController = _widget.topViewController;
+	PWContentViewController *viewController = _widget.topViewController;
 	
-	if (_widget == nil || viewController == nil || ![viewController.class conformsToProtocol:@protocol(PWContentViewControllerProtocol)])
+	if (_widget == nil || viewController == nil || ![viewController isKindOfClass:[PWContentViewController class]])
 		return CGPointZero;
 	
 	PWWidgetOrientation orientation = [PWController currentOrientation];
-	BOOL requiresKeyboard = viewController.requiresKeyboard;
+	BOOL requiresKeyboard = viewController.requiresKeyboard && ([PWController isIPad] || !viewController.wantsFullscreen);
 	
 	// set default keyboard height
 	if (_keyboardHeight == 0.0) {
@@ -1298,13 +1313,25 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	
 	PWController *controller = [PWController sharedInstance];
 	PWView *view = controller.mainView;
-	id<PWContentViewControllerProtocol> viewController = _widget.topViewController;
+	PWContentViewController *viewController = _widget.topViewController;
 	
-	if (_widget == nil || viewController == nil || ![viewController.class conformsToProtocol:@protocol(PWContentViewControllerProtocol)])
+	if (_widget == nil || viewController == nil || ![viewController isKindOfClass:[PWContentViewController class]])
 		return CGRectZero;
 	
 	PWWidgetOrientation orientation = [PWController currentOrientation];
 	//BOOL requiresKeyboard = viewController.requiresKeyboard;
+	
+	_resizedSize = [self _autoAdjustSize:_resizedSize];
+	
+	// ask the top view controller to update cell heights
+	if ([viewController isKindOfClass:[PWContentItemViewController class]]) {
+		LOG(@"PWContentItemViewController: Reload cell height");
+		[(PWContentItemViewController *)viewController reloadCellHeight];
+	}
+	
+	if (_resized && [PWController isIPad]) {
+		return CGRectMake(0, 0, _resizedSize.width, _resizedSize.height);
+	}
 	
 	// view dimensions
 	CGSize size = view.bounds.size;
@@ -1316,9 +1343,14 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	CGFloat containerWidth = MIN(MAX(0.0, contentWidth), width);
 	
 	// calculate container height
-	CGFloat contentHeight = [viewController contentHeightForOrientation:orientation];
-	CGFloat navigationBarHeight = [controller heightOfNavigationBarInOrientation:orientation];
-	CGFloat containerHeight = MIN(MAX(0.0, contentHeight + navigationBarHeight), height);
+	CGFloat containerHeight;
+	if (_resized) {
+		containerHeight = _resizedSize.height;
+	} else {
+		CGFloat contentHeight = [viewController contentHeightForOrientation:orientation];
+		CGFloat navigationBarHeight = [controller heightOfNavigationBarInOrientation:orientation];
+		containerHeight = MIN(MAX(0.0, contentHeight + navigationBarHeight), height);
+	}
 	
 	// container's rect
 	return CGRectMake(0, 0, containerWidth, containerHeight);
@@ -1401,6 +1433,54 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	[backgroundView setMaskRect:_containerView.frame fromRect:fromRect cornerRadius:cornerRadius animationType:PWBackgroundViewAnimationTypeMaximization presentationStyle:SettingPresentationStyle];
 }
 
+- (void)_repositionAnimated:(BOOL)animated {
+	
+	LOG(@"_repositionAnimated: %d", (int)animated);
+	
+	BOOL shouldUpdateBackgroundViewMask = _isActive && !_isMinimized && [PWController shouldMaskBackgroundView];
+	
+	PWView *mainView = [PWController sharedInstance].mainView;
+	PWBackgroundView *backgroundView = mainView.backgroundView;
+	
+	CGPoint currentCenter = _containerView.center;
+	CGRect bounds = _containerView.bounds;
+	CGPoint center = [self _containerCenterForBounds:bounds];
+	
+	CGFloat cornerRadius = [_widget.theme cornerRadius];
+	
+	if (CGPointEqualToPoint(currentCenter, center)) {
+		LOG(@"_repositionAnimated: center remain unchanged");
+		return;
+	}
+	
+	if (_isAnimating || !animated) {
+		
+		_shadowView.center = center;
+		_containerView.center = center;
+		
+		if (shouldUpdateBackgroundViewMask) {
+			[backgroundView setMaskRect:_containerView.frame fromRect:CGRectNull cornerRadius:cornerRadius animationType:PWBackgroundViewAnimationTypeNone presentationStyle:SettingPresentationStyle];
+		}
+		
+	} else {
+		
+		[UIView animateWithDuration:PWAnimationDuration delay:0.0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionTransitionNone animations:^{
+			
+			_shadowView.center = center;
+			_containerView.center = center;
+			
+		} completion:nil];
+		
+		CGRect rect = bounds;
+		rect.origin.x = center.x - bounds.size.width / 2;
+		rect.origin.y = center.y - bounds.size.height / 2;
+		
+		if (shouldUpdateBackgroundViewMask) {
+			[backgroundView setMaskRect:rect fromRect:CGRectNull cornerRadius:cornerRadius animationType:PWBackgroundViewAnimationTypeResize presentationStyle:SettingPresentationStyle];
+		}
+	}
+}
+
 - (void)_resizeAnimated:(BOOL)animated {
 	
 	LOG(@"_resizeAnimated: %d", (int)animated);
@@ -1433,9 +1513,13 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 		_shadowView.bounds = shadowBounds;
 		
 		_containerView.center = center;
-		_containerView.bounds = bounds;
-		[_containerView setNeedsLayout];
-		[_containerView layoutIfNeeded];
+		
+		if (!CGRectEqualToRect(currentBounds, bounds)) {
+			LOG(@"_resizeAnimated: container bounds changed from %@ to %@", NSStringFromCGRect(currentBounds), NSStringFromCGRect(bounds));
+			_containerView.bounds = bounds;
+			[_containerView setNeedsLayout];
+			[_containerView layoutIfNeeded];
+		}
 		
 		if (shouldUpdateBackgroundViewMask) {
 			[backgroundView setMaskRect:_containerView.frame fromRect:CGRectNull cornerRadius:cornerRadius animationType:PWBackgroundViewAnimationTypeNone presentationStyle:SettingPresentationStyle];
@@ -1451,8 +1535,12 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 			// must not call layoutIfNeeded here, otherwise the navigation controller view
 			// will animate as well (as a result the navigation bar and cells animate in a weird way)
 			_containerView.center = center;
-			_containerView.bounds = bounds;
-			[_containerView setNeedsLayout];
+			
+			if (!CGRectEqualToRect(currentBounds, bounds)) {
+				LOG(@"_resizeAnimated: container bounds changed from %@ to %@", NSStringFromCGRect(currentBounds), NSStringFromCGRect(bounds));
+				_containerView.bounds = bounds;
+				[_containerView setNeedsLayout];
+			}
 			
 			// force the background view to animate
 			UIView *containerBackgroundView = _containerView.containerBackgroundView;
@@ -1488,7 +1576,7 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 		_keyboardHeight = height;
 		
 		if (!_isAnimating && _isActive) {
-			[self _resizeAnimated:YES];
+			[self _repositionAnimated:YES];
 		}
 	}
 }
@@ -1504,7 +1592,7 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 		_keyboardHeight = keyboardHeight;
 		
 		if (!_isAnimating && _isActive) {
-			[self _resizeAnimated:YES];
+			[self _repositionAnimated:YES];
 		}
 	}
 }
@@ -1543,7 +1631,7 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 
 - (void)handleNavigationBarPan:(UIPanGestureRecognizer *)sender {
 	
-	LOG(@"handleNavigationBarPan: %@", sender);
+	//LOG(@"handleNavigationBarPan: %@", sender);
 	
 	UIGestureRecognizerState state = [sender state];
 	
@@ -1565,9 +1653,48 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	maxY -= margin;
 	
 	// limit the moving bounds
-	CGPoint center = [sender translationInView:view];
-	center.x = MAX(minX, MIN(_containerView.center.x + center.x, maxX));
-	center.y = MAX(minY, MIN(_containerView.center.y + center.y, maxY));
+	CGPoint centerDelta = [sender translationInView:view];
+	
+	if (state == UIGestureRecognizerStateBegan) {
+		_movingCenter = _containerView.center;
+	}
+	
+	_movingCenter.x += centerDelta.x;
+	_movingCenter.y += centerDelta.y;
+	
+	//LOG(@"Moving center: %.f / %.f", _movingCenter.x, _movingCenter.y);
+	
+	// edge detection
+	const CGFloat edgeSize = 50.0;
+	CGPoint touchLocation = [sender locationInView:view];
+	touchLocation.x += PWSheetMotionEffectDistance;
+	touchLocation.y += PWSheetMotionEffectDistance;
+	
+	if ([PWController isIPad] && touchLocation.x >= viewSize.width - edgeSize) {
+		// right
+		_touchingEdge = YES;
+		LOG(@"Entering right edge");
+	} else if ([PWController isIPad] && touchLocation.x <= edgeSize) {
+		// left
+		_touchingEdge = YES;
+		LOG(@"Entering left edge");
+	} else if (touchLocation.y <= edgeSize) {
+		// top
+		_touchingEdge = YES;
+		LOG(@"Entering top edge");
+	} else if (touchLocation.y >= viewSize.height - edgeSize) {
+		// bottom
+		_touchingEdge = YES;
+		LOG(@"Entering bottom edge");
+	} else if (_touchingEdge) {
+		// not in any edges
+		_touchingEdge = NO;
+		LOG(@"Leaving edge...");
+	}
+	
+	CGPoint center = _movingCenter;
+	center.x = MAX(minX, MIN(center.x, maxX));
+	center.y = MAX(minY, MIN(center.y, maxY));
 	
 	if (![PWController isIPad]) {
 		center.x = _containerView.center.x;
@@ -1635,6 +1762,8 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	
 	LOG(@"handleResizerPan: %@", sender);
 	
+	if (!_widget.supportResizing) return;
+	
 	UIGestureRecognizerState state = [sender state];
 	
 	PWView *view = [PWController sharedInstance].mainView;
@@ -1656,24 +1785,23 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	
 	// limit the moving bounds
 	CGPoint delta = [sender translationInView:view];
-	CGRect bounds = _containerView.bounds;
-	bounds.size.width += delta.x;
-	bounds.size.height += delta.y;
 	
-	const CGFloat minimizeSize = 200.0;
-	if (bounds.size.width <= minimizeSize) {
-		bounds.size.width = minimizeSize;
-		delta.x = minimizeSize - _containerView.bounds.size.width;
+	if (!_resized) {
+		_resized = YES;
+		_resizedSize = containerViewSize;
 	}
 	
-	if (bounds.size.height <= minimizeSize) {
-		bounds.size.height = minimizeSize;
-		delta.y = minimizeSize - _containerView.bounds.size.height;
-	}
+	if ([PWController isIPad]) _resizedSize.width += delta.x;
+	_resizedSize.height += delta.y;
+	
+	CGFloat minWidth = 200.0;
+	CGFloat minHeight = 200.0;
+	CGRect bounds = CGRectMake(0.0, 0.0, MAX(_resizedSize.width, minWidth), MAX(_resizedSize.height, minHeight));
+	bounds.size = [self _autoAdjustSize:bounds.size];
 	
 	CGPoint center = _containerView.center;
-	center.x += delta.x / 2.0;
-	center.y += delta.y / 2.0;
+	center.x += (bounds.size.width - containerViewSize.width) / 2.0;
+	center.y += (bounds.size.height - containerViewSize.height) / 2.0;
 	
 	[sender setTranslation:CGPointZero inView:view];
 	
@@ -1692,6 +1820,19 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 		
 		_isResizing = NO;
 		
+		_shadowView.center = center;
+		_shadowView.bounds = CGRectInset(bounds, -PWShadowViewRadius, -PWShadowViewRadius);
+		_containerView.center = center;
+		_containerView.bounds = bounds;
+		
+		_resizedSize = bounds.size;
+		
+		// reload cell height
+		PWContentItemViewController *topViewController = (PWContentItemViewController *)_widget.topViewController;
+		if ([topViewController isKindOfClass:[PWContentItemViewController class]]) {
+			[topViewController reloadCellHeight];
+		}
+		
 		// show background view when stop dragging
 		// and adjust the mask rect
 		if ([PWController shouldShowBackgroundView]) {
@@ -1700,16 +1841,11 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 				
 				CGFloat cornerRadius = [_widget.theme cornerRadius];
 				
-				[backgroundView setMaskRect:bounds fromRect:CGRectNull cornerRadius:cornerRadius animationType:PWBackgroundViewAnimationTypeNone presentationStyle:SettingPresentationStyle];
+				[backgroundView setMaskRect:_containerView.frame fromRect:CGRectNull cornerRadius:cornerRadius animationType:PWBackgroundViewAnimationTypeNone presentationStyle:SettingPresentationStyle];
 			}
 			
 			[backgroundView show];
 		}
-		
-		_shadowView.center = center;
-		_shadowView.bounds = CGRectInset(bounds, -PWShadowViewRadius, -PWShadowViewRadius);
-		_containerView.center = center;
-		_containerView.bounds = bounds;
 		
 		[UIView animateWithDuration:PWTransitionAnimationDuration animations:^{
 			_containerView.alpha = 1.0;
@@ -1724,17 +1860,22 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 		_containerView.center = center;
 		_containerView.bounds = bounds;
 		
+		// reload cell height
+		PWContentItemViewController *topViewController = (PWContentItemViewController *)_widget.topViewController;
+		if ([topViewController isKindOfClass:[PWContentItemViewController class]]) {
+			[topViewController reloadCellHeight];
+		}
+		
 		[UIView animateWithDuration:PWTransitionAnimationDuration animations:^{
 			_containerView.alpha = .8;
 		}];
 	}
 	
-	/*
 	CGPoint centerMinusMargin = CGPointMake(center.x - margin, center.y - margin);
 	ReferenceLocation location = ReferenceLocationFromSizeAndCenter(containerViewSize, centerMinusMargin, viewSize);
 	
 	_hasContainerViewLocation = YES;
-	_containerViewLocation = location;*/
+	_containerViewLocation = location;
 }
 
 - (void)handleMiniViewPan:(UIPanGestureRecognizer *)sender {

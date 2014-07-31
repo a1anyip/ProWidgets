@@ -21,6 +21,7 @@
 	
 	self.shouldAutoConfigureStandardButtons = NO;
 	self.wantsFullscreen = YES;
+	self.requiresKeyboard = YES;
 	
 	self.tableView.delegate = self;
 	self.tableView.dataSource = self;

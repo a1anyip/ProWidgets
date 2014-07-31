@@ -6,6 +6,8 @@
 	<string>Reminders</string>
 	<key>layout</key>
 	<string>PWWidgetLayoutCustom</string>
+	<key>supportResizing</key>
+	<true/>
 	<key>preferredTintColor</key>
 	<string>#FF5200</string>
 	<key>preferredBarTextColor</key>

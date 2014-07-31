@@ -10,9 +10,11 @@
 #import "PWContentItemViewController.h"
 #import "PWController.h"
 #import "PWWidget.h"
+#import "PWWidgetController.h"
 #import "PWWidgetPlistParser.h"
 #import "PWWidgetItem.h"
 #import "PWWidgetItemCell.h"
+#import "PWContainerView.h"
 #import "PWThemableTableView.h"
 #import "PWTheme.h"
 
@@ -107,6 +109,14 @@ static NSNumberFormatter *numberFormatter = nil;
 
 - (void)reload {
 	[self.tableView reloadData];
+}
+
+- (void)reloadCellHeight {
+	[self _updateFillHeight];
+	[UIView setAnimationsEnabled:NO];
+	[self.tableView beginUpdates];
+	[self.tableView endUpdates];
+	[UIView setAnimationsEnabled:YES];
 }
 
 - (void)configureFirstResponder {
@@ -674,11 +684,8 @@ static NSNumberFormatter *numberFormatter = nil;
 
 - (CGFloat)optimalContentHeightForOrientation:(PWWidgetOrientation)orientation {
 	
-	// update fill height in case the orientation is changed
-	[self _updateFillHeight];
-	
 	// reload the change in fill height, if any
-	[self reload];
+	[self reloadCellHeight];
 	
 	if (!self.shouldMaximizeContentHeight && !_itemsShouldFillHeight) {
 	
@@ -757,9 +764,20 @@ static NSNumberFormatter *numberFormatter = nil;
 	
 	LOG(@"_updateFillHeight");
 	
+	PWWidgetController *widgetController = self.widget.widgetController;
 	PWWidgetOrientation orientation = [PWController currentOrientation];
-	CGFloat availableHeight = [self _calculateAvailableHeightForOrientation:orientation];
-	CGFloat accumulatedHeight = MIN([self _calculateAccumulatedHeightForOrientation:orientation], availableHeight);
+	
+	CGFloat availableHeight;
+	CGFloat accumulatedHeight = [self _calculateAccumulatedHeightForOrientation:orientation];
+	
+	if (widgetController.resized) {
+		PWController *controller = [PWController sharedInstance];
+		CGFloat containerViewHeight = self.widget.widgetController.containerView.bounds.size.height;
+		CGFloat navigationBarHeight = [controller heightOfNavigationBarInOrientation:orientation];
+		availableHeight = containerViewHeight - navigationBarHeight;
+	} else {
+		availableHeight = [self _calculateAvailableHeightForOrientation:orientation];
+	}
 	
 	_itemsShouldFillHeight = NO;
 	
@@ -770,9 +788,22 @@ static NSNumberFormatter *numberFormatter = nil;
 		}
 	}
 	
+	const CGFloat minFillHeight = 60.0;
+	
 	if (_itemsShouldFillHeight) {
-		[self _setFillHeight:MAX(0.0, availableHeight - accumulatedHeight)];
+		
+		CGFloat fillHeight = availableHeight - accumulatedHeight;
+		if (fillHeight < minFillHeight) {
+			// allow scrolling because the content height is not sufficient for showing all rows
+			self.tableView.scrollEnabled = YES;
+		} else {
+			// disable scrolling
+			self.tableView.scrollEnabled = NO;
+		}
+		
+		[self _setFillHeight:MAX(minFillHeight, fillHeight)];
 	} else {
+		self.tableView.scrollEnabled = YES;
 		[self _setFillHeight:0.0];
 	}
 }

@@ -20,6 +20,7 @@
 	
 	self.shouldAutoConfigureStandardButtons = NO;
 	self.wantsFullscreen = YES;
+	self.requiresKeyboard = YES;
 	
 	_titleItem = [[PWWidgetItemTextField createItemForItemViewController:self] retain];
 	_titleItem.key = @"title";

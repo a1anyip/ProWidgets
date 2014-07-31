@@ -24,6 +24,7 @@
 }
 
 @property(nonatomic) BOOL requiresProtectedDataAccess;
+@property(nonatomic) BOOL supportResizing;
 
 @property(nonatomic, copy) NSString *name;
 @property(nonatomic, readonly) NSString *displayName;

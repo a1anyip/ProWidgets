@@ -28,6 +28,10 @@
 @property(nonatomic, retain) JSValue *didPresent;
 @property(nonatomic, retain) JSValue *willDismiss;
 @property(nonatomic, retain) JSValue *didDismiss;
+@property(nonatomic, retain) JSValue *willMinimize;
+@property(nonatomic, retain) JSValue *didMinimize;
+@property(nonatomic, retain) JSValue *willMaximize;
+@property(nonatomic, retain) JSValue *didMaximize;
 @property(nonatomic, retain) JSValue *configureFirstResponder;
 @property(nonatomic, retain) JSValue *itemValueChangedEventHandler;
 @property(nonatomic, retain) JSValue *closeEventHandler;
@@ -84,6 +88,10 @@
 	JSManagedValue *_didPresent;
 	JSManagedValue *_willDismiss;
 	JSManagedValue *_didDismiss;
+	JSManagedValue *_willMinimize;
+	JSManagedValue *_didMinimize;
+	JSManagedValue *_willMaximize;
+	JSManagedValue *_didMaximize;
 	JSManagedValue *_configureFirstResponder;
 	JSManagedValue *_itemValueChangedEventHandler;
 	JSManagedValue *_submitEventHandler;
@@ -100,6 +108,10 @@
 @property(nonatomic, retain) JSValue *didPresent;
 @property(nonatomic, retain) JSValue *willDismiss;
 @property(nonatomic, retain) JSValue *didDismiss;
+@property(nonatomic, retain) JSValue *willMinimize;
+@property(nonatomic, retain) JSValue *didMinimize;
+@property(nonatomic, retain) JSValue *willMaximize;
+@property(nonatomic, retain) JSValue *didMaximize;
 @property(nonatomic, retain) JSValue *configureFirstResponder;
 @property(nonatomic, retain) JSValue *itemValueChangedEventHandler;
 @property(nonatomic, retain) JSValue *submitEventHandler;

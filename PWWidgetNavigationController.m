@@ -8,7 +8,7 @@
 //
 
 #import "PWWidgetNavigationController.h"
-#import "PWContentViewControllerProtocol.h"
+#import "PWContentViewController.h"
 
 @implementation PWWidgetNavigationController
 
@@ -26,8 +26,8 @@
 	[self.topViewController.view endEditing:YES];
 	
 	for (UIViewController *viewController in viewControllers) {
-		if (![viewController.class conformsToProtocol:@protocol(PWContentViewControllerProtocol)]) {
-			LOG(@"PWWidgetNavigationController: Unable to set view controllers. Reason: one of the view controllers (%@) does not conform to PWContentViewControllerProtocol protocol.", viewController);
+		if (![viewController isKindOfClass:[PWContentViewController class]]) {
+			LOG(@"PWWidgetNavigationController: Unable to set view controllers. Reason: one of the view controllers (%@) is not a subclass of PWContentViewController.", viewController);
 			return;
 		}
 	}
@@ -49,10 +49,10 @@
 	
 	[self.topViewController.view endEditing:YES];
 	
-	if (![viewController.class conformsToProtocol:@protocol(PWContentViewControllerProtocol)] &&
+	if (![viewController isKindOfClass:[PWContentViewController class]] &&
 		![viewController isKindOfClass:objc_getClass("TKToneClassicsTableViewController")]) {
 		
-		LOG(@"PWWidgetNavigationController: Unable to push view controller (%@). Reason: view controller does not conform to PWContentViewControllerProtocol protocol.", viewController);
+		LOG(@"PWWidgetNavigationController: Unable to push view controller (%@). Reason: view controller is not a subclass of PWContentViewController.", viewController);
 		
 		return;
 	}

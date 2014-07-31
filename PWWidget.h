@@ -10,7 +10,6 @@
 #import "header.h"
 #import "PWBase.h"
 #import "PWAlertView.h"
-#import "PWContentViewControllerProtocol.h"
 #import "PWWidgetNavigationController.h"
 
 #define TEXT(class,key) [class localizedStringForKey:key value:nil table:nil]
@@ -65,7 +64,7 @@
 @property(nonatomic, copy) NSString *defaultItemViewControllerPlist;
 @property(nonatomic, readonly) PWContentItemViewController *defaultItemViewController;
 
-@property(nonatomic, readonly) id<PWContentViewControllerProtocol> topViewController;
+@property(nonatomic, readonly) PWContentViewController *topViewController;
 
 /**
  *  Retrieve the presented instance of the widget.
@@ -242,7 +241,7 @@
  *  @param animated       If YES, the container view will be resized using an animation
  *  @param viewController The content view controller to be asked to provide size information, normally the top view controller in navigation stack
  */
-- (void)resizeWidgetAnimated:(BOOL)animated forContentViewController:(id<PWContentViewControllerProtocol>)viewController;
+- (void)resizeWidgetAnimated:(BOOL)animated forContentViewController:(PWContentViewController *)viewController;
 
 /**
  *  Override this method to perform custom tasks when the widget is ready to be presented.

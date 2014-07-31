@@ -89,6 +89,11 @@
 - (void)reload;
 
 /**
+ *  Ask the table view of this item view controller to reload cell heights
+ */
+- (void)reloadCellHeight;
+
+/**
  *  Override this method to configure the first responder.
  *  The default implementation will make the first suitable item to become the first responder.
  */
