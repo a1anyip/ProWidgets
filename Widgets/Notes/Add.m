@@ -37,6 +37,8 @@
 	// fetch all calendars
 	NoteContext *noteContext = self.noteContext;
 	NSArray *stores = [noteContext allStores];
+	NoteStoreObject *defaultStore = [noteContext defaultStoreForNewNote];
+	NSUInteger defaultStoreIndex = 0;
 	
 	if ([stores count] == 0) {
 		[self.widget showMessage:@"You need at least one store to save notes." title:nil handler:^{
@@ -59,13 +61,17 @@
 		
 		if (accountName == nil) continue;
 		
+		if ([store isEqual:defaultStore]) {
+			defaultStoreIndex = i;
+		}
+		
 		[titles addObject:accountName];
 		[values addObject:@(i++)];
 	}
 	
 	PWWidgetItemListValue *item = (PWWidgetItemListValue *)[self itemWithKey:@"account"];
 	[item setListItemTitles:titles values:values];
-	[item setValue:@[@(0)]];
+	[item setValue:@[@(defaultStoreIndex)]];
 	
 	_stores = [stores retain];
 }

@@ -85,7 +85,8 @@
 }
 
 - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
-	return YES;
+	PWWidgetBrowserDefault defaultBrowser = [(PWWidgetBrowser *)self.widget defaultBrowser];
+	return defaultBrowser == PWWidgetBrowserDefaultSafari;
 }
 
 - (UITableViewCellEditingStyle)tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -246,8 +247,28 @@
 		
 	} else if (defaultBrowser == PWWidgetBrowserDefaultChrome) {
 		
-		NSDictionary *dict = [PWWidgetBrowser readChromeBookmarks];
-		LOG(@"%@", dict);
+		NSArray *bookmarks = [PWWidgetBrowser readChromeBookmarks];
+		
+		if (_isRoot) {
+			[_items release];
+			_items = [bookmarks mutableCopy];
+		} else {
+			// search for the array with specified identifier
+			__block void(^search)(NSArray *) = ^void(NSArray *root) {
+				for (NSDictionary *item in root) {
+					NSNumber *identifier = item[@"identifier"];
+					NSArray *children = item[@"children"];
+					if ([identifier unsignedIntegerValue] == _folderIdentifier) {
+						[_items release];
+						_items = [children mutableCopy];
+					} else {
+						// continue searching its children
+						search(children);
+					}
+				}
+			};
+			search(bookmarks);
+		}
 	}
 	
 	[self.tableView reloadData];

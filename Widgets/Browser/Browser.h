@@ -40,6 +40,6 @@
 - (void)switchToWebInterface;
 - (void)switchToBookmarkInterface;
 
-+ (NSDictionary *)readChromeBookmarks;
++ (NSArray *)readChromeBookmarks;
 
 @end

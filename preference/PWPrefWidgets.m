@@ -1,3 +1,4 @@
+#import "PWPrefController.h"
 #import "PWPrefWidgets.h"
 #import "PWPrefWidgetsView.h"
 #import "PWPrefWidgetPreference.h"
@@ -284,6 +285,10 @@ extern NSBundle *bundle;
 			[infoView setName:info[@"displayName"]];
 			[infoView setAuthor:info[@"author"]];
 			[infoView setDescription:info[@"description"]];
+			[infoView setLivePreviewHidden:NO];
+			[infoView setLivePreviewEnabledState:[info[@"requiresLivePreview"] boolValue]];
+			[infoView setLivePreviewSwitchTarget:self action:@selector(_infoViewLivePreviewSwitchHandler:info:)];
+			[infoView setLivePreviewSwitchInfo:@{ @"name":info[@"name"] }];
 			[infoView setConfirmButtonTitle:@"Uninstall"];
 			
 			if ([info[@"installedViaURL"] boolValue]) {
@@ -297,6 +302,23 @@ extern NSBundle *bundle;
 			[self presentViewController:infoViewController animated:YES completion:nil];
 		}
 	}
+}
+
+- (void)_infoViewLivePreviewSwitchHandler:(UISwitch *)sender info:(NSDictionary *)info {
+	
+	BOOL on = sender.on;
+	NSString *name = info[@"name"];
+	if (name == nil) return;
+	
+	PWPrefController *parent = (PWPrefController *)self.parentController;
+	NSMutableDictionary *settings = [[parent valueForKey:@"livePreviewSettings"] mutableCopy];
+	if (on) {
+		settings[name] = @YES;
+	} else {
+		[settings removeObjectForKey:name];
+	}
+	
+	[parent updateValue:settings forKey:@"livePreviewSettings"];
 }
 
 - (void)_infoViewConfirmButtonHandler:(NSDictionary *)info {

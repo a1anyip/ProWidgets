@@ -153,7 +153,7 @@ ICON_GETTER(folderIcon, @"BookmarksListFolder")
 	_currentInterface = PWWidgetBrowserInterfaceBookmark;
 }
 
-+ (NSDictionary *)readChromeBookmarks {
++ (NSArray *)readChromeBookmarks {
 	
 	SBApplicationController *controller = [objc_getClass("SBApplicationController") sharedInstance];
 	SBApplication *chromeApp = [controller applicationWithDisplayIdentifier:ChromeIdentifier];
@@ -165,20 +165,54 @@ ICON_GETTER(folderIcon, @"BookmarksListFolder")
 	NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
 	NSDictionary *roots = json[@"roots"];
 	
+	NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
+	[formatter setNumberStyle:NSNumberFormatterDecimalStyle];
+	
+	__block NSArray *(^iterateItems)(NSArray *) = ^NSArray *(NSArray *parent) {
+		
+		if (parent == nil) {
+			return nil;
+		}
+		
+		NSMutableArray *items = [NSMutableArray array];
+		
+		for (NSDictionary *root in parent) {
+			
+			if (![root isKindOfClass:[NSDictionary class]]) continue;
+			
+			NSNumber *identifier = [formatter numberFromString:root[@"id"]];
+			NSString *name = root[@"name"];
+			NSString *type = root[@"type"];
+			NSString *url = root[@"url"];
+			BOOL isFolder = [type isEqualToString:@"folder"];
+			
+			if (identifier == nil) continue;
+			if (name == nil) name = @"";
+			if (url == nil) url = @"";
+			
+			NSMutableDictionary *row = [[@{ @"identifier": identifier, @"title": name, @"address": url, @"isFolder": @(isFolder) } mutableCopy] autorelease];
+			
+			NSArray *children = isFolder ? iterateItems(root[@"children"]) : nil;
+			if (children != nil) {
+				row[@"children"] = children;
+			}
+			
+			[items addObject:row];
+		}
+		
+		return items;
+	};
+	
+	NSMutableArray *rootArray = [NSMutableArray array];
 	for (NSString *key in roots) {
-		
-		NSDictionary *rootFolder = roots[key];
-		if (![rootFolder isKindOfClass:[NSDictionary class]]) continue;
-		
-		NSString *name = rootFolder[@"name"];
-		NSString *type = rootFolder[@"type"];
-		if (![type isEqualToString:@"folder"]) continue;
-		
-		LOG(@"key: %@", key);
-		LOG(@"name: %@", name);
+		NSDictionary *item = roots[key];
+		[rootArray addObject:item];
 	}
 	
-	return nil;//json;
+	NSArray *result = iterateItems(rootArray);
+	RELEASE(formatter)
+	
+	return result;
 }
 
 - (void)dealloc {

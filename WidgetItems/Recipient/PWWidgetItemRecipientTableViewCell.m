@@ -98,7 +98,7 @@ char PWWidgetItemRecipientTableViewCellRecipientKey;
 	NSDictionary *attrs = @{ NSFontAttributeName: regularFont };
 	NSDictionary *boldAttrs = @{ NSFontAttributeName: boldFont };
 	
-	NSString *text = [NSString stringWithFormat:@"%@%@%@", type, ([type length] == 0 ? @"" : @"  "), address];
+	NSString *text = [NSString stringWithFormat:@"%@%@%@", (type == nil ? @"" : type), ([type length] == 0 ? @"" : @"  "), (address == nil ? @"" : address)];
 	NSMutableAttributedString *attributedText = [[NSMutableAttributedString alloc] initWithString:text attributes:attrs];
 	
 	if ([type length] > 0) {

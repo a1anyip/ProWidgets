@@ -1243,7 +1243,10 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	//CGFloat maxHeight = [[PWController sharedInstance] availableHeightInOrientation:orientation fullscreen:viewController.wantsFullscreen withKeyboard:viewController.requiresKeyboard];
 	CGFloat maxHeight = [[PWController sharedInstance] maximumHeightInOrientation:orientation] - PWSheetHorizontalMargin * 2;
 	
-	size.width = MAX(1.0, MIN(size.width, maxWidth));
+	
+	
+	// widget width cannot be resized on iPhone
+	if ([PWController isIPad]) size.width = MAX(1.0, MIN(size.width, maxWidth));
 	size.height = MAX(1.0, MIN(size.height, maxHeight));
 	
 	return size;
@@ -1302,7 +1305,7 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 		maxY -= margin;
 		
 		// limit the moving bounds
-		center.x = MAX(minX, MIN(center.x, maxX));
+		center.x = [PWController isIPad] ? MAX(minX, MIN(center.x, maxX)) : viewSize.width / 2;
 		center.y = MAX(minY, MIN(center.y, maxY));
 		
 		return center;
@@ -1335,12 +1338,12 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	
 	// view dimensions
 	CGSize size = view.bounds.size;
-	CGFloat width = size.width;
+	//CGFloat width = size.width;
 	CGFloat height = size.height;
 	
 	// calculate container width
 	CGFloat contentWidth = [viewController contentWidthForOrientation:orientation];
-	CGFloat containerWidth = MIN(MAX(0.0, contentWidth), width);
+	CGFloat containerWidth = MAX(0.0, contentWidth);
 	
 	// calculate container height
 	CGFloat containerHeight;

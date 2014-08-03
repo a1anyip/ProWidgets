@@ -1,3 +1,5 @@
+@class NoteStoreObject;
+
 @interface NSEntityDescription : NSObject
 
 + (id)insertNewObjectForEntityForName:(NSString *)entityName inManagedObjectContext:(id)context;
@@ -10,7 +12,7 @@
 - (NSArray *)allVisibleNotes;
 
 - (id)managedObjectContext;
-- (id)defaultStoreForNewNote;
+- (NoteStoreObject *)defaultStoreForNewNote;
 - (id)allStores;
 - (id)nextIndex;
 - (void)enableChangeLogging:(BOOL)enabled;

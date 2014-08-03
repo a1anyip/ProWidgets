@@ -18,9 +18,6 @@
 - (instancetype)initWithContainerView:(UIView *)containerView requiresLivePreview:(BOOL)requiresLivePreview {
 	if ((self = [super init])) {
 		
-		// for snapshot
-		BOOL requiresLivePreview = NO;
-		
 		_containerView = containerView;
 		[containerView retain];
 		[containerView removeFromSuperview];

@@ -1,6 +1,6 @@
 //
 //  ProWidgets
-//  Bootstrap (inject the library into SpringBoard)
+//  Lock Screen
 //
 //  1.0.0
 //

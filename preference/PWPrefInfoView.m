@@ -45,6 +45,23 @@ extern NSBundle *bundle;
 		_descriptionTextView.dataDetectorTypes = UIDataDetectorTypeAll;
 		[self addSubview:_descriptionTextView];
 		
+		// add live preview row
+		_livePreviewLabel = [UILabel new];
+		_livePreviewLabel.text = @"Live Preview:";
+		_livePreviewLabel.textColor = [UIColor colorWithWhite:0.5 alpha:1.0];
+		_livePreviewLabel.font = [UIFont systemFontOfSize:16];
+		_livePreviewLabel.hidden = YES;
+		[self addSubview:_livePreviewLabel];
+		
+		_livePreviewSwitch = [UISwitch new];
+		_livePreviewSwitch.hidden = YES;
+		[_livePreviewSwitch addTarget:self action:@selector(_livePreviewSwitchHandler) forControlEvents:UIControlEventValueChanged];
+		[self addSubview:_livePreviewSwitch];
+		
+		_livePreviewSeparator = [UIView new];
+		_livePreviewSeparator.backgroundColor = [UIColor colorWithWhite:.8 alpha:1.0];
+		[self addSubview:_livePreviewSeparator];
+		
 		// add separator
 		_separator = [UIView new];
 		_separator.backgroundColor = [UIColor colorWithWhite:.8 alpha:1.0];
@@ -71,6 +88,7 @@ extern NSBundle *bundle;
 	CGFloat iconSize = 25.0;
 	CGFloat nameHeight = 40.0;
 	CGFloat authorHeight = 40.0;
+	CGFloat livePreviewHeight = _showLivePreview ? (isLandscape ? 35.0 : 40.0) : 0.0;
 	CGFloat buttonHeight = isLandscape ? 35.0 : 50.0;
 	CGFloat navigationBarHeight = isLandscape ? 32.0 : 44.0;
 	
@@ -90,7 +108,16 @@ extern NSBundle *bundle;
 	CGRect separatorRect = CGRectMake(0, authorRect.origin.y + authorRect.size.height + yMargin - .5, width, .5);
 	
 	CGRect descriptionRect = CGRectMake(0, separatorRect.origin.y + .5, width, 0);
-	descriptionRect.size.height = height - descriptionRect.origin.y - buttonHeight;
+	descriptionRect.size.height = height - descriptionRect.origin.y - buttonHeight - livePreviewHeight;
+	
+	CGRect livePreviewLabelRect = CGRectMake(10.0, height - buttonHeight - livePreviewHeight, 200.0, livePreviewHeight);
+	
+	[_livePreviewSwitch sizeToFit];
+	CGRect livePreviewSwitchRect = _livePreviewSwitch.frame;
+	livePreviewSwitchRect.origin.x = width - xMargin / 2 - livePreviewSwitchRect.size.width;
+	livePreviewSwitchRect.origin.y = height - buttonHeight - livePreviewHeight + (livePreviewHeight - livePreviewSwitchRect.size.height) / 2;
+	
+	CGRect livePreviewSeparatorRect = CGRectMake(0, height - buttonHeight - livePreviewHeight, width, .5);
 	
 	CGRect buttonRect = CGRectMake(0, height - buttonHeight, width, buttonHeight);
 	
@@ -99,6 +126,9 @@ extern NSBundle *bundle;
 	_authorLabel.frame = authorRect;
 	_separator.frame = separatorRect;
 	_descriptionTextView.frame = descriptionRect;
+	_livePreviewLabel.frame = livePreviewLabelRect;
+	_livePreviewSwitch.frame = livePreviewSwitchRect;
+	_livePreviewSeparator.frame = livePreviewSeparatorRect;
 	_confirmButton.frame = buttonRect;
 }
 
@@ -116,6 +146,32 @@ extern NSBundle *bundle;
 
 - (void)setDescription:(NSString *)description {
 	_descriptionTextView.text = description;
+}
+
+- (void)setLivePreviewHidden:(BOOL)hidden {
+	_showLivePreview = !hidden;
+	_livePreviewLabel.hidden = hidden;
+	_livePreviewSwitch.hidden = hidden;
+	_livePreviewSeparator.hidden = hidden;
+	[self setNeedsLayout];
+}
+
+- (void)setLivePreviewEnabledState:(BOOL)state {
+	_livePreviewSwitch.on = state;
+}
+
+- (void)setLivePreviewSwitchTarget:(id)target action:(SEL)action {
+	_livePreviewSwitchTarget = target;
+	_livePreviewSwitchAction = action;
+}
+
+- (void)setLivePreviewSwitchInfo:(NSDictionary *)info {
+	[_livePreviewSwitchInfo release];
+	_livePreviewSwitchInfo = [info retain];
+}
+
+- (void)_livePreviewSwitchHandler {
+	[_livePreviewSwitchTarget performSelector:_livePreviewSwitchAction withObject:_livePreviewSwitch withObject:_livePreviewSwitchInfo];
 }
 
 - (void)setConfirmButtonType:(PWPrefInfoViewConfirmButtonType)type {
@@ -169,7 +225,10 @@ extern NSBundle *bundle;
 	RELEASE_VIEW(_authorLabel)
 	RELEASE_VIEW(_separator)
 	RELEASE_VIEW(_descriptionTextView)
+	RELEASE_VIEW(_livePreviewLabel)
+	RELEASE_VIEW(_livePreviewSwitch)
 	RELEASE_VIEW(_confirmButton)
+	RELEASE(_livePreviewSwitchInfo)
 	RELEASE(_confirmButtonInfo)
 	[super dealloc];
 }
