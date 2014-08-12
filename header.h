@@ -8,8 +8,8 @@
 //////////////////////////////////////////////////////////////////////
 
 // Configuration
-#define LOG_DEBUG 1
-#define LOG_DEALLOC 1
+//#define LOG_DEBUG 1
+//#define LOG_DEALLOC 1
 //#define LOG_DURATION 1
 
 #define VERSION 100

@@ -1243,8 +1243,6 @@ static inline CGPoint CenterFromReferenceLocation(ReferenceLocation location, CG
 	//CGFloat maxHeight = [[PWController sharedInstance] availableHeightInOrientation:orientation fullscreen:viewController.wantsFullscreen withKeyboard:viewController.requiresKeyboard];
 	CGFloat maxHeight = [[PWController sharedInstance] maximumHeightInOrientation:orientation] - PWSheetHorizontalMargin * 2;
 	
-	
-	
 	// widget width cannot be resized on iPhone
 	if ([PWController isIPad]) size.width = MAX(1.0, MIN(size.width, maxWidth));
 	size.height = MAX(1.0, MIN(size.height, maxHeight));

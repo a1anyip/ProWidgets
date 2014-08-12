@@ -76,6 +76,7 @@ static inline void createButton() {
 	button = [UIButton new];
 	button.tag = BTN_TAG;
 	button.userInteractionEnabled = YES;
+	button.exclusiveTouch = YES;
 	button.adjustsImageWhenHighlighted = YES;
 	button.showsTouchWhenHighlighted = NO;
 	button.backgroundColor = [UIColor clearColor];
@@ -86,6 +87,12 @@ static inline void createButton() {
 	button.imageView.tintColor = [UIColor whiteColor];
 	button.imageView.contentMode = UIViewContentModeScaleAspectFit;
 }
+
+%hook UIButton
+
+//- (BOOL)hitTest:(CGPoint)point withEvent
+
+%end
 
 @interface CALayer ()
 
@@ -149,8 +156,8 @@ static inline void updateButton(NSString *widgetName) {
 	
 	SBWallpaperEffectView *wallpaperEffect = [[objc_getClass("SBWallpaperEffectView") alloc] initWithWallpaperVariant:0];
 	wallpaperEffect.frame = button.bounds;
-	wallpaperEffect.style = 6;
-	[wallpaperEffect setMaskImage:image masksBlur:NO masksTint:NO];
+	wallpaperEffect.style = 9;
+	//[wallpaperEffect setMaskImage:image masksBlur:NO masksTint:NO];
 	[button addSubview:wallpaperEffect];
 	[wallpaperEffect release];
 	/*
@@ -184,6 +191,22 @@ static inline void updateButton(NSString *widgetName) {
 	
 	CGPoint location = [gestureRecognizer locationInView:button];
 	BOOL contains = CGRectContainsPoint(button.bounds, location);
+	
+	//NSLog(@"***** SBLockScreenBounceAnimator: _handleTapGesture: %@ (%@) (%d)", gestureRecognizer, NSStringFromCGPoint(location), contains);
+	
+	if (!button.hidden && contains) {
+		buttonPressed();
+	} else {
+		%orig;
+	}
+}
+
+- (void)_handlePanGesture:(UIPanGestureRecognizer *)gestureRecognizer {
+	
+	CGPoint location = [gestureRecognizer locationInView:button];
+	BOOL contains = CGRectContainsPoint(button.bounds, location);
+	
+	//NSLog(@"***** SBLockScreenBounceAnimator: _handlePanGesture: %@ (%@) (%d)", gestureRecognizer, NSStringFromCGPoint(location), contains);
 	
 	if (!button.hidden && contains) {
 		buttonPressed();

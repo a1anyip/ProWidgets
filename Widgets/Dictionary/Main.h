@@ -17,5 +17,6 @@
 
 - (void)setWord:(NSString *)word;
 - (void)setFirstResponder;
+- (void)resignFirstResponder;
 
 @end

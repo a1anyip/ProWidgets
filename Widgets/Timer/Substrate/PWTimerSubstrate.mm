@@ -108,7 +108,7 @@ static inline __attribute__((constructor)) void init() {
 				NSTimeInterval referenceTime = [NSDate timeIntervalSinceReferenceDate];
 				[manager scheduleAt:referenceTime + duration withSound:sound];
 				CLOCKMANAGER_UPDATE;
-				UI_UPDATE;
+				//UI_UPDATE;
 				
 				NSInteger state = manager.state;
 				NSTimeInterval fireTime = manager.fireTime;

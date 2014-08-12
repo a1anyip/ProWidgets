@@ -21,9 +21,27 @@
 #define BTN_INITIAL_ALPHA .3
 #define BTN_PRESSED_ALPHA .8
 
+//static SBBulletinViewController *bulletinViewController;
 static BOOL enabled = YES;
 static char PWTodayViewTomorrowSectionKey;
+/*
+%hook SBBulletinViewController
 
+- (id)init {
+	id instance = %orig;
+	bulletinViewController = instance;
+	return instance;
+}
+
+- (void)dealloc {
+	if (bulletinViewController == self) {
+		bulletinViewController = nil;
+	}
+	%orig;
+}
+
+%end
+*/
 %hook SBTodayWidgetAndTomorrowSectionHeaderView
 
 - (id)initWithFrame:(CGRect)frame {
@@ -94,6 +112,13 @@ static char PWTodayViewTomorrowSectionKey;
 		
 		// retrieve SBBulletinViewController
 		SBBulletinViewController *controller = (SBBulletinViewController *)tableView.delegate;
+		
+		if (![controller isKindOfClass:objc_getClass("SBBulletinViewController")]) {
+			// fix crash in LockInfo7
+			controller = nil;
+		}
+		
+//		SBBulletinViewController *controller = bulletinViewController;
 		if (controller != nil && section != NSNotFound) {
 			NSArray *sections = *(NSArray **)instanceVar(controller, "_orderedSections");
 			if (sections != NULL) {

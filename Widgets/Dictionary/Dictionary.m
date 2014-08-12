@@ -75,6 +75,8 @@
 			[self popViewControllerAnimated:YES];
 		}
 		
+		[_mainViewController resignFirstResponder];
+		
 		[[PWWidgetDictionary widget] showMessage:@"No definition found. Please check that you have installed at least one dictionary asset. Manage dictionary assets in the preference page of Dictionary widget." title:nil handler:^{
 			
 			self.shouldAutoFocus = YES;

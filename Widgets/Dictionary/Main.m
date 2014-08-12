@@ -46,4 +46,9 @@
 	[word becomeFirstResponder];
 }
 
+- (void)resignFirstResponder {
+	PWWidgetItem *word = [self itemWithKey:@"word"];
+	[word resignFirstResponder];
+}
+
 @end
