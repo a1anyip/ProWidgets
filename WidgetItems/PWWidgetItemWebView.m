@@ -18,43 +18,33 @@
 	return [PWWidgetItemWebViewCell class];
 }
 
+- (instancetype)init {
+	if ((self = [super init])) {
+		
+		_webView = [UIWebView new];
+		//_webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+		_webView.allowsInlineMediaPlayback = NO;
+		_webView.mediaPlaybackAllowsAirPlay = NO;
+		_webView.backgroundColor = [UIColor clearColor];
+		_webView.opaque = NO;
+	}
+	return self;
+}
+
 - (void)loadData:(NSData *)data MIMEType:(NSString *)MIMEType textEncodingName:(NSString *)encodingName baseURL:(NSURL *)baseURL {
-	[self _setPendingContent:@{
-		@"type": @"data",
-		@"data": SAFE_VALUE(data),
-		@"mime": SAFE_VALUE(MIMEType),
-		@"encoding": SAFE_VALUE(encodingName),
-		@"baseURL": SAFE_VALUE(baseURL)
-	}];
+	[_webView loadData:data MIMEType:MIMEType textEncodingName:encodingName baseURL:baseURL];
 }
 
 - (void)loadHTMLString:(NSString *)string baseURL:(NSURL *)baseURL {
-	[self _setPendingContent:@{
-		@"type": @"string",
-		@"string": SAFE_VALUE(string),
-		@"baseURL": SAFE_VALUE(baseURL)
-	}];
+	[_webView loadHTMLString:string baseURL:baseURL];
 }
 
 - (void)loadRequest:(NSURLRequest *)request {
-	[self _setPendingContent:@{
-		@"type": @"request",
-		@"request": SAFE_VALUE(request)
-	}];
-}
-
-- (void)_setPendingContent:(NSDictionary *)content {
-	[_pendingContent release];
-	_pendingContent = [content retain];
-	[self setCellValue:nil];
-}
-
-- (void)_clearPendingContent {
-	[_pendingContent release], _pendingContent = nil;
+	[_webView loadRequest:request];
 }
 
 - (void)dealloc {
-	RELEASE(_pendingContent)
+	RELEASE_VIEW(_webView);
 	[super dealloc];
 }
 
@@ -70,60 +60,30 @@
 
 //////////////////////////////////////////////////////////////////////
 
-- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
-	if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier])) {
-		
-		_webView = [UIWebView new];
-		_webView.allowsInlineMediaPlayback = NO;
-		_webView.mediaPlaybackAllowsAirPlay = NO;
-		_webView.backgroundColor = [UIColor clearColor];
-		_webView.opaque = NO;
-		
-		[self.contentView addSubview:_webView];
-	}
-	return self;
-}
-
 - (void)layoutSubviews {
 	[super layoutSubviews];
-	_webView.frame = self.contentView.bounds;
+	_itemWebView.frame = self.bounds;
 }
 
 //////////////////////////////////////////////////////////////////////
 
 - (void)setTitle:(NSString *)title {}
 
-- (void)setValue:(id)value {
+- (void)updateItem:(PWWidgetItemWebView *)item {
 	
-	PWWidgetItemWebView *item = (PWWidgetItemWebView *)self.item;
+	if (item.webView != _itemWebView || item.webView.superview != self.contentView) {
 	
-	if (item.pendingContent != nil) {
-		
-		NSDictionary *content = item.pendingContent;
-		NSString *type = content[@"type"];
-		
-		if ([type isEqualToString:@"data"]) {
-			
-			NSData *data = RETRIEVE_VALUE(content[@"data"]);
-			NSString *mime = RETRIEVE_VALUE(content[@"mime"]);
-			NSString *encoding = RETRIEVE_VALUE(content[@"encoding"]);
-			NSURL *baseURL = RETRIEVE_VALUE(content[@"baseURL"]);
-			[_webView loadData:data MIMEType:mime textEncodingName:encoding baseURL:baseURL];
-			
-		} else if ([type isEqualToString:@"string"]) {
-			
-			NSString *string = RETRIEVE_VALUE(content[@"string"]);
-			NSURL *baseURL = RETRIEVE_VALUE(content[@"baseURL"]);
-			[_webView loadHTMLString:string baseURL:baseURL];
-			
-		} else if ([type isEqualToString:@"request"]) {
-			
-			NSURLRequest *request = RETRIEVE_VALUE(content[@"request"]);
-			[_webView loadRequest:request];
+		// remove everything in content view
+		for (UIView *subview in self.contentView.subviews) {
+			[subview removeFromSuperview];
 		}
 		
-		//[item _clearPendingContent];
+		_itemWebView = item.webView;
+		[_itemWebView removeFromSuperview];
+		[self.contentView addSubview:_itemWebView];
 	}
+	
+	[self setNeedsLayout];
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -134,7 +94,7 @@
 //////////////////////////////////////////////////////////////////////
 
 - (void)dealloc {
-	RELEASE_VIEW(_webView)
+	_itemWebView = nil;
 	[super dealloc];
 }
 

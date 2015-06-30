@@ -11,17 +11,10 @@
 
 @implementation PWWidgetItemTextField
 
-+ (Class)valueClass {
-	return [NSString class];
-}
-
-+ (id)defaultValue {
-	return @"";
-}
-
 + (Class)cellClass {
 	return [PWWidgetItemTextFieldCell class];
 }
+
 /*
 - (BOOL)textFieldShouldBeginEditing:(UITextField *)textField {
 	LOG(@"textFieldShouldBeginEditing: <item: %@>", self);
@@ -83,14 +76,13 @@
 
 //////////////////////////////////////////////////////////////////////
 
-- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
-	if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier])) {
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier theme:(PWTheme *)theme {
+	if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier theme:theme])) {
 		
 		_textField = [UITextField new];
 		_textField.textColor = [UIColor blackColor];
 		_textField.borderStyle = UITextBorderStyleNone;
-		_textField.clearButtonMode = UITextFieldViewModeAlways;
-		_textField.keyboardAppearance = [PWController activeTheme].wantsDarkKeyboard ? UIKeyboardAppearanceDark : UIKeyboardAppearanceDefault;
+		_textField.clearButtonMode = UITextFieldViewModeWhileEditing;
 		
 		_iconView = [UIImageView new];
 		_iconView.backgroundColor = [UIColor clearColor];
@@ -129,10 +121,20 @@
 
 - (void)updateItem:(PWWidgetItem *)item {
 	
-	if (_textField.delegate != (PWWidgetItemTextField *)item && [_textField isFirstResponder]) {
+	PWWidgetItemTextField *textFieldItem = (PWWidgetItemTextField *)item;
+	
+	if (_textField.delegate != textFieldItem && [_textField isFirstResponder]) {
 		[_textField resignFirstResponder];
 	}
-	_textField.delegate = (PWWidgetItemTextField *)item;
+	
+	_textField.delegate = textFieldItem;
+	_textField.keyboardAppearance = textFieldItem.theme.wantsDarkKeyboard ? UIKeyboardAppearanceDark : UIKeyboardAppearanceDefault;
+	
+	_textField.autocapitalizationType = textFieldItem.autocapitalizationType;
+	_textField.autocorrectionType = textFieldItem.autocorrectionType;
+	_textField.spellCheckingType = textFieldItem.spellCheckingType;
+	_textField.keyboardType = textFieldItem.keyboardType;
+	_textField.secureTextEntry = textFieldItem.secure;
 }
 
 //////////////////////////////////////////////////////////////////////

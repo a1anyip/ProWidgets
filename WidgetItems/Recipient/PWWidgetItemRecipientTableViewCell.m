@@ -10,12 +10,14 @@
 #import "../../PWController.h"
 #import "../../PWTheme.h"
 
+static UIImage *recipientRemoveButtonImage = nil;
+
 char PWWidgetItemRecipientTableViewCellRecipientKey;
 
 @implementation PWWidgetItemRecipientTableViewCell
 
-- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
-	if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier])) {
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier theme:(PWTheme *)theme {
+	if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier theme:theme])) {
 		
 		self.detailTextLabel.font = [UIFont systemFontOfSize:14.0];
 		
@@ -27,36 +29,16 @@ char PWWidgetItemRecipientTableViewCellRecipientKey;
 
 - (void)layoutSubviews {
 	[super layoutSubviews];
-	/*
+	
 	CGSize size = self.bounds.size;
 	CGFloat width = size.width;
-	CGFloat height = size.height;
-	CGFloat horizontalPadding = 8.0;
+	//CGFloat height = size.height;
+	//CGFloat horizontalPadding = 8.0;
 	
-	CGFloat separatorWidth = 2.0;
-	CGFloat timeWidth = 60.0;
-	
-	CGFloat labelHeight = 22.0;
-	CGFloat contentHeight = labelHeight * 2;
-	CGFloat top = (height - contentHeight) / 2;
-	
-	CGRect separatorRect = CGRectMake(horizontalPadding * 2 + timeWidth, 0, separatorWidth, height);
-	
-	CGRect startTimeRect = CGRectMake(horizontalPadding, top, timeWidth, labelHeight);
-	CGRect endTimeRect = startTimeRect;
-	endTimeRect.origin.y += labelHeight;
-	
-	CGRect titleRect = CGRectMake(horizontalPadding * 3 + timeWidth + separatorWidth, top, 0.0, labelHeight);
-	titleRect.size.width = width - titleRect.origin.x - horizontalPadding;
-	
-	CGRect locationRect = CGRectMake(horizontalPadding * 3 + timeWidth + separatorWidth, top + labelHeight, 0.0, labelHeight);
-	locationRect.size.width = width - locationRect.origin.x - horizontalPadding;
-	
-	_separator.frame = separatorRect;
-	_titleLabel.frame = titleRect;
-	_locationLabel.frame = locationRect;
-	_startTimeLabel.frame = startTimeRect;
-	_endTimeLabel.frame = endTimeRect;*/
+	UIView *accessoryView = self.accessoryView;
+	CGRect accessoryViewRect = accessoryView.frame;
+	accessoryViewRect.origin.x = width - accessoryViewRect.size.width - 10.0;
+	accessoryView.frame = accessoryViewRect;
 }
 
 /*- (MFComposeRecipient *)buttonRecipient {
@@ -85,7 +67,7 @@ char PWWidgetItemRecipientTableViewCellRecipientKey;
 
 - (void)setTitleTextColor:(UIColor *)color {
 	
-	UIColor *detailTextColor = [PWTheme lightenColor:color];
+	UIColor *detailTextColor = [PWTheme translucentColor:color];
 	
 	self.textLabel.textColor = color;
 	self.detailTextLabel.textColor = detailTextColor;
@@ -93,7 +75,7 @@ char PWWidgetItemRecipientTableViewCellRecipientKey;
 
 - (void)setSelectedTitleTextColor:(UIColor *)color {
 	
-	UIColor *detailTextColor = [PWTheme lightenColor:color];
+	UIColor *detailTextColor = [PWTheme translucentColor:color];
 	
 	self.textLabel.highlightedTextColor = color;
 	self.detailTextLabel.highlightedTextColor = detailTextColor;
@@ -116,7 +98,7 @@ char PWWidgetItemRecipientTableViewCellRecipientKey;
 	NSDictionary *attrs = @{ NSFontAttributeName: regularFont };
 	NSDictionary *boldAttrs = @{ NSFontAttributeName: boldFont };
 	
-	NSString *text = [NSString stringWithFormat:@"%@%@%@", type, ([type length] == 0 ? @"" : @" "), address];
+	NSString *text = [NSString stringWithFormat:@"%@%@%@", (type == nil ? @"" : type), ([type length] == 0 ? @"" : @"  "), (address == nil ? @"" : address)];
 	NSMutableAttributedString *attributedText = [[NSMutableAttributedString alloc] initWithString:text attributes:attrs];
 	
 	if ([type length] > 0) {
@@ -147,12 +129,17 @@ char PWWidgetItemRecipientTableViewCellRecipientKey;
 }
 
 - (void)_configureRemoveButton {
-	UIImage *image = [[PWController sharedInstance] imageResourceNamed:@"recipientRemoveButton"];
+	
+	if (recipientRemoveButtonImage == nil) {
+		recipientRemoveButtonImage = [[[[PWController sharedInstance] imageResourceNamed:@"recipientRemoveButton"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] retain];
+	}
+	
 	UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
 	button.frame = CGRectMake(0, 0, 44.0, 44.0); // fixed size
 	button.contentHorizontalAlignment = UIControlContentHorizontalAlignmentRight;
 	button.userInteractionEnabled = YES;
-	[button setImage:image forState:UIControlStateNormal];
+	[button setImage:recipientRemoveButtonImage forState:UIControlStateNormal];
+	
 	self.accessoryView = button;
 }
 

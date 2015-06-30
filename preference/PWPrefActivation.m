@@ -13,7 +13,7 @@ extern NSBundle *bundle;
 }
 
 - (NSString *)navigationTitle {
-	return @"Activation Methods";
+	return PTEXT(@"ActivationMethods");
 }
 
 - (BOOL)requiresEditBtn {
@@ -46,7 +46,7 @@ extern NSBundle *bundle;
 	// re-fetch enabled widgets from PWController
 	[_visibleWidgets release];
 	[_hiddenWidgets release];
-	NSDictionary *enabledWidgets = [[PWController sharedInstance] enabledWidgets];
+	NSDictionary *enabledWidgets = [[PWController sharedInstance] enabledWidgetsWithCategories];
 	_visibleWidgets = [enabledWidgets[@"visible"] mutableCopy];
 	_hiddenWidgets = [enabledWidgets[@"hidden"] mutableCopy];
 	// reload table view
@@ -62,16 +62,16 @@ extern NSBundle *bundle;
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
-	return section == 0 ? @"Activation methods" : (section == 1 ? @"Visible widgets" : @"Hidden widgets");
+	return section == 0 ? PTEXT(@"ActivationMethods") : (section == 1 ? PTEXT(@"VisibleWidgets") : PTEXT(@"HiddenWidgets"));
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForFooterInSection:(NSInteger)section {
 	if (section == 0 && [_activationMethods count] > 0) {
-		return @"You could configure activation methods in this section.";
+		return PTEXT(@"ActivationMethodsFooterText");
 	} else if (section == 0 && [_activationMethods count] == 0) {
-		return @"You may find some activation methods in Cydia, or re-install ProWidgets to restore stock activation methods.";
+		return PTEXT(@"NoActivationMethodsFooterText");
 	} else if (section == 2) {
-		return @"You could rearrange or set the visibility of widgets in some activation methods (e.g. Control Center) in this section.\n\nSome widgets are hidden according to their settings.";
+		return PTEXT(@"HiddenWidgetsFooterText");
 	}
 	return nil;
 }
@@ -133,7 +133,7 @@ extern NSBundle *bundle;
 			BOOL hasPreference = [info[@"hasPreference"] boolValue];
 			
 			// set default display name
-			if ([displayName length] == 0) displayName = @"Unknown";
+			if ([displayName length] == 0) displayName = PTEXT(@"Unknown");
 			
 			// set default description
 			if ([description length] == 0) description = nil;//@"No description";
@@ -159,31 +159,27 @@ extern NSBundle *bundle;
 			// extract widget info
 			NSBundle *widgetBundle = info[@"bundle"];
 			NSString *displayName = info[@"displayName"];
-			NSString *description = info[@"description"];
+			NSString *shortDescription = info[@"shortDescription"];
 			NSString *iconFile = info[@"iconFile"];
 			UIImage *iconImage = [iconFile length] > 0 ? [UIImage imageNamed:iconFile inBundle:widgetBundle] : nil;
 			
 			// set default display name
-			if ([displayName length] == 0) displayName = @"Unknown";
+			if ([displayName length] == 0) displayName = PTEXT(@"Unknown");
 			
 			// set default description
-			if ([description length] == 0) description = nil;//@"No description";
+			if ([shortDescription length] == 0) shortDescription = nil;
 			
 			// set default icon image
 			if (iconImage == nil) iconImage = IMAGE(@"icon_widgets");
 			
 			// configure cell
 			cell.textLabel.text = displayName;
-			cell.detailTextLabel.text = description;
+			cell.detailTextLabel.text = shortDescription;
 			cell.imageView.image = iconImage;
 		}
 	} else {
 		if (section == 0) {
-			cell.textLabel.text = @"No installed activation methods";
-		} else if (section == 1) {
-			cell.textLabel.text = @"No visible widgets";
-		} else if (section == 2) {
-			cell.textLabel.text = @"No hidden widgets";
+			cell.textLabel.text = PTEXT(@"NoActivationMethods");
 		}
 	}
 	
@@ -205,11 +201,53 @@ extern NSBundle *bundle;
 			BOOL hasPreference = [info[@"hasPreference"] boolValue];
 			
 			if (hasPreference) {
+				
 				NSString *prefFile = info[@"preferenceFile"];
-				PWPrefActivationPreference *controller = [[[PWPrefActivationPreference alloc] initWithPlist:prefFile inBundle:bundle] autorelease];
-				controller.rootController = self.rootController;
-				controller.parentController = self;
-				[self pushController:controller];
+				NSString *prefBundle = info[@"preferenceBundle"];
+				
+				if ([prefFile length] > 0) {
+					
+					PWPrefActivationPreference *controller = [[[PWPrefActivationPreference alloc] initWithPlist:prefFile inBundle:bundle] autorelease];
+					controller.rootController = self.rootController;
+					controller.parentController = self;
+					[self pushController:controller];
+					
+				} else if ([prefBundle length] > 0) {
+					
+					// load the preference bundle
+					if ([prefBundle hasSuffix:@".bundle"]) {
+						prefBundle = [prefBundle stringByDeletingPathExtension];
+					}
+					
+					NSString *bundlePath = [NSString stringWithFormat:@"/Library/PreferenceBundles/%@.bundle/", prefBundle];
+					NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
+					
+					if ([bundle load]) {
+						
+						Class principalClass = [bundle principalClass];
+						id viewController = [[principalClass new] autorelease];
+						
+						if (viewController == nil) {
+							LOG(@"The principal class cannot be found or initialized.");
+							return;
+						}
+						
+						if (![viewController isKindOfClass:[UIViewController class]]) {
+							LOG(@"The principal class is not a sub class of UIViewController.");
+							return;
+						}
+						
+						if ([viewController respondsToSelector:@selector(setRootController:)]) {
+							[viewController performSelector:@selector(setRootController:) withObject:self.rootController];
+						}
+						
+						if ([viewController respondsToSelector:@selector(setParentController:)]) {
+							[viewController performSelector:@selector(setParentController:) withObject:self];
+						}
+						
+						[self pushController:viewController];
+					}
+				}
 			}
 		}
 	}

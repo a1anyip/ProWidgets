@@ -16,9 +16,6 @@
 	
 	[self loadPlist:@"AddItems"];
 	
-	PWWidgetCalendar *widget = (PWWidgetCalendar *)self.widget;
-	_initialTomorrow = [widget.userInfo[@"type"] isEqualToString:@"tomorrow"];
-	
 	// fetch all available calendars
 	[self fetchCalendars:nil];
 	
@@ -40,18 +37,17 @@
 }
 
 - (void)titleTapped {
-	PWWidgetCalendar *widget = (PWWidgetCalendar *)self.widget;
-	[widget switchToOverviewInterface];
+	[[PWWidgetCalendar widget] switchToOverviewInterface];
 }
 
 - (EKEventStore *)store {
-	PWWidgetCalendar *widget = (PWWidgetCalendar *)self.widget;
-	return widget.eventStore;
+	return [PWWidgetCalendar widget].eventStore;
 }
 
 - (void)fetchCalendars:(NSString *)selectedIdentifier {
 	
 	NSArray *calendars = [self.store calendarsForEntityType:EKEntityTypeEvent];
+	EKCalendar *defaultCalendar = [self.store defaultCalendarForNewEvents];
 	
 	if ([calendars count] == 0) {
 		[self.widget showMessage:@"You need at least one calendar to save events."];
@@ -71,29 +67,27 @@
 			continue;
 		}
 		
-		if (selectedIdentifier != nil && [calendar.calendarIdentifier isEqualToString:selectedIdentifier]) {
-			selectedIndex = i;
+		if (selectedIdentifier != nil) {
+			if ([calendar.calendarIdentifier isEqualToString:selectedIdentifier]) {
+				selectedIndex = i;
+			}
+		} else if (defaultCalendar != nil) {
+			if ([defaultCalendar isEqual:calendar]) {
+				selectedIndex = i;
+			}
 		}
 		
 		[titles addObject:calendar.title];
 		[values addObject:@(i++)];
 	}
 	
-	NSUInteger defaultIndex = NSNotFound;
-	if (selectedIndex != NSNotFound) {
-		defaultIndex = selectedIndex;
-	} else {
-		
-		if (selectedIdentifier != nil) {
-			// cannot locate the new calendar
-			[self.widget showMessage:@"Unable to create calendar"];
-		}
-		
-		EKCalendar *defaultCalendar = [self.store defaultCalendarForNewEvents];
-		defaultIndex = [calendars indexOfObject:defaultCalendar];
+	if (selectedIdentifier != nil && selectedIndex == NSNotFound) {
+		// cannot locate the new calendar
+		[self.widget showMessage:@"Unable to create calendar"];
 	}
 	
-	if (defaultIndex == NSNotFound) defaultIndex = 0;
+	// fall back to the first item
+	if (selectedIndex == NSNotFound) selectedIndex = 0;
 	
 	// add "Create..." option
 	[titles addObject:@"Create..."];
@@ -101,7 +95,7 @@
 	
 	PWWidgetItemListValue *item = (PWWidgetItemListValue *)[self itemWithKey:@"calendar"];
 	[item setListItemTitles:titles values:values];
-	[item setValue:@(defaultIndex)];
+	[item setValue:@(selectedIndex)];
 	
 	_calendars = [calendars retain];
 	[calendars release];
@@ -164,7 +158,10 @@
 
 - (void)setInitialDates {
 	
-	NSTimeInterval extraDayTime = _initialTomorrow ? 24 * 60 * 60 : 0;
+	PWWidgetCalendar *widget = (PWWidgetCalendar *)self.widget;
+	BOOL initialTomorrow = [widget.userInfo[@"type"] isEqualToString:@"tomorrow"];
+	
+	NSTimeInterval extraDayTime = initialTomorrow ? 24 * 60 * 60 : 0;
 	
 	NSTimeInterval nextHourTime = [[NSDate date] timeIntervalSinceReferenceDate] + 60 * 60 + extraDayTime;
 	NSTimeInterval nextTwoHoursTime = nextHourTime + 60 * 60;
@@ -324,21 +321,23 @@
 		if ([value count] == 1) {
 			if ([value[0] isEqual:[[(PWWidgetItemListValue *)item listItemValues] lastObject]]) {
 				
-				__block NSArray *oldCalendarValue = (NSArray *)[oldValue copy];
-				
-				// Create...
-				[self.widget prompt:@"Enter the calendar name" title:@"Create Calendar" buttonTitle:@"Create" defaultValue:nil style:UIAlertViewStylePlainTextInput completion:^(BOOL cancelled, NSString *firstValue, NSString *secondValue) {
+				//dispatch_after(dispatch_time(DISPATCH_TIME_NOW, .5 * NSEC_PER_SEC), dispatch_get_main_queue(), ^(void){
+					__block NSArray *oldCalendarValue = (NSArray *)[oldValue copy];
 					
-					if (cancelled) {
-						// set to previous value
-						[item setValue:oldCalendarValue];
-					} else {
-						// create a calendar with input name (firstValue)
-						[self createCalendar:firstValue];
-					}
-					
-					[oldCalendarValue release], oldCalendarValue = nil;
-				}];
+					// Create...
+					[self.widget prompt:@"Enter the calendar name" title:@"Create Calendar" buttonTitle:@"Create" defaultValue:nil style:UIAlertViewStylePlainTextInput completion:^(BOOL cancelled, NSString *firstValue, NSString *secondValue) {
+						
+						if (cancelled) {
+							// set to previous value
+							[item setValue:oldCalendarValue];
+						} else {
+							// create a calendar with input name (firstValue)
+							[self createCalendar:firstValue];
+						}
+						
+						[oldCalendarValue release], oldCalendarValue = nil;
+					}];
+				//});
 			}
 		}
 	}

@@ -9,18 +9,27 @@
 
 #import "header.h"
 
+typedef enum {
+	
+	PWBackgroundViewAnimationTypeNone,
+	PWBackgroundViewAnimationTypeResize,
+	PWBackgroundViewAnimationTypePresentation,
+	PWBackgroundViewAnimationTypeMaximization
+	
+} PWBackgroundViewAnimationType;
+
 @interface PWBackgroundView : UIView {
 	
-	BOOL _shouldAnimateTransform;
 	CAShapeLayer *_mask;
+	
+	NSUInteger _finalPathCount;
+	CGPathRef _finalPath;
 }
 
-@property(nonatomic) BOOL shouldAnimateTransform;
-
-- (void)show:(BOOL)shouldAnimateTransform;
+- (void)show;
 - (void)hide;
 
 - (void)clearMask;
-- (void)setMaskRect:(CGRect)rect cornerRadius:(CGFloat)cornerRadius animated:(BOOL)animated;
+- (void)setMaskRect:(CGRect)rect fromRect:(CGRect)rect cornerRadius:(CGFloat)cornerRadius animationType:(PWBackgroundViewAnimationType)animationType presentationStyle:(PWWidgetPresentationStyle)presentationType;
 
 @end

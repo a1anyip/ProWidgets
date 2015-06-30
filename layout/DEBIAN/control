@@ -1,7 +1,7 @@
 Package: cc.tweak.prowidgets
 Name: ProWidgets
-Depends: firmware (>= 7.0), unzip, preferenceloader, de.j-gessner.ccloader, cc.tweak.libobjcipc
-Version: 1.0.0
+Depends: firmware (>= 7.0), unzip, preferenceloader, cc.tweak.libobjcipc
+Version: 1.1.0
 Architecture: iphoneos-arm
 Description: 
 Maintainer: Alan Yip

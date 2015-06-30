@@ -15,14 +15,22 @@
 	///// Runtime variables /////
 	/////////////////////////////
 	
+	BOOL _showingWelcomeScreen;
+	
 	BOOL _interfaceOrientationIsLocked;
 	UIInterfaceOrientation _lockedInterfaceOrientation;
-	BOOL _configured;
-	BOOL _pendingDismissalRequest;
+	
+	UIInterfaceOrientation _lastWillChangeToOrientation;
+	UIInterfaceOrientation _lastDidChangeToOrientation;
 	
 	// Base Bundle
 	// for getting widget path
 	NSBundle *_baseBundle;
+	
+	// Localization Bundle
+	NSBundle *_localizationBundle;
+	NSArray *_localizations;
+	NSMutableDictionary *_cachedCommonLocalizations;
 	
 	// Resource Bundle
 	NSBundle *_resourceBundle;
@@ -33,6 +41,9 @@
 	///// User Interface /////
 	//////////////////////////
 	
+	// Welcome Screen
+	PWWSWindow *_welcomeScreen;
+	
 	// Main Window
 	PWWindow *_window;
 	
@@ -42,41 +53,41 @@
 	//////////////////////
 	///// Preference /////
 	//////////////////////
-	BOOL _enabledParallax;
-	NSUInteger _preferredSource;
-	BOOL _testMode;
+	
 	NSArray *_visibleWidgetOrder;
 	NSArray *_hiddenWidgetOrder;
+	NSDictionary *_livePreviewSettings;
 	NSString *_defaultThemeName;
 	
-	////////////////////////////
-	///// Presented widget /////
-	////////////////////////////
+	// Welcome Screen
+	BOOL _showedWelcomeScreen;
 	
-	// indicator of whether a widget is opened
-	BOOL _isPresenting;
+	// General
+	PWLockAction _lockAction;
+	CGFloat _miniViewScale;
 	
-	// indicator of whether a widget is being opened (during animation)
-	BOOL _isAnimating;
+	// Effect
+	PWWidgetPresentationStyle _presentationStyle;
+	BOOL _enabledParallax;
+	BOOL _disabledBlur;
+	BOOL _disabledMask;
 	
-	// indicator of whether a widget is minimized
-	BOOL _isMinimized;
+	// Global Preference
+	NSUInteger _preferredSource;
 	
-	// current widget
-	// keep a reference to the currently opened widget
-	PWWidget *_presentedWidget;
+	// Others
+	BOOL _testMode;
 	
 	// Pending widget
 	BOOL _hasPendingWidget;
 	PWWidget *_pendingWidget;
 	NSDictionary *_pendingUserInfo;
 	
-	/////////////////
-	///// Theme /////
-	/////////////////
-	BOOL _loadedDefaultTheme;
-	NSString *_cachedDefaultThemeTheme;
-	PWTheme *_cachedDefaultTheme; // only save defualt theme
+	// Experimental settings
+	BOOL _loadedExperimentalSettings;
+	BOOL _exDragging;
+	BOOL _exMultipleWidgets;
+	BOOL _exShowShadow;
 	
 	/////////////////////////
 	///// Private stuff /////
@@ -84,26 +95,28 @@
 	NSDate *_initialTime;
 }
 
+@property(nonatomic, assign) BOOL interfaceOrientationIsLocked;
+@property(nonatomic, assign) UIInterfaceOrientation lockedInterfaceOrientation;
+
 @property(nonatomic, readonly) NSBundle *baseBundle;
+@property(nonatomic, readonly) NSBundle *localizationBundle;
 @property(nonatomic, readonly) NSBundle *resourceBundle;
 
 @property(nonatomic, readonly) PWWindow *window;
 @property(nonatomic, readonly) PWView *mainView;
 @property(nonatomic, readonly) PWBackgroundView *backgroundView;
-@property(nonatomic, readonly) PWContainerView *containerView;
-
-@property(nonatomic, readonly) BOOL isPresenting;
-@property(nonatomic, readonly) BOOL isAnimating;
-@property(nonatomic, readonly) BOOL isMinimized;
-@property(nonatomic) BOOL pendingDismissalRequest;
 
 // Preference
-@property(nonatomic, readonly) BOOL enabledParallax;
-@property(nonatomic, readonly) NSUInteger preferredSource; // 0 is iCloud, 1 is Local
-@property(nonatomic, readonly) BOOL testMode;
 @property(nonatomic, readonly) NSArray *visibleWidgetOrder;
 @property(nonatomic, readonly) NSArray *hiddenWidgetOrder;
 @property(nonatomic, readonly) NSString *defaultThemeName;
+@property(nonatomic, readonly) PWWidgetPresentationStyle presentationStyle;
+@property(nonatomic, readonly) NSUInteger preferredSource; // 0 is iCloud, 1 is Local
+
+// Experiemental settings
+@property(nonatomic, readonly) BOOL exDragging;
+@property(nonatomic, readonly) BOOL exMultipleWidgets;
+@property(nonatomic, readonly) BOOL exShowShadow;
 
 //////////////////////////////////////////////////////////////////////
 
@@ -111,18 +124,35 @@
  * Singleton accessor
  **/
 
-+ (instancetype)sharedInstance;
++ (PWController *)sharedInstance;
 
 //////////////////////////////////////////////////////////////////////
 
 /**
- * Getters
+ * Bundle loaders
  **/
 
++ (NSBundle *)bundleNamed:(NSString *)name ofType:(NSString *)type extension:(NSString *)extension;
++ (NSBundle *)widgetBundleNamed:(NSString *)name;
++ (NSBundle *)scriptBundleNamed:(NSString *)name;
++ (NSBundle *)themeBundleNamed:(NSString *)name;
++ (NSBundle *)activationMethodBundleNamed:(NSString *)name;
+
+//////////////////////////////////////////////////////////////////////
+
++ (BOOL)shouldShowBackgroundView;
++ (BOOL)shouldMaskBackgroundView;
++ (BOOL)shouldShowShadowView;
++ (BOOL)shouldMinimizeAllControllersAutomatically;
++ (BOOL)supportsDragging;
++ (BOOL)supportsMultipleWidgetsOnScreen;
+
 + (BOOL)protectedDataAvailable;
++ (NSString *)deviceModel;
 + (int)version;
 + (NSBundle *)baseBundle;
 + (NSString *)basePath;
++ (NSBundle *)localizationBundle;
 
 + (BOOL)isIPad;
 + (BOOL)isPortrait;
@@ -136,12 +166,14 @@
 + (UIInterfaceOrientation)currentInterfaceOrientation;
 - (UIInterfaceOrientation)currentInterfaceOrientation;
 
-- (CGFloat)availableWidthInOrientation:(PWWidgetOrientation)orientation;
-- (CGFloat)availableHeightInOrientation:(PWWidgetOrientation)orientation withKeyboard:(BOOL)withKeyboard;
+- (CGFloat)maximumWidthInOrientation:(PWWidgetOrientation)orientation;
+- (CGFloat)maximumHeightInOrientation:(PWWidgetOrientation)orientation;
+- (CGFloat)availableHeightInOrientation:(PWWidgetOrientation)orientation fullscreen:(BOOL)fullscreen withKeyboard:(BOOL)withKeyboard;
 - (CGFloat)heightOfNavigationBarInOrientation:(PWWidgetOrientation)orientation;
 - (CGFloat)defaultHeightOfKeyboardInOrientation:(PWWidgetOrientation)orientation;
 
 - (UIImage *)imageResourceNamed:(NSString *)name;
+- (NSString *)commonLocalizedStringForPreferences:(NSArray *)preferences key:(NSString *)key;
 
 //////////////////////////////////////////////////////////////////////
 
@@ -157,59 +189,14 @@
 - (void)_loadPreference;
 - (void)_reloadPreference;
 
-/**
- * Notification handlers
- **/
-- (void)_presentWidgetHandler:(NSNotification *)notification;
-- (void)_dismissWidgetHandler:(NSNotification *)notification;
-
-//////////////////////////////////////////////////////////////////////
-
-/**
- * General bundle loaders
- **/
-
-- (NSBundle *)_bundleNamed:(NSString *)name ofType:(NSString *)type;
-
 //////////////////////////////////////////////////////////////////////
 
 /**
  * Theme
  **/
 
-// Retrieve active theme
-+ (PWTheme *)activeTheme;
-- (PWTheme *)activeTheme;
-
-- (NSString *)defaultThemeName;
-
-- (PWTheme *)loadDefaultTheme;
-- (PWTheme *)reloadDefaultTheme;
-- (PWTheme *)loadThemeNamed:(NSString *)name;
-
-//////////////////////////////////////////////////////////////////////
-
-/**
- * Widget
- **/
-
-// Retrieve active widget
-+ (PWWidget *)activeWidget;
-- (PWWidget *)activeWidget;
-
-// Widget loaders
-- (NSBundle *)_bundleForWidgetNamed:(NSString *)name;
-- (PWWidget *)_createWidgetFromBundle:(NSBundle *)bundle;
-- (PWWidget *)_createWidgetNamed:(NSString *)name;
-
-// Present or dismiss widget
-- (BOOL)_presentWidget:(PWWidget *)widget userInfo:(NSDictionary *)userInfo;
-- (BOOL)_dismissWidget;
-- (BOOL)_dismissMinimizedWidget;
-
-// Minimization
-- (BOOL)_minimizeWidget;
-- (BOOL)_maximizeWidget;
+- (PWTheme *)loadDefaultThemeForWidget:(PWWidget *)widget;
+- (PWTheme *)loadThemeNamed:(NSString *)name forWidget:(PWWidget *)widget;
 
 //////////////////////////////////////////////////////////////////////
 
@@ -218,7 +205,6 @@
  **/
 
 // Widget loaders
-- (NSBundle *)_bundleForScriptNamed:(NSString *)name;
 - (PWScript *)_createScriptFromBundle:(NSBundle *)bundle;
 - (PWScript *)_createScriptNamed:(NSString *)name;
 
@@ -230,16 +216,6 @@
 /**
  * Public API
  **/
-
-// widget
-- (BOOL)presentWidget:(PWWidget *)widget userInfo:(NSDictionary *)userInfo;
-- (BOOL)presentWidgetNamed:(NSString *)name userInfo:(NSDictionary *)userInfo;
-- (BOOL)presentWidgetFromBundle:(NSBundle *)bundle userInfo:(NSDictionary *)userInfo;
-
-- (BOOL)dismissWidget;
-
-- (BOOL)minimizeWidget;
-- (BOOL)maximizeWidget;
 
 // script
 - (BOOL)executeScript:(PWScript *)script userInfo:(NSDictionary *)userInfo;
@@ -260,6 +236,7 @@
 - (NSDictionary *)infoOfThemeInBundle:(NSBundle *)bundle;
 
 // activation method
+- (NSDictionary *)infoOfActivationMethodNamed:(NSString *)name;
 - (NSDictionary *)infoOfActivationMethodInBundle:(NSBundle *)bundle;
 
 - (UIImage *)iconOfWidgetNamed:(NSString *)name;
@@ -271,12 +248,15 @@
 - (UIImage *)maskOfWidgetInBundle:(NSBundle *)bundle;
 
 - (NSArray *)installedWidgets;
-- (NSDictionary *)enabledWidgets;
+- (NSArray *)enabledWidgets;
+- (NSDictionary *)enabledWidgetsWithCategories;
 - (NSArray *)visibleWidgets; // visible widgets in Activation Methods
 - (NSArray *)hiddenWidgets; // hidden widgets in Activation Methods
 - (NSArray *)installedScripts;
 - (NSArray *)installedThemes;
 - (NSArray *)activationMethods;
+
+- (BOOL)getLivePreviewSettingForWidget:(PWWidget *)widget;
 
 //////////////////////////////////////////////////////////////////////
 
@@ -284,10 +264,12 @@
  * Private methods
  **/
 
-+ (BOOL)_shouldDisableLockScreenIdleTimer;
++ (BOOL)_checkAPIEnvironment;
 
-- (void)_manuallyDismissWidget;
-- (void)_showProtectedDataUnavailable:(PWWidget *)widget presented:(BOOL)presented;
+- (BOOL)_showingWelcomeScreen;
+- (void)_firstTimeShowWelcomeScreen;
+- (void)_showWelcomeScreen;
+- (void)_hideWelcomeScreen;
 
 - (void)_recordInitialTime;
 - (void)_outputDuration;
@@ -295,6 +277,9 @@
 - (void)_applyParallaxEffect;
 - (void)_removeParallaxEffect;
 
-- (NSArray *)_installedBundlesOfType:(NSString *)type infoSelector:(SEL)infoSelector;
+- (NSArray *)_installedBundlesOfType:(NSString *)type extension:(NSString *)extension infoSelector:(SEL)infoSelector;
+
+- (BOOL)_disabledMask;
+- (CGFloat)_miniViewScale;
 
 @end

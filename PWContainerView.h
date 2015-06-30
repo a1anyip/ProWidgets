@@ -11,13 +11,22 @@
 
 @interface PWContainerView : UIView {
 	
-	CGFloat _keyboardHeight;
+	PWWidgetController *_widgetController;
+	
 	UIImageView *_containerBackgroundView;
+	UIView *_overlayView;
 	UIView *_navigationControllerView;
+	UIImageView *_resizer;
 }
 
-@property(nonatomic) CGFloat keyboardHeight;
 @property(nonatomic, readonly) UIImageView *containerBackgroundView;
 @property(nonatomic, assign) UIView *navigationControllerView;
+
+- (instancetype)initWithWidgetController:(PWWidgetController *)widgetController;
+
+- (void)showOverlay;
+- (void)hideOverlay;
+
+- (void)setResizerEnabled:(BOOL)enabled;
 
 @end

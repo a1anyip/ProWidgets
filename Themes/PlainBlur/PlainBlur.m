@@ -26,7 +26,7 @@
 
 @end
 
-@interface UINavigationBar (Private)
+@interface UINavigationBar (backgroundView)
 
 - (UIView *)_backgroundView;
 
@@ -34,7 +34,7 @@
 
 @interface PWWidgetThemePlainBlur : PWTheme {
 	
-	_UIBackdropView *_blurView;
+	UIView *_blurView;
 }
 
 @end
@@ -65,23 +65,46 @@
 	return [UIColor colorWithWhite:0.85 alpha:.9];
 }
 
+- (void)enterSnapshotMode {
+	if (!self.disabledBlur) {
+		_blurView.backgroundColor = [UIColor whiteColor];
+	}
+}
+
+- (void)exitSnapshotMode {
+	if (!self.disabledBlur) {
+		_blurView.backgroundColor = [UIColor clearColor];
+	}
+}
+
 - (void)setupTheme {
 	
 	UINavigationBar *navigationBar = [self navigationBar];
 	PWContainerView *containerView = [self containerView];
 	
-	// make the navigation bar transparent
 	navigationBar.translucent = NO;
 	
 	UIView *backgroundView = [navigationBar _backgroundView];
 	backgroundView.backgroundColor = [UIColor clearColor]; // remove white background
 	
-	// backdrop view settings
-	_UIBackdropViewSettings *settings = [[[objc_getClass("_UIBackdropViewSettingsUltraLight") alloc] initWithDefaultValues] autorelease];
+	if (self.disabledBlur) {
+		
+		CGFloat alpha = .98;
+		
+		_blurView = [UIView new];
+		_blurView.backgroundColor = [UIColor whiteColor];
+		_blurView.alpha = alpha;
+		[containerView insertSubview:_blurView atIndex:0];
+		
+	} else {
 	
-	// add blur view as the background
-	_blurView = [[objc_getClass("_UIBackdropView") alloc] initWithSettings:settings];
-	[containerView insertSubview:_blurView atIndex:0];
+		// backdrop view settings
+		_UIBackdropViewSettings *settings = [[[objc_getClass("_UIBackdropViewSettingsUltraLight") alloc] initWithDefaultValues] autorelease];
+		
+		// add blur view as the background
+		_blurView = [[objc_getClass("_UIBackdropView") alloc] initWithSettings:settings];
+		[containerView insertSubview:_blurView atIndex:0];
+	}
 }
 
 - (void)removeTheme {

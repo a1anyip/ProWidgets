@@ -9,7 +9,12 @@
 
 #import "header.h"
 
-@interface PWThemableTableView : UITableView
+@interface PWThemableTableView : UITableView {
+	
+	PWTheme *_theme;
+}
+
+- (instancetype)initWithFrame:(CGRect)frame style:(UITableViewStyle)style theme:(PWTheme *)theme;
 
 - (void)_configureAppearance;
 - (void)setHideSeparatorInEmptyCells:(BOOL)hidden;

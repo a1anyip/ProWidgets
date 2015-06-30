@@ -16,8 +16,24 @@ typedef void(^PWAlertViewCompletionHandler)(BOOL cancelled, NSString *firstValue
 	PWAlertViewCompletionHandler _completionHandler;
 }
 
+/**
+ *  The block completion handler.
+ */
 @property(nonatomic, copy) PWAlertViewCompletionHandler completionHandler;
 
-- (instancetype)initWithTitle:(NSString *)title message:(NSString *)message buttonTitle:(NSString *)buttonTitle defaultValue:(NSString *)defaultValue cancelButtonTitle:(NSString *)cancelButtonTitle style:(UIAlertViewStyle)style completion:(PWAlertViewCompletionHandler)completion;
+/**
+ *  Wrapper method for initializing an alert view with block completion handler.
+ *
+ *  @param title             The string that appears in the receiver’s title bar.
+ *  @param message           Descriptive text that provides more details than the title.
+ *  @param buttonTitle       The title of the button next to cancel button or nil if there is only cancel button.
+ *  @param cancelButtonTitle The title of the cancel button or nil if there is no cancel button.
+ *  @param defaultValue      The default value of the first text field or nil if there is no default value or no text field.
+ *  @param style             The kind of alert displayed to the user.
+ *  @param completion        The block completion handler.
+ *
+ *  @return Newly initialized alert view.
+ */
+- (instancetype)initWithTitle:(NSString *)title message:(NSString *)message buttonTitle:(NSString *)buttonTitle cancelButtonTitle:(NSString *)cancelButtonTitle defaultValue:(NSString *)defaultValue style:(UIAlertViewStyle)style completion:(PWAlertViewCompletionHandler)completion ;
 
 @end

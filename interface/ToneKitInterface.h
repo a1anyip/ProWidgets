@@ -1,4 +1,4 @@
-@class TKTonePicker, TKToneTableController;
+@class TKTonePicker, TKToneTableController, TLDividerTableViewCell;
 
 @interface TKTonePicker : UIView
 {
@@ -6,6 +6,8 @@
     TKToneTableController *_tableController;
     id _delegate;
 }
+
+- (void)setStyleProvider:(id)styleProvider;
 
 + (id)tonePickerWithFrame:(CGRect)arg1;
 + (id)texttonePickerWithFrame:(CGRect)arg1;
@@ -41,7 +43,7 @@
 - (void)ringtoneManagerContentsChanged:(id)arg1;
 - (void)_toneManagerContentsChanged;
 - (void)_buildTable;
-- (void)buildUIWithAVController:(id)arg1 filter:(unsigned int)arg2 tonePicker:(BOOL)arg3;
+- (void)buildUIWithAVController:(id)arg1 filter:(NSUInteger)arg2 tonePicker:(BOOL)arg3;
 - (void)setContext:(int)arg1;
 - (void)setShowsStoreButtonInNavigationBar:(BOOL)arg1;
 - (void)setMediaAtTop:(BOOL)arg1;
@@ -56,11 +58,25 @@
 - (void)setAVController:(id)arg1;
 - (void)_reloadData;
 - (void)dealloc;
-- (id)initWithFrame:(CGRect)arg1 avController:(id)arg2 filter:(unsigned int)arg3 tonePicker:(BOOL)arg4;
+- (id)initWithFrame:(CGRect)arg1 avController:(id)arg2 filter:(NSUInteger)arg3 tonePicker:(BOOL)arg4;
 - (id)initWithFrame:(CGRect)arg1 avController:(id)arg2;
 - (id)initWithFrame:(CGRect)arg1;
 
 @end
 
-@interface TKToneTableController : NSObject
+@interface TKToneTableController : NSObject<UITableViewDelegate, UITableViewDataSource>
+
+- (id)initWithAVController:(id)arg1 filter:(NSUInteger)arg2 tonePicker:(BOOL)arg3;
+- (void)setTableView:(UITableView *)tableView;
+- (id)ringtoneManager;
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
+
+@end
+
+@interface TLDividerTableViewCell : UITableViewCell
+
+- (void)setContentBackgroundColor:(UIColor *)backgroundColor;
+- (void)setContentFillColor:(UIColor *)fillColor;
+
 @end

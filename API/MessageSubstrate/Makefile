@@ -1,6 +1,7 @@
 TWEAK_NAME = PWAPIMessage
-PWAPIMessage_FILES = PWAPIMessage.m
-PWAPIMessage_FRAMEWORKS = CoreFoundation Foundation UIKit
+PWAPIMessage_FILES = PWAPIMessage.x
+PWAPIMessage_FRAMEWORKS = CoreFoundation Foundation UIKit MessageUI
+PWAPIMessage_PRIVATE_FRAMEWORKS = ChatKit
 PWAPIMessage_LIBRARIES = objcipc
 PWAPIMessage_CFLAGS = -I../../
 

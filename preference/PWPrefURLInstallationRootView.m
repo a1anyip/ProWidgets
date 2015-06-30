@@ -1,6 +1,6 @@
 #import "PWPrefURLInstallationRootView.h"
 #import "PWPrefURLInstallationRootController.h"
-#import "PWPrefURLInstallationInfoView.h"
+#import "PWPrefInfoView.h"
 #import "../PWTheme.h"
 
 extern NSBundle *bundle;
@@ -45,7 +45,7 @@ extern NSBundle *bundle;
 		_retryButton.adjustsImageWhenHighlighted = YES;
 		_retryButton.alpha = 0.0;
 		_retryButton.hidden = YES;
-		[_retryButton setTitle:@"Retry" forState:UIControlStateNormal];
+		[_retryButton setTitle:PTEXT(@"Retry") forState:UIControlStateNormal];
 		[_retryButton setBackgroundImage:[PWTheme imageFromColor:[UIColor redColor]] forState:UIControlStateNormal];
 		[_retryButton addTarget:[self nextResponder] action:@selector(retry) forControlEvents:UIControlEventTouchUpInside];
 		[self addSubview:_retryButton];
@@ -122,7 +122,7 @@ extern NSBundle *bundle;
 	}];
 }
 
-- (void)switchToInfoView:(PWPrefURLInstallationInfoView *)view {
+- (void)switchToInfoView:(PWPrefInfoView *)view {
 	
 	if (_infoView != nil) return;
 	
@@ -208,7 +208,7 @@ extern NSBundle *bundle;
 }
 
 - (void)setError:(NSString *)errMsg {
-	[self setStatus:@"Failed"];
+	[self setStatus:PTEXT(@"Failed")];
 	[self setProgressText:errMsg];
 	
 	// show the retry button

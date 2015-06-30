@@ -11,12 +11,14 @@
 	<key>PWInfoDisplayName</key>
 	<string>Dictionary</string>
 	<key>PWInfoAuthor</key>
-	<string>Alan Yip</string>
+	<string>ProWidgets</string>
 	<key>PWInfoDescription</key>
 	<string>Look up the definition of a word</string>
 	<key>PWInfoIconFile</key>
 	<string>icon.png</string>
-	<key>PWInfoPreferenceFile</key>
-	<string></string>
+	<key>PWInfoPreferenceBundle</key>
+	<string>PWWidgetDictionary</string>
+	<key>PWInfoPreferenceDefaults</key>
+	<string>cc.tweak.prowidgets.widget.dictionary</string>
 </dict>
 </plist>

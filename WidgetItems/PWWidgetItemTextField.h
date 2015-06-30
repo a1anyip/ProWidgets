@@ -8,8 +8,10 @@
 //
 
 #import "item.h"
+#import "_PWWidgetItemTextInputTraits.h"
 
-@interface PWWidgetItemTextField : PWWidgetItem<UITextFieldDelegate>
+@interface PWWidgetItemTextField : _PWWidgetItemTextInputTraits<UITextFieldDelegate>
+
 @end
 
 @interface PWWidgetItemTextFieldCell : PWWidgetItemCell {

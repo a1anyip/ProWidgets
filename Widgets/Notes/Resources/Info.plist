@@ -11,8 +11,18 @@
 	<key>PWInfoDisplayName</key>
 	<string>Notes</string>
 	<key>PWInfoAuthor</key>
-	<string>Alan Yip</string>
-	<key>PWInfoDescription</key>
+	<string>ProWidgets</string>
+	<key>PWInfoShortDescription</key>
 	<string>Manage and create notes</string>
+	<key>PWInfoDescription</key>
+	<string>Notes widget allows you to quickly add a new note, view and modify the existing notes.
+
+Tap on navigation bar once to switch between add and list interfaces.
+
+Configure the default interface in the widget preference page.</string>
+	<key>PWInfoPreferenceDefaults</key>
+	<string>cc.tweak.prowidgets.widget.notes</string>
+	<key>PWInfoPreferenceFile</key>
+	<string>Preference</string>
 </dict>
 </plist>

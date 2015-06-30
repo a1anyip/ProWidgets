@@ -11,4 +11,8 @@
 
 - (void)reloadInstalledThemes;
 
+- (void)_cellImageViewTapHandler:(UITapGestureRecognizer *)sender;
+- (void)_infoViewConfirmButtonHandler:(NSDictionary *)info;
+- (void)_uninstallThemeAtIndex:(NSUInteger)index;
+
 @end

@@ -9,9 +9,11 @@
 
 #import "PWTheme.h"
 #import "PWController.h"
+#import "PWWidgetController.h"
 #import "PWContainerView.h"
 #import "PWThemableTableViewCell.h"
 #import "PWWidget.h"
+#import "PWWidgetNavigationController.h"
 
 static NSDictionary *supportedColorString = nil;
 
@@ -56,10 +58,12 @@ static NSDictionary *supportedColorString = nil;
  * Initialization
  **/
 
-- (instancetype)initWithName:(NSString *)name bundle:(NSBundle *)bundle {
+- (instancetype)initWithName:(NSString *)name bundle:(NSBundle *)bundle widget:(PWWidget *)widget disabledBlur:(BOOL)disabledBlur {
 	if ((self = [super init])) {
 		self.name = name;
 		self.bundle = bundle;
+		self.widget = widget;
+		self.disabledBlur = disabledBlur;
 	}
 	return self;
 }
@@ -323,12 +327,14 @@ static NSDictionary *supportedColorString = nil;
 	return color;
 }
 
+#define COLOR_ADJUSTMENT_AMOUNT 30.0
+
 + (UIColor *)darkenColor:(UIColor *)color {
-	return [self adjustColorBrightness:color colorAdjustment:-30/255.0 alphaMultiplier:1.0];
+	return [self adjustColorBrightness:color colorAdjustment:-COLOR_ADJUSTMENT_AMOUNT/255.0 alphaMultiplier:1.0];
 }
 
 + (UIColor *)lightenColor:(UIColor *)color {
-	return [self adjustColorBrightness:color colorAdjustment:30/255.0 alphaMultiplier:1.0];
+	return [self adjustColorBrightness:color colorAdjustment:COLOR_ADJUSTMENT_AMOUNT/255.0 alphaMultiplier:1.0];
 }
 
 + (UIColor *)translucentColor:(UIColor *)color {
@@ -338,34 +344,32 @@ static NSDictionary *supportedColorString = nil;
 //////////////////////////////////////////////////////////////////////
 
 - (PWBackgroundView *)backgroundView {
-	return [PWController sharedInstance].backgroundView;
+	return self.widget.widgetController.backgroundView;
 }
 
 - (PWContainerView *)containerView {
-	return [PWController sharedInstance].containerView;
+	return self.widget.widgetController.containerView;
 }
 
 - (UINavigationController *)navigationController {
-	return [PWController activeWidget].navigationController;
+	return self.widget.navigationController;
 }
 
 - (UINavigationBar *)navigationBar {
-	return [PWController activeWidget].navigationController.navigationBar;
+	return self.widget.navigationController.navigationBar;
+}
+
+- (UIColor *)preferredTintColor {
+	return self.widget.preferredTintColor;
+}
+
+- (UIColor *)preferredBarTextColor {
+	return self.widget.preferredBarTextColor;
 }
 
 /**
  * Private methods
  **/
-
-- (void)_setPreferredTintColor:(UIColor *)tintColor {
-	[_preferredTintColor release];
-	_preferredTintColor = [tintColor copy];
-}
-
-- (void)_setPreferredBarTextColor:(UIColor *)tintColor {
-	[_preferredBarTextColor release];
-	_preferredBarTextColor = [tintColor copy];
-}
 
 - (void)_configureAppearance {
 	
@@ -396,10 +400,6 @@ static NSDictionary *supportedColorString = nil;
 	
 	[bar setBackgroundImage:[self navigationBarBackgroundImageForOrientation:PWWidgetOrientationPortrait] forBarMetrics:UIBarMetricsDefault];
 	[bar setBackgroundImage:[self navigationBarBackgroundImageForOrientation:PWWidgetOrientationLandscape] forBarMetrics:UIBarMetricsLandscapePhone];
-	
-	// update separator color in table view cell
-	UIColor *separatorColor = [self cellSeparatorColor];
-	[PWThemableTableViewCell setSeparatorColor:separatorColor];
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -679,12 +679,21 @@ static NSDictionary *supportedColorString = nil;
 }
 
 + (CGFloat)defaultHeightOfCellOfType:(PWWidgetCellType)type forOrientation:(PWWidgetOrientation)orientation {
+	
+	CGFloat baseHeight;
+	
+	if (orientation == PWWidgetOrientationLandscape && ![PWController isIPad]) {
+		baseHeight = 36.0;
+	} else {
+		baseHeight = 44.0;
+	}
+	
 	switch (type) {
 		case PWWidgetCellTypeNormal:
 		default:
-			return 44.0;
+			return baseHeight;
 		case PWWidgetCellTypeTextArea:
-			return 44.0 * 3;
+			return baseHeight * 3;
 	}
 }
 
@@ -706,8 +715,7 @@ static NSDictionary *supportedColorString = nil;
 	
 	RELEASE(_name)
 	RELEASE(_bundle)
-	RELEASE(_preferredTintColor)
-	RELEASE(_preferredBarTextColor)
+	_widget = nil;
 	
 	[super dealloc];
 }

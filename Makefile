@@ -3,8 +3,9 @@
 export THEOS_DEVICE_IP=127.0.0.1
 export THEOS_DEVICE_PORT=2222
 
-export DEBUG = 1
-export DEBUGFLAG = -ggdb
+#export DEBUG = 1
+#export DEBUGFLAG = -ggdb
+export DEBUG = 0
 
 export TARGET = :clang
 export ARCHS = armv7 arm64
@@ -16,10 +17,13 @@ export ADDITIONAL_OBJCFLAGS = -fvisibility=default -fvisibility-inlines-hidden -
 
 ### Controller ###
 LIB = PWController.m
+LIB += PWWidgetController.m
+LIB += PWWidgetNavigationController.m
 
 ### Core ###
-LIB += PWTestBar.m
+#LIB += PWTestBar.m
 LIB += PWMiniView.m
+LIB += PWShadowView.m
 LIB += PWBase.m
 LIB += PWWindow.m
 LIB += PWBackgroundView.m
@@ -44,8 +48,10 @@ LIB += PWWidgetItem.m
 LIB += PWWidgetItemCell.m
 
 ### Widget Items ###
+LIB += WidgetItems/_PWWidgetItemTextInputTraits.m
 LIB += WidgetItems/PWWidgetItemTextArea.m
 LIB += WidgetItems/PWWidgetItemTextField.m
+LIB += WidgetItems/PWWidgetItemValue.m
 LIB += WidgetItems/PWWidgetItemListValue.m
 LIB += WidgetItems/PWWidgetItemDateValue.m
 LIB += WidgetItems/PWWidgetItemToneValue.m
@@ -86,11 +92,22 @@ LIB += JSBridge/PWJSBridgePreferenceWrapper.m
 
 ############################################################
 
+# Activation
+ACTIVATION_METHODS = ActivationMethods/LockScreen
+ACTIVATION_METHODS += ActivationMethods/TodayView
+ACTIVATION_METHODS += ActivationMethods/NotificationCenter
+ACTIVATION_METHODS += ActivationMethods/NotificationCenterCorners
+ACTIVATION_METHODS += ActivationMethods/ActivatorListener
+ACTIVATION_METHODS += ActivationMethods/ControlCenter
+
+############################################################
+
 # API
 API = API/Message.m
 API += API/Mail.m
 API += API/Alarm.m
 API += API/Calendar.m
+API += API/Note.m
 #API += API/Contact.m
 
 ############################################################
@@ -102,38 +119,30 @@ API_SUBSTRATES += API/AlarmSubstrate
 
 ############################################################
 
-# Activation
-#ACTIVATION_METHODS = ActivationMethods/LockScreen
-ACTIVATION_METHODS += ActivationMethods/TodayView
-ACTIVATION_METHODS += ActivationMethods/NotificationCenter
-ACTIVATION_METHODS += ActivationMethods/NotificationCenterCorners
-ACTIVATION_METHODS += ActivationMethods/ActivatorListener
-ACTIVATION_METHODS += ActivationMethods/ControlCenter
-
-############################################################
-
 # Built-in Widgets
-#WIDGETS = Widgets/Test
-#WIDGETS += Widgets/Custom
 WIDGETS += Widgets/Calendar
 WIDGETS += Widgets/Reminders
 WIDGETS += Widgets/Notes
 WIDGETS += Widgets/Browser
 WIDGETS += Widgets/Dictionary
 WIDGETS += Widgets/Alarm
+WIDGETS += Widgets/Timer
 WIDGETS += Widgets/Messages
 WIDGETS += Widgets/Mail
-#WIDGETS += Widgets/Contact
+
+#WIDGETS += Widgets/Test
+#WIDGETS += Widgets/Custom
 
 ############################################################
 
 # Third-party Widgets
-WIDGETSTP = WidgetsTP/Authenticator
+#WIDGETSTP = WidgetsTP/Authenticator
+#WIDGETSTP += WidgetsTP/Spotify
 
 ############################################################
 
 # Test Scripts
-SCRIPTS = Scripts/Test
+#SCRIPTS = Scripts/Test
 
 ############################################################
 
@@ -142,6 +151,7 @@ THEMES = Themes/Blur
 THEMES += Themes/DarkBlur
 THEMES += Themes/PlainBlur
 THEMES += Themes/Plain
+THEMES += Themes/Grey
 
 ############################################################
 
@@ -150,18 +160,32 @@ PREFERENCE = preference
 
 ############################################################
 
+# Welcome Screen
+WELCOME_SCREEN = WelcomeScreen/PWWSWindow.m
+WELCOME_SCREEN += WelcomeScreen/PWWSTipView.m
+
+############################################################
+
 LIBRARY_NAME = libprowidgets
-libprowidgets_FILES = $(LIB) $(API)
-libprowidgets_FRAMEWORKS = CoreFoundation Foundation UIKit CoreGraphics CoreImage QuartzCore JavaScriptCore EventKit
-libprowidgets_PRIVATE_FRAMEWORKS = MobileKeyBag Calculate MobileTimer ToneKit ToneLibrary AddressBook MessageUI ChatKit
-libprowidgets_INSTALL_PATH = /Library/ProWidgets
+libprowidgets_FILES = $(LIB) $(API) $(WELCOME_SCREEN)
+libprowidgets_FRAMEWORKS = CoreFoundation Foundation UIKit CoreGraphics CoreImage QuartzCore JavaScriptCore EventKit AddressBook MediaPlayer
+libprowidgets_PRIVATE_FRAMEWORKS = MobileKeyBag Calculate MobileTimer ToneKit ToneLibrary AddressBook MessageUI ChatKit MailServices Notes
+libprowidgets_INSTALL_PATH = /Library/ProWidgets/
 libprowidgets_LIBRARIES = substrate objcipc
 
-SUBPROJECTS = Bootstrap $(API_SUBSTRATES) $(ACTIVATION_METHODS) $(WIDGETS) $(WIDGETSTP) $(SCRIPTS) $(THEMES) $(PREFERENCE)
+SUBPROJECTS = Substrate $(API_SUBSTRATES) $(ACTIVATION_METHODS) $(WIDGETS) $(WIDGETSTP) $(SCRIPTS) $(THEMES) $(PREFERENCE)
 
 include theos/makefiles/common.mk
 include $(THEOS_MAKE_PATH)/library.mk
 include $(THEOS_MAKE_PATH)/aggregate.mk
+
+#LIB_PATH = $(libprowidgets_INSTALL_PATH)$(LIBRARY_NAME).dylib
+#STUB_PATH = $(THEOS_STAGING_DIR)$(LIBRARY_NAME).stub.dylib
+#$(ECHO_LINKING)echo "" | $(TARGET_LD) $(TARGET_LDFLAGS) -dynamiclib -install_name $(LIB_PATH) -o $(STUB_PATH) -x c -; $(TARGET_STRIP) -c $(STUB_PATH)$(ECHO_END)
+
+after-stage::
+	$(ECHO_NOTHING)find $(THEOS_STAGING_DIR) -iname '*.psd' -exec rm -rfv {} + $(ECHO_END)
+	$(ECHO_NOTHING)find $(THEOS_STAGING_DIR) -iname '*.bak' -exec rm -rfv {} + $(ECHO_END)
 
 after-install::
 	install.exec "killall -9 backboardd"

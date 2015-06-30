@@ -1,4 +1,10 @@
-@class _UIDictionaryManager, _UIDefinitionValue;
+@class _UIDefinitionDictionary, _UIDictionaryManager, _UIDefinitionValue, ASAsset;
+
+@interface _UIDefinitionDictionary : NSObject
+
+@property(readonly) ASAsset *rawAsset;
+
+@end
 
 @interface _UIDictionaryManager : NSObject {
     NSArray *_availableDefinitionDictionaries;
@@ -45,5 +51,11 @@
 - (id)rawAsset;
 - (void)setRawAsset:(id)arg1;
 - (id)term;
+
+@end
+
+@interface ASAsset : NSObject
+
+- (NSInteger)state;
 
 @end

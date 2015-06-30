@@ -13,8 +13,8 @@
 			<string>title</string>
 			<key>type</key>
 			<string>textArea</string>
-			<key>overrideHeight</key>
-			<real>120.0</real>
+			<key>shouldFillHeight</key>
+			<true/>
 		</dict>
 		<dict>
 			<key>key</key>

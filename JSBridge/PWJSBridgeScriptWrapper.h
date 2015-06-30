@@ -10,7 +10,7 @@
 #import "PWJSBridgeWrapper.h"
 #import "PWJSBridgeBaseWrapper.h"
 
-@protocol PWJSBridgeScriptWrapperExport <JSExport>
+@protocol PWJSBridgeScriptWrapperExport <PWJSBridgeBaseWrapperExport, JSExport>
 /*
 // helper methods
 - (void)showMessage:(JSValue *)message :(JSValue *)title;

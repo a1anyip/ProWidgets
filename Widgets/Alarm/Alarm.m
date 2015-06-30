@@ -28,7 +28,7 @@
 
 - (void)load {
 	
-	PWWidgetAlarmInterface defaultInterface = PWWidgetAlarmInterfaceAdd;
+	PWWidgetAlarmInterface defaultInterface = [self intValueForPreferenceKey:@"defaultInterface" defaultValue:0] == 1 ? PWWidgetAlarmInterfaceOverview : PWWidgetAlarmInterfaceAdd;
 	
 	if (defaultInterface == PWWidgetAlarmInterfaceAdd) {
 		[self switchToAddInterface];
@@ -42,7 +42,7 @@
 	if (_currentInterface == PWWidgetAlarmInterfaceAdd) return;
 	
 	if (_addViewControllers == nil) {
-		PWWidgetAlarmAddViewController *addViewController = [[PWWidgetAlarmAddViewController new] autorelease];
+		PWWidgetAlarmAddViewController *addViewController = [[[PWWidgetAlarmAddViewController alloc] initForWidget:self] autorelease];
 		_addViewControllers = [@[addViewController] copy];
 	}
 	
@@ -55,7 +55,7 @@
 	if (_currentInterface == PWWidgetAlarmInterfaceOverview) return;
 	
 	if (_overviewViewControllers == nil) {
-		PWWidgetAlarmOverviewViewController *overviewViewController = [[PWWidgetAlarmOverviewViewController new] autorelease];
+		PWWidgetAlarmOverviewViewController *overviewViewController = [[[PWWidgetAlarmOverviewViewController alloc] initForWidget:self] autorelease];
 		_overviewViewControllers = [@[overviewViewController] copy];
 	}
 	

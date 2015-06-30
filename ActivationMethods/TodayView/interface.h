@@ -5,6 +5,7 @@
 
 + (id)sharedInstance;
 - (void)dismissAnimated:(BOOL)animated;
+- (void)dismissAnimated:(BOOL)animated completion:(id)completion;
 
 @end
 
@@ -12,7 +13,7 @@
 
 - (UITableView *)tableView;
 - (void)updateVisibility;
-- (void)PW_pressed;
+- (void)_pw_pressed;
 
 @end
 
@@ -23,5 +24,11 @@
 @interface SBBBSectionInfo : NSObject
 
 - (NSString *)identifier;
+
+@end
+
+@interface UITableView ()
+
+- (NSInteger)_sectionForHeaderView:(id)headerView;
 
 @end

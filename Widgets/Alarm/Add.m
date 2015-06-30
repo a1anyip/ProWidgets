@@ -30,8 +30,7 @@
 }
 
 - (void)titleTapped {
-	PWWidgetAlarm *widget = (PWWidgetAlarm *)self.widget;
-	[widget switchToOverviewInterface];
+	[[PWWidgetAlarm widget] switchToOverviewInterface];
 }
 
 - (void)itemValueChangedEventHandler:(PWWidgetItem *)item oldValue:(id)oldValue {
@@ -76,7 +75,7 @@
 	PWAPIAlarm *alarm = [PWAPIAlarmManager addAlarmWithTitle:label active:YES hour:hour minute:minute daySetting:daySetting allowsSnooze:snooze sound:soundIdentifier soundType:soundType];
 	
 	if (alarm == nil) {
-		[self.widget showMessage:@"Unable to add alarm"];
+		[self.widget showMessage:TEXT(PWWidgetAlarm, @"UnableAddAlarm")];
 	} else {
 		[self.widget dismiss];
 	}

@@ -9,7 +9,9 @@
 
 #import "item.h"
 #import "../PWContentViewController.h"
-#import "ToneValue/PWWidgetItemTonePickerController.h"
+#import "ToneValue/PWWidgetItemTonePickerControllerDelegate.h"
+
+@class PWWidgetItemTonePickerController;
 
 @interface PWWidgetItemToneValue : PWWidgetItem<PWWidgetItemTonePickerControllerDelegate> {
 	

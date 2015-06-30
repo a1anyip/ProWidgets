@@ -11,14 +11,15 @@
 
 @interface PWThemableTableViewCell : UITableViewCell {
 	
+	PWTheme *_theme;
+	
 	BOOL _configuredAppearance;
 	UIView *_customSeparatorView;
 }
 
-+ (void)setSeparatorColor:(UIColor *)color;
+@property(nonatomic, retain) PWTheme *theme;
 
-//////////////////////////////////////////////////////////////////////
-
+- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier theme:(PWTheme *)theme;
 - (void)_configureAppearance;
 
 ////////// Normal //////////
@@ -44,7 +45,5 @@
 - (void)setSwitchThumbColor:(UIColor *)color;
 - (void)setSwitchOnColor:(UIColor *)color;
 - (void)setSwitchOffColor:(UIColor *)color;
-
-//////////////////////////////////////////////////////////////////////
 
 @end

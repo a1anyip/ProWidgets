@@ -11,6 +11,8 @@
 
 @interface PWWidgetBrowser : PWWidget {
 	
+	PWWidgetBrowserDefault _defaultBrowser;
+	
 	NSBundle *_safariBundle;
 	UIImage *_reloadIcon;
 	UIImage *_stopIcon;
@@ -22,6 +24,10 @@
 	NSArray *_bookmarkViewControllers;
 }
 
+@property(nonatomic, assign) BOOL shouldAutoFocus;
+
+@property(nonatomic, readonly) PWWidgetBrowserDefault defaultBrowser;
+
 - (NSBundle *)safariBundle;
 - (UIImage *)reloadIcon;
 - (UIImage *)stopIcon;
@@ -29,9 +35,11 @@
 - (UIImage *)folderIcon;
 
 - (void)navigateToURL:(NSString *)url;
-- (void)addBookmarkFromWebInterfaceWithTitle:(NSString *)title url:(NSString *)url;
+- (void)addBookmarkFromWebInterfaceWithTitle:(NSString *)title url:(NSString *)url animated:(BOOL)animated;
 
 - (void)switchToWebInterface;
 - (void)switchToBookmarkInterface;
+
++ (NSArray *)readChromeBookmarks;
 
 @end

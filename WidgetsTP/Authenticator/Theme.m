@@ -13,11 +13,7 @@
 - (CGFloat)cornerRadius {
 	return 0.0;
 }
-/*
-- (UIColor *)sheetBackgroundColor {
-	return [PWTheme parseColorString:@"#f0f0f0"];
-}
-*/
+
 - (UIColor *)navigationBarBackgroundColor {
 	return [PWTheme parseColorString:@"#d0d0d0"];
 }

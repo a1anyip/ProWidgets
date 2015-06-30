@@ -24,11 +24,11 @@
 	self.tableView.delegate = self;
 	self.tableView.dataSource = self;
 	
-	PWTheme *theme = [PWController activeTheme];
+	PWTheme *theme = self.theme;
 	
 	_noLabel = [UILabel new];
-	_noLabel.text = @"Loading";
-	_noLabel.textColor = [theme sheetForegroundColor];
+	_noLabel.text = TEXT(PWWidgetAlarm, @"Loading");
+	_noLabel.textColor = [PWTheme translucentColor:[theme sheetForegroundColor]];
 	_noLabel.font = [UIFont boldSystemFontOfSize:22.0];
 	_noLabel.textAlignment = NSTextAlignmentCenter;
 	_noLabel.frame = self.view.bounds;
@@ -37,11 +37,11 @@
 }
 
 - (NSString *)title {
-	return @"Manage";
+	return TEXT(PWWidgetAlarm, @"Manage");
 }
 
 - (void)loadView {
-	self.view = [[[PWThemableTableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain] autorelease];
+	self.view = [[[PWThemableTableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain theme:self.theme] autorelease];
 }
 
 - (UITableView *)tableView {
@@ -61,7 +61,7 @@
 	
 	// fade in or out the no label
 	if ([_alarms count] == 0) {
-		_noLabel.text = @"No Alarms";
+		_noLabel.text = TEXT(PWWidgetAlarm, @"NoAlarms");
 		self.tableView.alwaysBounceVertical = NO;
 		[UIView animateWithDuration:PWTransitionAnimationDuration animations:^{
 			_noLabel.alpha = 1.0;
@@ -75,8 +75,7 @@
 }
 
 - (void)titleTapped {
-	PWWidgetAlarm *widget = (PWWidgetAlarm *)self.widget;
-	[widget switchToAddInterface];
+	[[PWWidgetAlarm widget] switchToAddInterface];
 }
 
 /**
@@ -105,7 +104,7 @@
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForDeleteConfirmationButtonForRowAtIndexPath:(NSIndexPath *)indexPath {
-	return @"Remove";
+	return TEXT(PWWidgetAlarm, @"Remove");
 }
 
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -143,7 +142,7 @@
 	PWWidgetAlarmTableViewCell *cell = (PWWidgetAlarmTableViewCell *)[tableView dequeueReusableCellWithIdentifier:identifier];
 	
 	if (!cell) {
-		cell = [[[PWWidgetAlarmTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier] autorelease];
+		cell = [[[PWWidgetAlarmTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier theme:self.theme] autorelease];
 	}
 	
 	[cell setActive:alarm.active];
@@ -161,7 +160,7 @@
 		[_alarms release];
 		_alarms = [[PWAPIAlarmManager allAlarms] copy];
 		
-		dispatch_sync(dispatch_get_main_queue(), ^{
+		dispatch_async(dispatch_get_main_queue(), ^{
 			// reload table view
 			[self reload];
 			applyFadeTransition(self.tableView, PWTransitionAnimationDuration);

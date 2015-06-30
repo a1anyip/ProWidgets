@@ -11,10 +11,10 @@
 #import "header.h"
 #import "libactivator.h"
 #import "PWController.h"
+#import "PWWidgetController.h"
 
 #define ICON_PATH @"/Library/PreferenceBundles/ProWidgets.bundle/icon@2x.png"
 
-#define ListenerNameDismiss			@"ProWidgetsDismiss"
 #define ListenerNamePrefix			@"ProWidgets:"
 #define ListenerNameForWidget(x)	[NSString stringWithFormat:@"%@%@", ListenerNamePrefix, (x)]
 
@@ -23,7 +23,6 @@
 // function definitions
 static inline void registerListener(NSString *name);
 static inline NSString *widgetNameFromListenerName(NSString *listenerName);
-static inline BOOL isDismissListenerName(NSString *listenerName);
 
 // store shared instance
 static LAProWidgets *sharedInstance = nil;
@@ -32,7 +31,6 @@ static LAProWidgets *sharedInstance = nil;
 
 + (instancetype)sharedInstance;
 
-- (void)_registerDismissListener;
 - (void)_registerWidgetListener;
 - (UIImage *)_iconForWidgetNamed:(NSString *)name;
 
@@ -71,14 +69,9 @@ static LAProWidgets *sharedInstance = nil;
 			return self;
 		}
 		
-		[self _registerDismissListener];
 		[self _registerWidgetListener];
 	}
 	return self;
-}
-
-- (void)_registerDismissListener {
-	registerListener(ListenerNameDismiss);
 }
 
 - (void)_registerWidgetListener {
@@ -110,21 +103,15 @@ static LAProWidgets *sharedInstance = nil;
 	NSString *widgetName = widgetNameFromListenerName(listenerName);
 	
 	// present the widget
-	PWController *controller = [PWController sharedInstance];
-	
 	BOOL success = NO;
 	
-	if (isDismissListenerName(listenerName)) {
-		success = [controller dismissWidget];
+	NSDictionary *userInfo = nil;
+	if (event != nil) {
+		userInfo = @{ @"from": @"activator", @"event": event };
 	} else {
-		NSDictionary *userInfo = nil;
-		if (event != nil) {
-			userInfo = @{ @"from": @"activator", @"event": event };
-		} else {
-			userInfo = @{ @"from": @"activator" };
-		}
-		success = [controller presentWidgetNamed:widgetName userInfo:userInfo];
+		userInfo = @{ @"from": @"activator" };
 	}
+	success = [PWWidgetController presentWidgetNamed:widgetName userInfo:userInfo];
 	
 	event.handled = success;
 }
@@ -137,29 +124,19 @@ static LAProWidgets *sharedInstance = nil;
 //////////////////////////////////////////////////////////////////////
 
 - (NSString *)activator:(LAActivator *)activator requiresLocalizedTitleForListenerName:(NSString *)listenerName {
-	
-	if (isDismissListenerName(listenerName)) {
-		return @"Dismiss";
-	} else {
-		NSString *name = widgetNameFromListenerName(listenerName);
-		NSDictionary *info = [[PWController sharedInstance] infoOfWidgetNamed:name];
-		return info[@"displayName"];
-	}
+	NSString *name = widgetNameFromListenerName(listenerName);
+	NSDictionary *info = [[PWController sharedInstance] infoOfWidgetNamed:name];
+	return info[@"displayName"];
 }
 
 - (NSString *)activator:(LAActivator *)activator requiresLocalizedDescriptionForListenerName:(NSString *)listenerName {
-	
-	if (isDismissListenerName(listenerName)) {
-		return @"Dismiss presented widget";
-	} else {
-		//NSString *widgetName = widgetNameFromListenerName(listenerName);
-		//return [NSString stringWithFormat:@"Present widget '%@'", widgetName];
-		return @"Present widget";
-	}
+	//NSString *widgetName = widgetNameFromListenerName(listenerName);
+	//return [NSString stringWithFormat:@"Present widget '%@'", widgetName];
+	return @"Present widget";
 }
 
 - (NSString *)activator:(LAActivator *)activator requiresLocalizedGroupForListenerName:(NSString *)listenerName {
-	return isDismissListenerName(listenerName) ? @"ProWidgets " : @"ProWidgets";
+	return @"ProWidgets";
 }
 
 - (NSArray *)activator:(LAActivator *)activator requiresCompatibleEventModesForListenerWithName:(NSString *)listenerName {
@@ -194,10 +171,6 @@ static inline NSString *widgetNameFromListenerName(NSString *listenerName) {
 	if (prefixLength == -1) prefixLength = [ListenerNamePrefix length];
 	
 	return [listenerName substringFromIndex:prefixLength];
-}
-
-static inline BOOL isDismissListenerName(NSString *listenerName) {
-	return [listenerName isEqualToString:ListenerNameDismiss];
 }
 
 static inline __attribute__((constructor)) void init() {

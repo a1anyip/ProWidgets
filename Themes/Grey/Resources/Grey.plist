@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	
+	<!--
+
+	This file is the theme definition for ProWidgets.
+
+	Leave the value blank or remove the item to use its default value.
+
+	Documentation at http://prowidgets.net/doc/
+
+	-->
+	
+	<!-- Boolean values -->
+	
+	<key>wantsDarkKeyboard</key>
+	<false/>
+
+	<!-- Image name values
+	
+	     Specify the file name with extension in "portrait" and "landscape" values (@2x can be omitted)
+	     Leave a value empty if you don't need that
+	
+	     Cap inset value format:
+	     <string>top,left,bottom,right</string>
+	
+	     Example:
+	     <key>portraitCapInsets</key>
+	     <string>2.0,1.0,2.0,1.0</string>
+	-->
+
+	<key>sheetBackgroundImage</key>
+	<dict>
+		<key>portrait</key>
+		<string></string>
+		<key>landscape</key>
+		<string></string>
+		<key>portraitCapInsets</key>
+		<string></string>
+		<key>landscapeCapInsets</key>
+		<string></string>
+	</dict>
+
+	<key>navigationBarBackgroundImage</key>
+	<dict>
+		<key>portrait</key>
+		<string></string>
+		<key>landscape</key>
+		<string></string>
+		<key>portraitCapInsets</key>
+		<string></string>
+		<key>landscapeCapInsets</key>
+		<string></string>
+	</dict>
+
+	<key>cellBackgroundImage</key>
+	<dict>
+		<key>portrait</key>
+		<string></string>
+		<key>landscape</key>
+		<string></string>
+		<key>portraitCapInsets</key>
+		<string></string>
+		<key>landscapeCapInsets</key>
+		<string></string>
+	</dict>
+
+	<key>cellSelectedBackgroundImage</key>
+	<dict>
+		<key>portrait</key>
+		<string></string>
+		<key>landscape</key>
+		<string></string>
+		<key>portraitCapInsets</key>
+		<string></string>
+		<key>landscapeCapInsets</key>
+		<string></string>
+	</dict>
+	
+	<!-- Color values
+	
+	     Support the following formats in color values (case insensitive):
+	
+	     #RGB              (e.g. #FFF)
+	     #RRGGBB           (e.g. #FF0000, #F0F0F0)
+	
+	     rgb(0,0,0)        (e.g. rgb(255,0,0), rgb(100%,0,0))
+	     rgba(0,0,0,0.5)   (e.g. rgba(255,0,0,1.0), rgba(100%,0,0,0.5))
+	
+	     hsl(0,0%,0%)      (e.g. hsl(120,50%,50%), hsl(-120,50%,50%))
+	     hsla(0,0%,0%,0.5) (e.g. hsla(120,50%,50%,1.0), hsla(-120,50%,50%,0.5))
+	
+	     And all color names listed in the page, https://developer.apple.com/library/ios/documentation/uikit/reference/UIColor_Class/Reference/Reference.html
+	     (e.g. black, clear, lightText)
+	-->
+	
+	<key>tintColor</key>
+	<string>#333</string>
+	
+	<key>sheetForegroundColor</key>
+	<string>#333</string>
+
+	<key>sheetBackgroundColor</key>
+	<string>#DDD</string>
+	
+	<key>navigationBarBackgroundColor</key>
+	<string>#CCC</string>
+	
+	<key>navigationTitleTextColor</key>
+	<string>#333</string>
+	
+	<key>navigationButtonTextColor</key>
+	<string>#666</string>
+	
+	<key>cellSeparatorColor</key>
+	<string>#BBB</string>
+	
+	<key>cellBackgroundColor</key>
+	<string>#EEE</string>
+
+	<key>cellTitleTextColor</key>
+	<string>#666</string>
+
+	<key>cellValueTextColor</key>
+	<string>#333</string>
+
+	<key>cellButtonTextColor</key>
+	<string>#333</string>
+	
+	<key>cellInputTextColor</key>
+	<string>#333</string>
+	
+	<key>cellInputPlaceholderTextColor</key>
+	<string>#999</string>
+
+	<key>cellPlainTextColor</key>
+	<string>#CCC</string>
+
+	<key>cellSelectedBackgroundColor</key>
+	<string>rgba(0,0,0,0.1)</string>
+
+	<key>cellSelectedTitleTextColor</key>
+	<string>#000</string>
+
+	<key>cellSelectedValueTextColor</key>
+	<string>#666</string>
+
+	<key>cellSelectedButtonTextColor</key>
+	<string>#000</string>
+	
+	<key>cellHeaderFooterViewBackgroundColor</key>
+	<string>#DDD</string>
+	
+	<key>cellHeaderFooterViewTitleTextColor</key>
+	<string>#666</string>
+	
+	<key>switchThumbColor</key>
+	<string>#AAA</string>
+
+	<key>switchOnColor</key>
+	<string>#CCC</string>
+
+	<key>switchOffColor</key>
+	<string>#CCC</string>
+
+	<!-- Numerical values -->
+
+	<key>cornerRadius</key>
+	<real>8.0</real>
+	
+	<key>cellHeight</key>
+	<dict>
+		<key>portrait</key>
+		<dict>
+			<key>normal</key>
+			<real>44.0</real>
+			<key>textarea</key>
+			<real>132.0</real>
+		</dict>
+		<key>landscape</key>
+		<dict>
+			<key>normal</key>
+			<real>36.0</real>
+			<key>textarea</key>
+			<real>108.0</real>
+		</dict>
+	</dict>
+</dict>
+</plist>

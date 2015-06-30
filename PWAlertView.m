@@ -11,7 +11,7 @@
 
 @implementation PWAlertView
 
-- (instancetype)initWithTitle:(NSString *)title message:(NSString *)message buttonTitle:(NSString *)buttonTitle defaultValue:(NSString *)defaultValue cancelButtonTitle:(NSString *)cancelButtonTitle style:(UIAlertViewStyle)style completion:(PWAlertViewCompletionHandler)completion {
+- (instancetype)initWithTitle:(NSString *)title message:(NSString *)message buttonTitle:(NSString *)buttonTitle cancelButtonTitle:(NSString *)cancelButtonTitle defaultValue:(NSString *)defaultValue style:(UIAlertViewStyle)style completion:(PWAlertViewCompletionHandler)completion {
 	
 	if (title == nil) title = @"";
 	if (message == nil) message = @"";

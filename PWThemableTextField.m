@@ -11,38 +11,49 @@
 #import "PWController.h"
 #import "PWTheme.h"
 
+@interface UITextField ()
+
+- (UIColor *)_placeholderColor;
+- (UIImage *)_clearButtonImageForState:(unsigned int)state;
+
+@end
+
 @implementation PWThemableTextField
 
-- (instancetype)init {
-	if ((self = [super init])) {
-		[self _configureAppearance];
-	}
-	return self;
-}
-
-- (instancetype)initWithFrame:(CGRect)frame {
+- (instancetype)initWithFrame:(CGRect)frame theme:(PWTheme *)theme {
 	if ((self = [super initWithFrame:frame])) {
-		[self _configureAppearance];
+		[self _configureAppearance:theme];
 	}
 	return self;
 }
 
-- (void)_configureAppearance {
-	
-	PWTheme *theme = [PWController activeTheme];
+- (void)_configureAppearance:(PWTheme *)theme {
 	
 	UIColor *backgroundColor = [theme cellBackgroundColor];
 	UIColor *inputTextColor = [theme cellInputTextColor];
 	UIColor *inputPlaceholderTextColor = [theme cellInputPlaceholderTextColor];
+	
+	_cachedPlaceholderColor = [inputPlaceholderTextColor retain];
 	
 	self.backgroundColor = backgroundColor;
 	
 	self.textColor = inputTextColor;
 	self.tintColor = [PWTheme adjustColorBrightness:inputTextColor colorAdjustment:0.0 alphaMultiplier:.3];
 	
-	[self setValue:inputPlaceholderTextColor forKeyPath:@"_placeholderLabel.textColor"];
-	
 	self.keyboardAppearance = theme.wantsDarkKeyboard ? UIKeyboardAppearanceDark : UIKeyboardAppearanceDefault;
+}
+
+- (UIColor *)_placeholderColor {
+	if (_cachedPlaceholderColor != nil) {
+		return _cachedPlaceholderColor;
+	} else {
+		return [super _placeholderColor];
+	}
+}
+
+- (void)dealloc {
+	RELEASE(_cachedPlaceholderColor)
+	[super dealloc];
 }
 
 @end

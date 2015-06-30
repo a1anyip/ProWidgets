@@ -11,8 +11,18 @@
 	<key>PWInfoDisplayName</key>
 	<string>Calendar</string>
 	<key>PWInfoAuthor</key>
-	<string>Alan Yip</string>
-	<key>PWInfoDescription</key>
+	<string>ProWidgets</string>
+	<key>PWInfoShortDescription</key>
 	<string>View and create events</string>
+	<key>PWInfoDescription</key>
+	<string>Calendar widget allows you to quickly add a new event and view the upcoming events.
+
+Tap on navigation bar once to switch between add and overview interfaces.
+
+Configure the default interface and the period of upcoming events in the widget preference page.</string>
+	<key>PWInfoPreferenceDefaults</key>
+	<string>cc.tweak.prowidgets.widget.calendar</string>
+	<key>PWInfoPreferenceFile</key>
+	<string>Preference</string>
 </dict>
 </plist>

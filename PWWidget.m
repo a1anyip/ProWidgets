@@ -8,33 +8,32 @@
 //
 
 #import "PWWidget.h"
+#import "PWWidgetJS.h"
 #import "PWController.h"
+#import "PWWidgetController.h"
 #import "PWView.h"
+#import "PWBackgroundView.h"
 #import "PWContainerView.h"
 #import "PWWidgetPlistParser.h"
 #import "PWTheme.h"
 #import "PWThemePlistParser.h"
 #import "PWWidgetItem.h"
 #import "PWWidgetItemCell.h"
-#import "PWAlertView.h"
 #import "PWContentItemViewController.h"
-#import "PWContentViewControllerDelegate.h"
+#import "PWWidgetNavigationController.h"
 
 #define CHECK_CONFIGURED(x) if (![self _checkConfigured:_cmd]) return x;
 
-@interface UINavigationBar (Private)
-
-- (id)backButtonViewAtPoint:(CGPoint)point;
-
-@end
-
 @implementation PWWidget
 
-//////////////////////////////////////////////////////////////////////
++ (instancetype)widget {
+	if ([self.class isMemberOfClass:[PWWidget class]]) return nil;
+	return [PWWidgetController controllerForPresentedWidgetWithPrincipalClass:self.class].widget;
+}
 
-/**
- * Widget initialization
- **/
++ (PWTheme *)theme {
+	return [self.widget theme];
+}
 
 - (instancetype)init {
 	if ((self = [super init])) {
@@ -49,19 +48,59 @@
 	[self loadWidgetPlist:[self name]];
 }
 
-- (void)load {
-	LOG(@"PWWidget: Load widget (%@)", self);
-}
+- (void)load {}
 
 - (void)preparePresentation {
 	
 	_isPresenting = YES;
+}
+
+- (UIViewController *)topViewController {
+	return _navigationController.topViewController;
+}
+
+- (void)_setConfigured {
+	
+	// set up navigation controller
+	_navigationController = [PWWidgetNavigationController new];
+	//_navigationController = [[PWWidgetNavigationController alloc] initWithNavigationBarClass:[PWWidgetNavigationBar class] toolbarClass:nil];
+	
+	LOG(@"_navigationController: %@", _navigationController);
+	
+	_navigationController.automaticallyAdjustsScrollViewInsets = NO;
+	_navigationController.edgesForExtendedLayout = UIRectEdgeNone;
+	_navigationController.extendedLayoutIncludesOpaqueBars = NO;
+	
+	_navigationController.delegate = self;
+	_navigationController.builtinTransitionStyle = 1; // set this to non-zero to avoid "layers" in transition
+	_navigationController.builtinTransitionGap = 0.0;
+	_navigationController.interactiveTransition = NO;
+	_navigationController.interactivePopGestureRecognizer.enabled = NO; // just disable the 'pan' gesture to pop view controller
+	
+	// retrieve navigation bar
+	UINavigationBar *navigationBar = _navigationController.navigationBar;
+	navigationBar.translucent = NO;
+	
+	// load default theme
+	if (_theme == nil) {
+		_theme = [[[PWController sharedInstance] loadDefaultThemeForWidget:self] retain];
+	}
+	
+	BOOL isJSWidget = [self isMemberOfClass:[PWWidgetJS class]];
 	
 	// if default layout is set, then auto create a content item view controller
-	if (_layout == PWWidgetLayoutDefault) {
+	if (_layout == PWWidgetLayoutDefault || isJSWidget) {
 		
 		// create a content item view controller
-		PWContentItemViewController *controller = [PWContentItemViewController new];
+		PWContentItemViewController *controller;
+		
+		if (isJSWidget) {
+			controller = [[PWContentItemViewControllerJS alloc] initForWidget:self];
+			 [(PWContentItemViewControllerJS *)controller setBridge:[(PWWidgetJS *)self bridge]];
+		} else {
+			controller = [[PWContentItemViewController alloc] initForWidget:self];
+		}
+		
 		controller.shouldAutoConfigureStandardButtons = YES;
 		
 		// load item view controller plist
@@ -77,30 +116,9 @@
 		_defaultItemViewController = controller;
 		[self pushViewController:controller animated:NO];
 	}
-}
-
-- (UIViewController *)topViewController {
-	return _navigationController.topViewController;
-}
-
-- (void)_setConfigured {
 	
 	// update flag value
 	_configured = YES;
-	
-	// set up navigation controller
-	_navigationController = [UINavigationController new];
-	_navigationController.edgesForExtendedLayout = UIRectEdgeNone;
-	_navigationController.automaticallyAdjustsScrollViewInsets = NO;
-	_navigationController.delegate = self;
-	_navigationController.builtinTransitionStyle = 1; // set this to non-zero to avoid "layers" in transition
-	_navigationController.builtinTransitionGap = 0.0;
-	_navigationController.interactiveTransition = NO;
-	_navigationController.interactivePopGestureRecognizer.enabled = NO; // just disable the 'pan' gesture to pop view controller
-	
-	// retrieve navigation bar
-	UINavigationBar *navigationBar = _navigationController.navigationBar;
-	navigationBar.translucent = NO;
 }
 
 - (BOOL)_checkConfigured:(SEL)selector {
@@ -113,10 +131,6 @@
 }
 
 //////////////////////////////////////////////////////////////////////
-
-/**
- * Loader
- **/
 
 - (BOOL)loadWidgetPlist:(NSString *)filename {
 	
@@ -137,11 +151,11 @@
 	CHECK_CONFIGURED(NO);
 	
 	// load theme
-	PWTheme *theme = [[PWController sharedInstance] loadThemeNamed:name];
+	PWTheme *theme = [[PWController sharedInstance] loadThemeNamed:name forWidget:self];
 	
 	// update reference
-	[_widgetTheme release];
-	_widgetTheme = [theme retain];
+	[_theme release];
+	_theme = [theme retain];
 	
 	return theme != nil;
 }
@@ -157,12 +171,12 @@
 	if (dict == nil) return NO;
 	
 	// parse and load theme
-	PWTheme *theme = [PWThemePlistParser parse:dict inBundle:_bundle];
+	PWTheme *theme = [PWThemePlistParser parse:dict inBundle:_bundle forWidget:self];
 	theme.name = _name;
 	
 	// update reference
-	[_widgetTheme release];
-	_widgetTheme = [theme retain];
+	[_theme release];
+	_theme = [theme retain];
 	
 	return YES;
 }
@@ -192,10 +206,6 @@
 }
 
 //////////////////////////////////////////////////////////////////////
-
-/**
- * Property Getters and Setters
- **/
 
 - (void)setLayout:(PWWidgetLayout)layout {
 	CHECK_CONFIGURED();
@@ -228,65 +238,98 @@
  **/
 
 - (BOOL)minimize {
-	return [[PWController sharedInstance] _minimizeWidget];
+	return [self.widgetController minimize];
 }
 
 - (BOOL)maximize {
-	return [[PWController sharedInstance] _maximizeWidget];
+	return [self.widgetController maximize];
 }
 
 - (BOOL)dismiss {
-	if ([PWController sharedInstance].isAnimating) {
-		[PWController sharedInstance].pendingDismissalRequest = YES;
+	if (self.widgetController.isAnimating) {
+		self.widgetController.pendingDismissalRequest = YES;
 		return YES;
 	} else {
-		return [[PWController sharedInstance] _dismissWidget];
+		return [self.widgetController dismiss];
 	}
 }
 
-- (PWTheme *)theme {
-	return [PWController activeTheme];
++ (UIImage *)imageNamed:(NSString *)name {
+	PWWidget *widget = [self widget];
+	if (widget != nil) {
+		return [widget imageNamed:name];
+	} else {
+		return nil;
+	}
 }
 
 - (UIImage *)imageNamed:(NSString *)name {
 	return [UIImage imageNamed:name inBundle:_bundle];
 }
 
-- (void)setViewControllers:(NSArray *)viewControllers animated:(BOOL)animated {
++ (NSString *)localizedStringForKey:(NSString *)key value:(NSString *)value table:(NSString *)table {
+	PWWidget *widget = [self widget];
+	if (widget != nil) {
+		return [widget localizedStringForKey:key value:value table:table];
+	} else {
+		return @"";
+	}
+}
+
+- (NSString *)localizedStringForKey:(NSString *)key value:(NSString *)value table:(NSString *)table {
 	
-	if (self.topViewController == nil) animated = NO;
+	if (key == nil || [key length] == 0) return @"";
 	
-	if (animated) {
-		applyFadeTransition(_navigationController.view, .2);
+	NSBundle *bundle = self.bundle;
+	
+	// to check whether the localiztion file for the current locale exists in the specified bundle
+	// in order to make the language consistent
+	NSMutableDictionary *cache = [self _cachedLocalizationsForTable:table];
+	NSString *localizedString = cache[key];
+	
+	if (localizedString != nil) {
+		LOG(@"localizedStringForKey: return cached localized string (%@) for key (%@)", localizedString, key);
+		return localizedString;
 	}
 	
-	[_navigationController setViewControllers:viewControllers animated:NO];
+	NSString *commonLocalizedString = [[PWController sharedInstance] commonLocalizedStringForPreferences:bundle.preferredLocalizations key:key];
+	
+	if (commonLocalizedString != nil) {
+		// cache it
+		cache[key] = commonLocalizedString;
+		return commonLocalizedString;
+	} else {
+		NSString *fallback = value == nil ? key : @"";
+		cache[key] = fallback;
+		return fallback;
+	}
+}
+
+- (void)setViewControllers:(NSArray *)viewControllers {
+	[_navigationController setViewControllers:viewControllers];
+}
+
+- (void)setViewControllers:(NSArray *)viewControllers animated:(BOOL)animated {
+	[_navigationController setViewControllers:viewControllers animated:animated];
 }
 
 - (void)pushViewController:(UIViewController *)viewController {
-	[self pushViewController:viewController animated:YES];
+	[_navigationController pushViewController:viewController];
 }
 
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated {
-	
-	if (![viewController.class conformsToProtocol:@protocol(PWContentViewControllerDelegate)]) {
-		LOG(@"PWWidget: Unable to push view controller (%@). Reason: view controller must conform to PWContentViewControllerDelegate protocol.", viewController);
-		return;
-	}
-	
-	if (self.topViewController == nil) animated = NO;
 	[_navigationController pushViewController:viewController animated:animated];
 }
 
 - (void)popViewController {
-	[self popViewControllerAnimated:YES];
+	[_navigationController popViewController];
 }
 
 - (void)popViewControllerAnimated:(BOOL)animated {
 	[_navigationController popViewControllerAnimated:animated];
 }
 
-- (void)resizeWidgetAnimated:(BOOL)animated forContentViewController:(id<PWContentViewControllerDelegate>)viewController {
+- (void)resizeWidgetAnimated:(BOOL)animated forContentViewController:(PWContentViewController *)viewController {
 	if (_isPresenting) {
 		
 		if (viewController == nil || self.topViewController != viewController) {
@@ -294,8 +337,7 @@
 			return;
 		}
 		
-		PWView *mainView = [PWController sharedInstance].mainView;
-		[mainView _resizeWidgetAnimated:animated];
+		[self.widgetController _resizeAnimated:animated];
 	}
 }
 
@@ -314,6 +356,12 @@
 - (void)willDismiss {}
 - (void)didDismiss {}
 
+- (void)willMinimize {}
+- (void)didMinimize {}
+
+- (void)willMaximize {}
+- (void)didMaximize {}
+
 - (void)keyboardWillShow:(CGFloat)height {}
 - (void)keyboardWillHide {}
 
@@ -324,14 +372,6 @@
 
 //////////////////////////////////////////////////////////////////////
 
-// Widget theme
-- (BOOL)_hasWidgetTheme {
-	return _widgetTheme != nil;
-}
-
-- (PWTheme *)_widgetTheme {
-	return _widgetTheme;
-}
 
 // helper method to throw an error
 - (void)_throwSetterError:(NSString *)name {
@@ -345,6 +385,8 @@
  **/
 
 - (void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated {
+	
+	if (self.widgetController.isMinimized) return;
 	
 	// resign first responder
 	[viewController.view endEditing:NO];
@@ -362,27 +404,29 @@
 		[contentViewController _willBePresentedInNavigationController:navigationController];
 	}
 	
-	if ([viewController.class conformsToProtocol:@protocol(PWContentViewControllerDelegate)]) {
+	if ([viewController isKindOfClass:[PWContentViewController class]]) {
 		
-		id<PWContentViewControllerDelegate> contentViewController = (id<PWContentViewControllerDelegate>)viewController;
+		PWContentViewController *contentViewController = (PWContentViewController *)viewController;
 		
 		// auto resize
-		if (![PWController sharedInstance].isAnimating)
+		if (!self.widgetController.isAnimating)
 			[self resizeWidgetAnimated:YES forContentViewController:contentViewController];
 		
 		// delegate method
-		if ([contentViewController respondsToSelector:@selector(willBePresentedInNavigationController:)])
-			[contentViewController willBePresentedInNavigationController:navigationController];
+		//if ([contentViewController respondsToSelector:@selector(willBePresentedInNavigationController:)])
+		[contentViewController willBePresentedInNavigationController:navigationController];
 	}
 	
 	// auto set first responder
 	// only set in this method when the widget is opening up
-	if ([PWController sharedInstance].isAnimating && [viewController respondsToSelector:@selector(configureFirstResponder)]) {
+	if (self.widgetController.isAnimating && [viewController respondsToSelector:@selector(configureFirstResponder)]) {
 		[viewController performSelector:@selector(configureFirstResponder)];
 	}
 }
 
 - (void)navigationController:(UINavigationController *)navigationController didShowViewController:(UIViewController *)viewController animated:(BOOL)animated {
+	
+	if (self.widgetController.isMinimized) return;
 	
 	UINavigationBar *navigationBar = navigationController.navigationBar;
 	
@@ -394,10 +438,17 @@
 	
 	if (!_configuredGestureRecognizers) {
 		
-		UITapGestureRecognizer *singleTap = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(titleSingleTapped:)] autorelease];
+		if ([PWController supportsDragging]) {
+			UIPanGestureRecognizer *pan = [[[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleNavigationBarPan:)] autorelease];
+			[pan setMinimumNumberOfTouches:1];
+			[pan setMaximumNumberOfTouches:1];
+			[navigationBar addGestureRecognizer:pan];
+		}
+		
+		UITapGestureRecognizer *singleTap = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleNavigationBarSingleTap:)] autorelease];
 		singleTap.delegate = self;
 		
-		UITapGestureRecognizer *doubleTap = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(titleDoubleTapped:)] autorelease];
+		UITapGestureRecognizer *doubleTap = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleNavigationBarDoubleTap:)] autorelease];
 		doubleTap.delegate = self;
 		doubleTap.numberOfTapsRequired = 2;
 		
@@ -405,11 +456,6 @@
 		
 		_configuredGestureRecognizers = YES;
 		
-		for (id x in navigationBar.gestureRecognizers) {
-			LOG(@"existing: %@", x);
-		}
-		
-		//navigationBar.gestureRecognizers = @[singleTap, doubleTap];
 		[navigationBar addGestureRecognizer:singleTap];
 		[navigationBar addGestureRecognizer:doubleTap];
 	}
@@ -436,16 +482,50 @@
 	return YES;
 }
 
-- (void)titleSingleTapped:(UIGestureRecognizer *)gestureRecognizer {
+- (void)handleNavigationBarPan:(UIPanGestureRecognizer *)sender {
+	[self.widgetController handleNavigationBarPan:sender];
+}
+
+- (void)handleNavigationBarSingleTap:(UIGestureRecognizer *)sender {
 	if ([self.topViewController isKindOfClass:[PWContentViewController class]]) {
 		PWContentViewController *controller = (PWContentViewController *)self.topViewController;
-		[controller triggerEvent:[PWContentViewController titleTappedEventName] withObject:gestureRecognizer];
+		[controller triggerEvent:[PWContentViewController titleTappedEventName] withObject:sender];
 	}
 }
 
-- (void)titleDoubleTapped:(UIGestureRecognizer *)gestureRecognizer {
-	// minimize widget when double tapped
-	[[PWController sharedInstance] _minimizeWidget];
+- (void)handleNavigationBarDoubleTap:(UIGestureRecognizer *)sender {
+	[self.widgetController minimize];
+}
+
+- (NSMutableDictionary *)_cachedLocalizationsForTable:(NSString *)table {
+	
+	if (table == nil) table = @"Localizable";
+	
+	// return cached dictionary
+	NSMutableDictionary *cached = _cachedLocalizations[table];
+	if (cached != nil) {
+		return cached;
+	}
+	
+	if (_cachedLocalizations == nil) {
+		_cachedLocalizations = [NSMutableDictionary new];
+	}
+	
+	// load it
+	NSBundle *bundle = self.bundle;
+	NSArray *preferredLocalizations = bundle.preferredLocalizations;
+	if ([preferredLocalizations count] > 0) {
+		NSString *tablePath = [NSString stringWithFormat:@"%@/%@.lproj/%@.strings", bundle.bundlePath, preferredLocalizations[0], table];
+		NSMutableDictionary *bundleLocalization = [NSMutableDictionary dictionaryWithContentsOfFile:tablePath];
+		if (bundleLocalization != nil) {
+			_cachedLocalizations[table] = bundleLocalization;
+			return bundleLocalization;
+		}
+	}
+	
+	NSMutableDictionary *fallback = [NSMutableDictionary dictionary];
+	_cachedLocalizations[table] = fallback;
+	return fallback;
 }
 
 - (NSString *)description {
@@ -457,19 +537,18 @@
 	LOG(@"PWWidget: _dealloc");
 	
 	// ask all pushed view controller to release
-	for (id<PWContentViewControllerDelegate> viewController in _navigationController.viewControllers) {
-		if ([viewController isKindOfClass:[PWContentViewController class]]) {
-			[(PWContentViewController *)viewController _dealloc];
-		}
+	for (PWContentViewController *viewController in _navigationController.viewControllers) {
+		[viewController _dealloc];
 	}
 	
+	// release all view controllers on stack
 	_navigationController.viewControllers = nil;
 	
-	// release all navigation controller
+	// release navigation controller
 	RELEASE(_navigationController)
 	
 	// release widget theme
-	RELEASE(_widgetTheme)
+	RELEASE(_theme)
 	
 	// release all configurations
 	RELEASE(_title)
@@ -479,6 +558,9 @@
 	// release default item view controller
 	RELEASE(_defaultItemViewControllerPlist)
 	RELEASE(_defaultItemViewController)
+	
+	// release cached localizations
+	RELEASE(_cachedLocalizations)
 }
 
 - (void)dealloc {

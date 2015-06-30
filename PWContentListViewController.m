@@ -16,13 +16,11 @@
 
 @implementation PWContentListViewController
 
-- (instancetype)initWithTitle:(NSString *)title delegate:(id<PWContentListViewControllerDelegate>)delegate {
-	if ((self = [super init])) {
+- (instancetype)initWithTitle:(NSString *)title delegate:(id<PWContentListViewControllerDelegate>)delegate forWidget:(PWWidget *)widget {
+	if ((self = [super initForWidget:widget])) {
 		
 		self.title = title;
 		_delegate = delegate;
-		
-		self.automaticallyAdjustsScrollViewInsets = NO;
 		
 		self.tableView.delegate = self;
 		self.tableView.dataSource = self;
@@ -35,7 +33,7 @@
 }
 
 - (void)loadView {
-	self.view = [[[PWThemableTableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain] autorelease];
+	self.view = [[[PWThemableTableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain theme:self.theme] autorelease];
 }
 
 - (UITableView *)tableView {
@@ -46,7 +44,7 @@
 
 - (void)reload {
 	[self.tableView reloadData];
-	[[PWController activeWidget] resizeWidgetAnimated:YES forContentViewController:self];
+	[self.widget resizeWidgetAnimated:YES forContentViewController:self];
 }
 
 - (void)willBePresentedInNavigationController:(UINavigationController *)navigationController {
@@ -75,7 +73,7 @@
  **/
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-	return [[PWController activeTheme] heightOfCellOfType:PWWidgetCellTypeNormal forOrientation:[PWController currentOrientation]];
+	return [self.theme heightOfCellOfType:PWWidgetCellTypeNormal forOrientation:[PWController currentOrientation]];
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -273,10 +271,8 @@
 	NSString *cellIdentifier = @"PWContentListViewControllerCell";
 	PWThemableTableViewCell *cell = (PWThemableTableViewCell *)[tableView dequeueReusableCellWithIdentifier:cellIdentifier];
 	
-	//LOG(@"PWContentListViewController: cell for row %u (title: %@) (cell: %@)", row, title, cell);
-	
 	if (!cell) {
-		cell = [[[PWThemableTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier] autorelease];
+		cell = [[[PWThemableTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier theme:self.theme] autorelease];
 	}
 	
 	cell.textLabel.text = title;
@@ -302,14 +298,6 @@
 	
 	return cell;
 }
-
-//////////////////////////////////////////////////////////////////////
-/*
-- (CGFloat)contentHeightForOrientation:(PWWidgetOrientation)orientation {
-	CGFloat cellHeight = [[PWController activeTheme] heightOfCellOfType:PWWidgetCellTypeNormal forOrientation:orientation];
-	return cellHeight * [[_delegate listItemTitles] count];
-}
-*/
 
 - (void)dealloc {
 	_delegate = nil;

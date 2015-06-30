@@ -17,7 +17,7 @@
 	return PWWidgetItemCellStyleNone;
 }
 
-+ (instancetype)create {
++ (instancetype)create:(PWTheme *)theme {
 	
 	PWWidgetItemCellStyle style = [self cellStyle];
 	UITableViewCellStyle cellStyle;
@@ -35,7 +35,7 @@
 			break;
 	}
 	
-	return [[[self alloc] initWithStyle:cellStyle reuseIdentifier:NSStringFromClass(self)] autorelease];
+	return [[[self alloc] initWithStyle:cellStyle reuseIdentifier:NSStringFromClass(self) theme:theme] autorelease];
 }
 
 - (void)layoutSubviews {

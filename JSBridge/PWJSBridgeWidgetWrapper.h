@@ -10,7 +10,7 @@
 #import "PWJSBridgeWrapper.h"
 #import "PWJSBridgeBaseWrapper.h"
 
-@protocol PWJSBridgeWidgetWrapperExport <JSExport>
+@protocol PWJSBridgeWidgetWrapperExport <PWJSBridgeBaseWrapperExport, JSExport>
 
 // getter
 @property(nonatomic, readonly) BOOL isPresenting;
@@ -22,13 +22,19 @@
 @property(nonatomic, retain) JSValue *items;
 
 // callbacks
+@property(nonatomic, retain) JSValue *configure;
 @property(nonatomic, retain) JSValue *load;
 @property(nonatomic, retain) JSValue *willPresent;
 @property(nonatomic, retain) JSValue *didPresent;
 @property(nonatomic, retain) JSValue *willDismiss;
 @property(nonatomic, retain) JSValue *didDismiss;
+@property(nonatomic, retain) JSValue *willMinimize;
+@property(nonatomic, retain) JSValue *didMinimize;
+@property(nonatomic, retain) JSValue *willMaximize;
+@property(nonatomic, retain) JSValue *didMaximize;
 @property(nonatomic, retain) JSValue *configureFirstResponder;
 @property(nonatomic, retain) JSValue *itemValueChangedEventHandler;
+@property(nonatomic, retain) JSValue *closeEventHandler;
 @property(nonatomic, retain) JSValue *submitEventHandler;
 
 - (void)maximize;
@@ -42,6 +48,7 @@
 // Setters
 - (void)setPreferredTintColor:(JSValue *)value;
 - (void)setPreferredBarTextColor:(JSValue *)value;
+- (void)setWantsFullscreen:(BOOL)value;
 - (void)setShouldMaximizeContentHeight:(BOOL)value;
 - (void)setRequiresKeyboard:(BOOL)value;
 - (void)setTitle:(JSValue *)value;
@@ -75,27 +82,39 @@
 @interface PWJSBridgeWidgetWrapper : PWJSBridgeBaseWrapper<PWJSBridgeWidgetWrapperExport> {
 	
 	// callbacks
+	JSManagedValue *_configure;
 	JSManagedValue *_load;
 	JSManagedValue *_willPresent;
 	JSManagedValue *_didPresent;
 	JSManagedValue *_willDismiss;
 	JSManagedValue *_didDismiss;
+	JSManagedValue *_willMinimize;
+	JSManagedValue *_didMinimize;
+	JSManagedValue *_willMaximize;
+	JSManagedValue *_didMaximize;
 	JSManagedValue *_configureFirstResponder;
 	JSManagedValue *_itemValueChangedEventHandler;
 	JSManagedValue *_submitEventHandler;
+	JSManagedValue *_closeEventHandler;
 }
 
 @property(nonatomic, readonly) PWWidget *widget;
 @property(nonatomic, readonly) PWContentItemViewController *itemViewController;
 
 // callbacks
+@property(nonatomic, retain) JSValue *configure;
 @property(nonatomic, retain) JSValue *load;
 @property(nonatomic, retain) JSValue *willPresent;
 @property(nonatomic, retain) JSValue *didPresent;
 @property(nonatomic, retain) JSValue *willDismiss;
 @property(nonatomic, retain) JSValue *didDismiss;
+@property(nonatomic, retain) JSValue *willMinimize;
+@property(nonatomic, retain) JSValue *didMinimize;
+@property(nonatomic, retain) JSValue *willMaximize;
+@property(nonatomic, retain) JSValue *didMaximize;
 @property(nonatomic, retain) JSValue *configureFirstResponder;
 @property(nonatomic, retain) JSValue *itemValueChangedEventHandler;
 @property(nonatomic, retain) JSValue *submitEventHandler;
+@property(nonatomic, retain) JSValue *closeEventHandler;
 
 @end

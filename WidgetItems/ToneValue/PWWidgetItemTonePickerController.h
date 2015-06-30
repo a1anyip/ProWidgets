@@ -8,25 +8,9 @@
 //
 
 #import "../item.h"
+#import "../PWWidgetItemToneValue.h"
 #import "../../PWContentViewController.h"
-
-typedef NS_ENUM(NSUInteger, TonePickerType) {
-	TonePickerTypeBoth = 1,
-	TonePickerTypeOnlyAlertTone = 2,
-	TonePickerTypeOnlyRingTone = 3
-};
-
-typedef NS_ENUM(NSUInteger, ToneType) {
-	ToneTypeRingtone = 1,
-	ToneTypeMediaItem = 2
-};
-
-@protocol PWWidgetItemTonePickerControllerDelegate <NSObject>
-
-@required
-- (void)selectedToneIdentifierChanged:(NSString *)identifier toneType:(ToneType)toneType;
-
-@end
+#import "PWWidgetItemTonePickerControllerDelegate.h"
 
 @interface PWWidgetItemTonePickerController : PWContentViewController {
 	
@@ -47,6 +31,8 @@ typedef NS_ENUM(NSUInteger, ToneType) {
 + (ToneType)toneTypeFromNumber:(NSNumber *)number;
 + (TonePickerType)tonePickerTypeFromNumber:(NSNumber *)number;
 
-- (instancetype)initWithTonePickerType:(TonePickerType)tonePickerType selectedToneIdentifier:(NSString *)identifier toneType:(ToneType)toneType;
+- (instancetype)initWithTonePickerType:(TonePickerType)tonePickerType selectedToneIdentifier:(NSString *)identifier toneType:(ToneType)toneType forWidget:(PWWidget *)widget;
+
+- (TKTonePicker *)tonePicker;
 
 @end

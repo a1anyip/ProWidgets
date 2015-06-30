@@ -27,16 +27,21 @@ extern char PWWidgetRemindersTableViewCellReminderKey;
 	self.tableView.delegate = self;
 	self.tableView.dataSource = self;
 	
-	PWTheme *theme = [PWController activeTheme];
+	PWTheme *theme = self.theme;
 	
 	_noLabel = [UILabel new];
 	_noLabel.text = @"Loading";
-	_noLabel.textColor = [theme sheetForegroundColor];
+	_noLabel.textColor = [PWTheme translucentColor:[theme sheetForegroundColor]];
 	_noLabel.font = [UIFont boldSystemFontOfSize:22.0];
 	_noLabel.textAlignment = NSTextAlignmentCenter;
 	_noLabel.frame = self.view.bounds;
 	_noLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	[self.view addSubview:_noLabel];
+	
+	[self setActionEventBlockHandler:^(id object) {
+		NSURL *url = [NSURL URLWithString:@"x-apple-reminder://"];
+		[[UIApplication sharedApplication] openURL:url];
+	}];
 }
 
 - (NSString *)title {
@@ -44,7 +49,7 @@ extern char PWWidgetRemindersTableViewCellReminderKey;
 }
 
 - (void)loadView {
-	self.view = [[[PWThemableTableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain] autorelease];
+	self.view = [[[PWThemableTableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain theme:self.theme] autorelease];
 }
 
 - (UITableView *)tableView {
@@ -52,8 +57,7 @@ extern char PWWidgetRemindersTableViewCellReminderKey;
 }
 
 - (EKEventStore *)store {
-	PWWidgetReminders *widget = (PWWidgetReminders *)self.widget;
-	return widget.eventStore;
+	return [PWWidgetReminders widget].eventStore;
 }
 
 - (void)willBePresentedInNavigationController:(UINavigationController *)navigationController {
@@ -82,8 +86,7 @@ extern char PWWidgetRemindersTableViewCellReminderKey;
 }
 
 - (void)titleTapped {
-	PWWidgetReminders *widget = (PWWidgetReminders *)self.widget;
-	[widget switchToAddInterface];
+	[[PWWidgetReminders widget] switchToAddInterface];
 }
 
 /**
@@ -145,7 +148,7 @@ extern char PWWidgetRemindersTableViewCellReminderKey;
 	PWWidgetRemindersTableViewCell *cell = (PWWidgetRemindersTableViewCell *)[tableView dequeueReusableCellWithIdentifier:identifier];
 	
 	if (!cell) {
-		cell = [[[PWWidgetRemindersTableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:identifier] autorelease];
+		cell = [[[PWWidgetRemindersTableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:identifier theme:self.theme] autorelease];
 		[cell setButtonTarget:self action:@selector(buttonPressed:)];
 		cell.selectionStyle = UITableViewCellSelectionStyleNone;
 	}
@@ -195,8 +198,6 @@ extern char PWWidgetRemindersTableViewCellReminderKey;
 			
 			[_reminders release];
 			_reminders = [reminders mutableCopy];
-			
-			LOG(@"Reminder list: %@", reminders);
 			
 			dispatch_sync(dispatch_get_main_queue(), ^{
 				// reload table view

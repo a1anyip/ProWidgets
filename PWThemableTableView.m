@@ -21,15 +21,9 @@ static char PWThemableTableViewHeaderFooterViewConfiguredKey;
 
 @implementation PWThemableTableView
 
-- (instancetype)init {
-	if ((self = [super init])) {
-		[self _configureAppearance];
-	}
-	return self;
-}
-
-- (instancetype)initWithFrame:(CGRect)frame style:(UITableViewStyle)style {
+- (instancetype)initWithFrame:(CGRect)frame style:(UITableViewStyle)style theme:(PWTheme *)theme {
 	if ((self = [super initWithFrame:frame style:style])) {
+		_theme = [theme retain];
 		[self _configureAppearance];
 	}
 	return self;
@@ -52,16 +46,17 @@ static char PWThemableTableViewHeaderFooterViewConfiguredKey;
 	
 	UITableViewHeaderFooterView *view = [super _sectionHeaderView:arg1 withFrame:frame forSection:section floating:floating reuseViewIfPossible:reuse];
 	
+	if (view == nil) return nil;
+	
 	NSNumber *configured = objc_getAssociatedObject(view, &PWThemableTableViewHeaderFooterViewConfiguredKey);
 	if (configured == nil || ![configured boolValue]) {
 		
-		[view setOpaque:NO];
-		
 		// configure its appearance
-		PWTheme *theme = [PWController activeTheme];
+		PWTheme *theme = _theme;
 		view.contentView.backgroundColor = [theme cellHeaderFooterViewBackgroundColor];
 		view.textLabel.textColor = [theme cellHeaderFooterViewTitleTextColor];
 		view.detailTextLabel.textColor = [theme cellHeaderFooterViewTitleTextColor];
+		view.opaque = NO;
 		
 		objc_setAssociatedObject(view, &PWThemableTableViewHeaderFooterViewConfiguredKey, @(YES), OBJC_ASSOCIATION_COPY);
 	}
@@ -79,6 +74,11 @@ static char PWThemableTableViewHeaderFooterViewConfiguredKey;
 	} else {
 		[self setTableFooterView:nil];
 	}
+}
+
+- (void)dealloc {
+	RELEASE(_theme)
+	[super dealloc];
 }
 
 @end

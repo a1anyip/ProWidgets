@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>title</key>
+	<string>Lock Screen</string>
+	<key>items</key>
+	<array>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>footerText</key>
+			<string>Choose the widget to show at the bottom corners of lock screen</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PWWidgetPickerCell</string>
+			<key>defaults</key>
+			<string>cc.tweak.prowidgets.activationmethod.lockscreen</string>
+			<key>PostNotification</key>
+			<string>cc.tweak.prowidgets.activationmethod.lockscreen.preferencechanged</string>
+			<key>key</key>
+			<string>widget</string>
+			<key>label</key>
+			<string>Widget</string>
+			<key>detail</key>
+			<string>PWWidgetPickerController</string>
+			<key>default</key>
+			<string>Browser</string>
+			<key>PWShowNone</key>
+			<true/>
+		</dict>
+	</array>
+</dict>
+</plist>

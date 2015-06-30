@@ -16,29 +16,34 @@
 
 @implementation PWWidgetItemRecipientView
 
-- (instancetype)init {
+- (instancetype)initWithTheme:(PWTheme *)theme {
 	if ((self = [super init])) {
 		
-		_textField = [PWThemableTextField new];
-		_textField.placeholder = @"Type recipients here...";
+		_textField = [[PWThemableTextField alloc] initWithFrame:CGRectZero theme:theme];
+		//[_textField setValue:[UIColor blueColor] forKeyPath:@"_placeholderLabel.textColor"];
+		_textField.placeholder = CT(@"TypeRecipientPlaceholder");
+		_textField.backgroundColor = [UIColor clearColor];
 		[self addSubview:_textField];
 		
-		_addButton = [[UIButton buttonWithType:UIButtonTypeContactAdd] retain];
+		/*_addButton = [[UIButton buttonWithType:UIButtonTypeContactAdd] retain];
 		_textField.rightView = _addButton;
-		_textField.rightViewMode = UITextFieldViewModeAlways;
+		_textField.rightViewMode = UITextFieldViewModeAlways;*/
 		
 		_separator = [UIView new];
 		[self addSubview:_separator];
 		
-		_recipientTableView = [[PWThemableTableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain];
+		_recipientTableView = [[PWThemableTableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain theme:theme];
 		[self addSubview:_recipientTableView];
 		
-		_searchResultTableView = [[PWThemableTableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain];
-		_searchResultTableView.alpha = 0.0;
+		_searchResultTableView = [[PWThemableTableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain theme:theme];
+		_searchResultTableView.hidden = YES;
 		[self addSubview:_searchResultTableView];
 		
+		_shadow = [[CAGradientLayer layer] retain];
+		_shadow.colors = [NSArray arrayWithObjects:(id)[[UIColor colorWithWhite:0.0 alpha:.15] CGColor], (id)[[UIColor clearColor] CGColor], nil];
+		[self.layer addSublayer:_shadow];
+		
 		// configure colors
-		PWTheme *theme = [PWController activeTheme];
 		self.tintColor = [theme tintColor];
 		_separator.backgroundColor = [theme cellSeparatorColor];
 	}
@@ -61,12 +66,15 @@
 	CGSize size = self.bounds.size;
 	CGFloat width = size.width;
 	CGFloat height = size.height;
+	CGFloat shadowHeight = 3.0;
 	CGFloat textFieldHeight = 44.0;
 	
+	CGRect shadowRect = CGRectMake(0, textFieldHeight, width, shadowHeight);
 	CGRect textFieldRect = CGRectMake(PWDefaultItemCellPadding, 0, width - PWDefaultItemCellPadding * 2, textFieldHeight);
 	CGRect separatorRect = CGRectMake(0, textFieldHeight - .5, width, .5);
 	CGRect tableViewRect = CGRectMake(0, textFieldHeight, width, height - textFieldHeight);
 	
+	_shadow.frame = shadowRect;
 	_textField.frame = textFieldRect;
 	_separator.frame = separatorRect;
 	_recipientTableView.frame = tableViewRect;
@@ -82,6 +90,8 @@
 	RELEASE_VIEW(_addButton)
 	RELEASE_VIEW(_recipientTableView)
 	RELEASE_VIEW(_searchResultTableView)
+	[_shadow removeFromSuperlayer];
+	RELEASE(_shadow)
 	
 	[super dealloc];
 }

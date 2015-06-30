@@ -11,6 +11,7 @@
 
 @interface PWWidgetItemRecipientView : UIView {
 	
+	CAGradientLayer *_shadow;
 	UITextField *_textField;
 	UIView *_separator;
 	UIButton *_addButton;
@@ -24,6 +25,8 @@
 @property(nonatomic, readonly) UIButton *addButton;
 @property(nonatomic, readonly) UITableView *recipientTableView;
 @property(nonatomic, readonly) UITableView *searchResultTableView;
+
+- (instancetype)initWithTheme:(PWTheme *)theme;
 
 - (void)setDelegate:(id<UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource>)delegate;
 

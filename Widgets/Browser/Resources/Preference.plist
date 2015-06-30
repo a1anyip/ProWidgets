@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>title</key>
+	<string>Browser</string>
+	<key>items</key>
+	<array>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>General</string>
+			<key>footerText</key>
+			<string>Bookmarks will be retrieved from the default browser.</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>defaults</key>
+			<string>cc.tweak.prowidgets.widget.browser</string>
+			<key>key</key>
+			<string>defaultBrowser</string>
+			<key>label</key>
+			<string>Default Browser</string>
+			<key>default</key>
+			<integer>0</integer>
+			<key>detail</key>
+			<string>PSListItemsController</string>
+			<key>validTitles</key>
+			<array>
+				<string>Safari</string>
+				<string>Chrome</string>
+			</array>
+			<key>validValues</key>
+			<array>
+				<integer>0</integer>
+				<integer>1</integer>
+			</array>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>defaults</key>
+			<string>cc.tweak.prowidgets.widget.browser</string>
+			<key>PostNotification</key>
+			<string>cc.tweak.prowidgets.widget.browser.preferencechanged</string>
+			<key>key</key>
+			<string>hideHTTP</string>
+			<key>label</key>
+			<string>Hide "http://"</string>
+			<key>default</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Integration</string>
+			<key>footerText</key>
+			<string>Redirect web links that will be opened in a specific browser from various sources to Browser widget.</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>defaults</key>
+			<string>cc.tweak.prowidgets.widget.browser</string>
+			<key>PostNotification</key>
+			<string>cc.tweak.prowidgets.widget.browser.preferencechanged</string>
+			<key>key</key>
+			<string>enabledOpenInAppSafari</string>
+			<key>label</key>
+			<string>Open in App (Safari)</string>
+			<key>default</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>defaults</key>
+			<string>cc.tweak.prowidgets.widget.browser</string>
+			<key>PostNotification</key>
+			<string>cc.tweak.prowidgets.widget.browser.preferencechanged</string>
+			<key>key</key>
+			<string>enabledOpenInAppChrome</string>
+			<key>label</key>
+			<string>Open in App (Chrome)</string>
+			<key>default</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>defaults</key>
+			<string>cc.tweak.prowidgets.widget.browser</string>
+			<key>PostNotification</key>
+			<string>cc.tweak.prowidgets.widget.browser.preferencechanged</string>
+			<key>key</key>
+			<string>enabledOpenFromIcon</string>
+			<key>label</key>
+			<string>Open from Home Screen Icon</string>
+			<key>default</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>footerText</key>
+			<string>Replace all "Add to Reading List" buttons with "Bookmark" function</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>defaults</key>
+			<string>cc.tweak.prowidgets.widget.browser</string>
+			<key>PostNotification</key>
+			<string>cc.tweak.prowidgets.widget.browser.preferencechanged</string>
+			<key>key</key>
+			<string>enabledAddToBookmark</string>
+			<key>label</key>
+			<string>Bookmark</string>
+			<key>default</key>
+			<true/>
+		</dict>
+	</array>
+</dict>
+</plist>

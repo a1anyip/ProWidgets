@@ -18,6 +18,28 @@
 #import "../PWWidget.h"
 #import "../PWScript.h"
 
+@interface PWJSContext : JSContext {
+	
+	PWJSBridge *_bridgeRef;
+}
+
+@property(nonatomic, assign) PWJSBridge *bridgeRef;
+
+@end
+
+@implementation PWJSContext
+/*
+- (oneway void)release {
+	NSUInteger retainCount = [self retainCount] - 1;
+	LOG(@"retain count: %d", (int)retainCount);
+	[super release];
+	if (retainCount == 3) {
+		[_bridgeRef _clearContext];
+	}
+}
+*/
+@end
+
 @implementation PWJSBridge
 
 - (instancetype)initWithWidget:(PWWidget *)widget {
@@ -77,7 +99,8 @@
 - (void)setupEnvironment {
 		
 	// setup virtual machine and JS context
-	_context = [JSContext new];
+	_context = [PWJSContext new];
+	((PWJSContext *)_context).bridgeRef = self;
 	
 	// it is important to set an exception handler
 	// or it will cause crashes when JSContext is released
@@ -90,6 +113,21 @@
 	
 	// point "pw" to JSBridge
 	_context[@"pw"] = self;
+	
+	// alert
+	_context[@"alert"] = ^(NSString *content) {
+		PWBase *base = _scriptRef != nil ? _scriptRef : _widgetRef;
+		[base showMessage:content];
+	};
+	
+	// prompt
+	/*
+	_context[@"prompt"] = ^(NSString *content, JSValue *defaultValue) {
+		NSString *_defaultValue = [defaultValue isUndefined] ? nil : [defaultValue toString];
+		PWBase *base = _scriptRef != nil ? _scriptRef : _widgetRef;
+		[base prompt:content buttonTitle:@"OK" defaultValue:defaultValue style:UIAlertViewStylePlainTextInput completion:nil];
+	}
+	*/
 }
 
 - (void)setupAPI {
@@ -186,9 +224,11 @@
 
 - (void)_clearContext {
 	
+	LOG(@"_clearContext");
+	
 	// clear reference
 	_widgetRef = nil;
-	//_scriptRef = nil;
+	_scriptRef = nil;
 	
 	// release context
 	_context[@"console"] = nil;

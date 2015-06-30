@@ -1,3 +1,17 @@
+@interface SBApplication : NSObject
+
+- (NSString *)path;
+- (NSString *)sandboxPath;
+
+@end
+
+@interface SBApplicationController : NSObject
+
++ (instancetype)sharedInstance;
+- (SBApplication *)applicationWithDisplayIdentifier:(NSString *)identifier;
+
+@end
+
 @interface WebDataSource : NSObject
 
 - (NSURLRequest *)request;
@@ -43,8 +57,15 @@
 
 - (WebBookmarkList *)listWithID:(NSUInteger)identifier;
 - (WebBookmarkList *)rootList;
+- (WebBookmark *)rootBookmark;
 - (WebBookmark *)readingListFolder;
 - (WebBookmark *)bookmarksBarBookmark;
+- (NSArray *)subfoldersOfID:(NSUInteger)identifier;
+
+- (WebBookmark *)bookmarkWithID:(NSUInteger)bookmarkID;
+
+- (void)saveBookmark:(id)bookmark;
+- (void)deleteBookmark:(id)bookmark postChangeNotification:(BOOL)postChangeNotification;
 
 @end
 
@@ -56,6 +77,8 @@
 
 @interface WebBookmark : NSObject
 
+- (id)initWithTitle:(id)arg1 address:(id)arg2;
+
 - (BOOL)isFolder;
 - (BOOL)isWebFilterWhiteListFolder;
 - (BOOL)isReadingListFolder;
@@ -66,5 +89,7 @@
 - (NSUInteger)identifier;
 - (NSString *)title;
 - (NSString *)address;
+
+- (void)_setParentID:(NSUInteger)parentID;
 
 @end

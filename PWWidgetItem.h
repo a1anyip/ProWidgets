@@ -60,6 +60,9 @@
 
 //////////////////////////////////////////////////////////////////////
 
+- (PWWidget *)widget;
+- (PWTheme *)theme;
+
 /**
  * Override this to specify which class the cell should be
  **/
@@ -76,7 +79,7 @@
  * Retrieve the table view cell for a widget item
  **/
 
-+ (PWWidgetItemCell *)createCell;
++ (PWWidgetItemCell *)createCell:(PWTheme *)theme;
 
 //////////////////////////////////////////////////////////////////////
 
@@ -85,6 +88,7 @@
  **/
 
 + (PWWidgetItem *)createItemNamed:(NSString *)name forItemViewController:(PWContentItemViewController *)itemViewController;
++ (instancetype)createItemForItemViewController:(PWContentItemViewController *)itemViewController;
 
 //////////////////////////////////////////////////////////////////////
 

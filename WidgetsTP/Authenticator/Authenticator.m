@@ -15,7 +15,6 @@
 }
 
 - (void)configure {
-	// configure theme
 	self.layout = PWWidgetLayoutCustom;
 	[self loadThemeNamed:@"PWWidgetThemeGoogleAuthenticator"];
 }
@@ -31,8 +30,14 @@
 		return;
 	}
 	
+	// get its bundle
+	NSString *path = authApp.path;
+	NSBundle *bundle = [NSBundle bundleWithPath:path];
+	
+	_reloadImage = [[UIImage imageNamed:@"refresh" inBundle:bundle] retain];
+	
 	// push a custom view controller
-	_viewController = [PWWidgetGoogleAuthenticatorViewController new];
+	_viewController = [[PWWidgetGoogleAuthenticatorViewController alloc] initForWidget:self];
 	[self pushViewController:_viewController animated:NO];
 }
 
@@ -44,6 +49,7 @@
 - (void)dealloc {
 	DEALLOCLOG;
 	RELEASE(_viewController)
+	RELEASE(_reloadImage)
 	[super dealloc];
 }
 

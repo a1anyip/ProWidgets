@@ -8,6 +8,7 @@
 //
 
 #import "PWBackgroundView.h"
+#import "PWController.h"
 
 @implementation PWBackgroundView
 
@@ -20,10 +21,7 @@
 	return self;
 }
 
-- (void)show:(BOOL)shouldAnimateTransform {
-	
-	[self clearMask];
-	self.shouldAnimateTransform = shouldAnimateTransform;
+- (void)show {
 	
 	self.alpha = 0.0;
 	[UIView animateWithDuration:PWAnimationDuration animations:^{
@@ -58,12 +56,21 @@
 }
 
 - (void)clearMask {
+	
 	self.layer.mask = nil;
+	RELEASE(_mask)
+	
+	if (_finalPath != NULL) {
+		CGPathRelease(_finalPath);
+		_finalPath = NULL;
+	}
+	
+	_finalPathCount = 0;
 }
 
-- (void)setMaskRect:(CGRect)rect cornerRadius:(CGFloat)cornerRadius animated:(BOOL)animated {
+- (void)setMaskRect:(CGRect)rect fromRect:(CGRect)fromRect cornerRadius:(CGFloat)cornerRadius animationType:(PWBackgroundViewAnimationType)animationType presentationStyle:(PWWidgetPresentationStyle)presentationStyle {
 	
-	LOG(@"setMaskRect ***** %@ <animated: %@> <_shouldAnimateTransform: %@>", NSStringFromCGRect(rect), animated ? @"YES" : @"NO", _shouldAnimateTransform ? @"YES" : @"NO");
+	LOG(@"setMaskRect <rect: %@> <fromRect: %@> <animationType: %d> <presentationStyle: %d>", NSStringFromCGRect(rect), NSStringFromCGRect(fromRect), (int)animationType, presentationStyle);
 	
 	// to ensure the mask is created
 	[self createMask];
@@ -87,15 +94,53 @@
 	CGPathRef fromCGPath = NULL;
 	CGPathRef toCGPath = toPath.CGPath;
 	
-	if (_shouldAnimateTransform) {
+	if (animationType == PWBackgroundViewAnimationTypePresentation || animationType == PWBackgroundViewAnimationTypeMaximization) {
 		
-		// from rect
-		CGFloat scale = 1.2;
-		CGRect fromRect = rect;
-		fromRect.size.width *= scale;
-		fromRect.size.height *= scale;
-		fromRect.origin.x -= (fromRect.size.width - rect.size.width) / 2;
-		fromRect.origin.y -= (fromRect.size.height - rect.size.height) / 2;
+		if (animationType == PWBackgroundViewAnimationTypePresentation) {
+			
+			CGSize screenSize = [[UIScreen mainScreen] bounds].size;
+			CGFloat screenHeight = [PWController isLandscape] ? screenSize.width : screenSize.height;
+			
+			switch (presentationStyle) {
+				
+				case PWWidgetPresentationStyleZoom:
+				{
+					// from rect
+					CGFloat scale = 1.2;
+					
+					fromRect = rect;
+					fromRect.size.width *= scale;
+					fromRect.size.height *= scale;
+					fromRect.origin.x -= (fromRect.size.width - rect.size.width) / 2;
+					fromRect.origin.y -= (fromRect.size.height - rect.size.height) / 2;
+					
+				} break;
+				
+				case PWWidgetPresentationStyleFade:
+				{
+					// rect unchanged
+					fromRect = rect;
+					
+				} break;
+					
+				case PWWidgetPresentationStyleSlideUp:
+				{
+					fromRect = rect;
+					fromRect.origin.y = screenHeight;
+					
+				} break;
+				
+				case PWWidgetPresentationStyleSlideDown:
+				{
+					fromRect = rect;
+					fromRect.origin.y = -fromRect.size.height;
+					
+				} break;
+				
+				default: break;
+			}
+		}
+		
 		fromRect.origin.x += PWSheetMotionEffectDistance; // correct the extra distance due to motion effect
 		fromRect.origin.y += PWSheetMotionEffectDistance;
 		
@@ -105,46 +150,46 @@
 		[fromPath setUsesEvenOddFillRule:YES];
 		
 		fromCGPath = fromPath.CGPath;
-		
-	} else {
-		fromCGPath = mask.path; // current mask path
 	}
 	
-	if (animated || _shouldAnimateTransform) {
+	if (animationType != PWBackgroundViewAnimationTypeNone) {
 		
 		CAMediaTimingFunction *function = nil;
 		
-		if (_shouldAnimateTransform)
+		if (animationType == PWBackgroundViewAnimationTypePresentation || animationType == PWBackgroundViewAnimationTypeMaximization)
 			function = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
 		else
 			function = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
 		
 		[CATransaction begin];
-		[CATransaction setAnimationDuration:PWAnimationDuration];
+		[CATransaction setAnimationDuration:(animationType == PWBackgroundViewAnimationTypeMaximization ? PWMaxMinimizationDuration : PWAnimationDuration)];
 		[CATransaction setAnimationTimingFunction:function];
 		
-		// to make sure no
-		__block CAShapeLayer *blockMask = [_mask retain];
-		__block CGPathRef blockToCGPath = CGPathRetain(toCGPath);
+		// there is another animation ongoing
+		if (_finalPath != NULL) CGPathRelease(_finalPath);
+		_finalPath = CGPathRetain(toCGPath);
+		
+		NSUInteger count = ++_finalPathCount;
 		[CATransaction setCompletionBlock:^{
-			if (blockMask != nil && blockToCGPath != NULL) {
-				blockMask.path = blockToCGPath;
+			if (_mask != nil && _finalPath != NULL && _finalPathCount == count) {
+				_mask.path = _finalPath;
+				[_mask removeAllAnimations];
+				CGPathRelease(_finalPath), _finalPath = NULL;
+			} else {
+				LOG(@"PWBackgroundView: count does not match _finalPathCount");
 			}
-			CGPathRelease(blockToCGPath), blockToCGPath = NULL;
-			[blockMask release], blockMask = nil;
 		}];
 		
 		CABasicAnimation *pathAnimation = [CABasicAnimation animationWithKeyPath:@"path"];
-		pathAnimation.fromValue = (id)fromCGPath;
+		if (fromCGPath != NULL) {
+			pathAnimation.fromValue = (id)fromCGPath;
+		}
 		pathAnimation.toValue = (id)toCGPath;
 		pathAnimation.fillMode = kCAFillModeForwards;
 		pathAnimation.removedOnCompletion = NO;
 		
 		[mask addAnimation:pathAnimation forKey:@"path"];
 		[CATransaction commit];
-		
-		// reset flag
-		_shouldAnimateTransform = NO;
 		
 	} else {
 		mask.path = toCGPath;
@@ -153,8 +198,7 @@
 
 - (void)dealloc {
 	DEALLOCLOG;
-	self.layer.mask = nil;
-	RELEASE(_mask)
+	[self clearMask];
 	[super dealloc];
 }
 

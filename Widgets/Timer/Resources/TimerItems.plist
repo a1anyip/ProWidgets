@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>items</key>
+	<array>
+		<dict>
+			<key>key</key>
+			<string>datePicker</string>
+			<key>type</key>
+			<string>PWWidgetTimerItemDatePicker</string>
+		</dict>
+		<dict>
+			<key>key</key>
+			<string>sound</string>
+			<key>title</key>
+			<string>When Timer Ends</string>
+			<key>type</key>
+			<string>tonevalue</string>
+			<key>tonePickerType</key>
+			<string>ringtone</string>
+		</dict>
+	</array>
+</dict>
+</plist>

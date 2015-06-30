@@ -5,6 +5,7 @@ GoogleAuthenticator_FRAMEWORKS = UIKit CoreGraphics QuartzCore
 GoogleAuthenticator_LIBRARIES = prowidgets objcipc
 GoogleAuthenticator_CFLAGS = -I../../
 GoogleAuthenticator_LDFLAGS = -L../../$(THEOS_OBJ_DIR_NAME)
+GoogleAuthenticator_BUNDLE_EXTENSION = widget
 
 SUBPROJECTS = AuthenticatorSubstrate
 

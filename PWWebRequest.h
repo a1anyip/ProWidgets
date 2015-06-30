@@ -14,7 +14,7 @@
 
 #define PWWebRequestDefaultUserAgent @"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_1) AppleWebKit/537.73.11 (KHTML, like Gecko) Version/7.0.1 Safari/537.73.11"
 
-typedef void (^PWWebRequestBlock)(BOOL success, int statusCode, NSString *response, NSError *error);
+typedef void (^PWWebRequestBlock)(BOOL success, int statusCode, NSDictionary *headers, NSString *response, NSError *error);
 
 @protocol PWWebRequestExport <JSExport>
 
@@ -31,6 +31,7 @@ typedef void (^PWWebRequestBlock)(BOOL success, int statusCode, NSString *respon
 	// response
 	int _statusCode;
 	NSStringEncoding _encoding;
+	NSDictionary *_headers;
 	NSMutableData *_response;
 	
 	// callback

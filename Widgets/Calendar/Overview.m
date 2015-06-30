@@ -25,16 +25,21 @@
 	self.tableView.delegate = self;
 	self.tableView.dataSource = self;
 	
-	PWTheme *theme = [PWController activeTheme];
+	PWTheme *theme = self.theme;
 	
 	_noLabel = [UILabel new];
 	_noLabel.text = @"Loading";
-	_noLabel.textColor = [theme sheetForegroundColor];
+	_noLabel.textColor = [PWTheme translucentColor:[theme sheetForegroundColor]];
 	_noLabel.font = [UIFont boldSystemFontOfSize:22.0];
 	_noLabel.textAlignment = NSTextAlignmentCenter;
 	_noLabel.frame = self.view.bounds;
 	_noLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	[self.view addSubview:_noLabel];
+	
+	[self setActionEventBlockHandler:^(id object) {
+		NSURL *url = [NSURL URLWithString:@"x-apple-calevent://"];
+		[[UIApplication sharedApplication] openURL:url];
+	}];
 }
 
 - (NSString *)title {
@@ -42,7 +47,7 @@
 }
 
 - (void)loadView {
-	self.view = [[[PWThemableTableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain] autorelease];
+	self.view = [[[PWThemableTableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain theme:self.theme] autorelease];
 }
 
 - (UITableView *)tableView {
@@ -50,8 +55,7 @@
 }
 
 - (EKEventStore *)store {
-	PWWidgetCalendar *widget = (PWWidgetCalendar *)self.widget;
-	return widget.eventStore;
+	return [PWWidgetCalendar widget].eventStore;
 }
 
 - (void)willBePresentedInNavigationController:(UINavigationController *)navigationController {
@@ -80,8 +84,7 @@
 }
 
 - (void)titleTapped {
-	PWWidgetCalendar *widget = (PWWidgetCalendar *)self.widget;
-	[widget switchToAddInterface];
+	[[PWWidgetCalendar widget] switchToAddInterface];
 }
 
 /**
@@ -155,7 +158,7 @@
 	PWWidgetCalendarTableViewCell *cell = (PWWidgetCalendarTableViewCell *)[tableView dequeueReusableCellWithIdentifier:identifier];
 	
 	if (!cell) {
-		cell = [[[PWWidgetCalendarTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier] autorelease];
+		cell = [[[PWWidgetCalendarTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier theme:self.theme] autorelease];
 	}
 	
 	EKEvent *event = _events[section][@"events"][row];
@@ -175,13 +178,15 @@
 	
 	dispatch_async(dispatch_get_global_queue(0, 0), ^{
 		
+		PWWidgetCalendar *widget = (PWWidgetCalendar *)self.widget;
 		NSCalendar *calendar = [NSCalendar currentCalendar];
 		
 		// get the date for today (from 12am)
 		NSDate *date = [NSDate date];
 		NSDate *todayDate = [calendar dateFromComponents:[calendar components:NSYearCalendarUnit | NSMonthCalendarUnit | NSDayCalendarUnit fromDate:date]];
 		
-		NSUInteger period = 7; // in days
+		// retrieve the period setting from preference
+		NSUInteger period = MIN(MAX(1, [widget intValueForPreferenceKey:@"period" defaultValue:7]), 60); // in days (min: 1 day / max: 2 months)
 		NSTimeInterval endTime = [todayDate timeIntervalSinceReferenceDate] + period * 24 * 60 * 60;
 		NSDate *endDate = [NSDate dateWithTimeIntervalSinceReferenceDate:endTime];
 		
@@ -193,6 +198,7 @@
 			
 			// start date contains time
 			NSDate *startDate = event.startDate;
+			//NSDate *endDate = event.endDate;
 			
 			// extract only day information from it
 			NSDate *dateWithDayOnly = [calendar dateFromComponents:[calendar components:NSYearCalendarUnit | NSMonthCalendarUnit | NSDayCalendarUnit fromDate:startDate]];

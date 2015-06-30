@@ -8,8 +8,14 @@
 //
 
 #import "item.h"
+#import "_PWWidgetItemTextInputTraits.h"
 
-@interface PWWidgetItemTextArea : PWWidgetItem<UITextViewDelegate>
+@interface PWWidgetItemTextArea : _PWWidgetItemTextInputTraits<UITextViewDelegate>
+
+@end
+
+@interface PWUITextView : UITextView
+
 @end
 
 @interface PWWidgetItemTextAreaCell : PWWidgetItemCell {

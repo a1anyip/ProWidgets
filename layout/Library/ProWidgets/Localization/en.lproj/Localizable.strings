@@ -1,0 +1,48 @@
+/* ProWidgets Core Localization File */
+
+/* General */
+"OK" = "OK";
+"Cancel" = "Cancel";
+"Close" = "Close";
+"Dismiss" = "Dismiss";
+"Done" = "Done";
+
+/* Welcome Screen */
+"Welcome" = "Welcome";
+"WelcomeMessage" = "Thanks for purchasing ProWidgets.\n\nProceed to next page to see some tips of using this product.";
+"Proceed" = "Proceed";
+
+"TipConvenienceTitle" = "Convenience";
+"TipConvenienceContent" = "Several built-in widgets bring you a convenient way to perform quick tasks anywhere.";
+
+"TipUsageTitle" = "Usage";
+"TipUsageContent" = "Activate widgets when needed. Close or minimize them after use. Widgets are not intended to stay on screen for a long time.";
+
+"TipMaximizedWidgetTitle" = "Maximized Widget";
+"TipMaximizedContent" = "Tap on the navigation bar to switch between pages. Double tap on it to minimize the widget.";
+
+"TipMinimizedWidgetTitle" = "Minimized Widget";
+"TipMinimizedWidgetContent" = "Tap on the minimized widget to maximize it. Double tap on it to close the widget.";
+
+"TipThirdPartyAddonsTitle" = "Third-party Add-ons";
+"TipThirdPartyAddonsContent" = "You could install third-party widgets and themes in Cydia or via URL.";
+
+"TipReadyTitle" = "Enjoy";
+"TipReadyContent" = "You are now ready to use ProWidgets.";
+
+/* Core */
+"UnablePresentWidget" = "Unable to present widget";
+"UnablePresentWidgetMessage" = "The widget \"%@\" does not have a root view controller.";
+"ProtectedDataUnavailable" = "Protected Data Unavailable";
+"ProtectedDataUnavailableDismissedMessage" = "As this widget \"%@\" requires access to protected data on your device, it is now dismissed to prevent any data corruption.";
+"ProtectedDataUnavailableUnablePresentMessage" = "Unable to present widget \"%@\" because it requires access to protected data on your device.";
+
+/* Widget Items */
+"ListValueSelectedTooManyItems" = "Only %u items could be selected.";
+"ToneValueNone" = "None";
+"ToneValueSound" = "Sound";
+"Recipient" = "%d recipient";
+"Recipients" = "%d recipients";
+"NoRecipients" = "No recipients";
+"RecipientMore" = " & %d more...";
+"TypeRecipientPlaceholder" = "Type recipients here...";

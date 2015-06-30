@@ -1,6 +1,8 @@
 #import "PWPrefPageViewController.h"
 #import "PWPrefURLInstallation.h"
 
+extern NSBundle *bundle;
+
 @implementation PWPrefPageViewController
 
 - (Class)viewClass { return nil; }
@@ -12,9 +14,8 @@
 	UIView *view = (UIView *)[[self viewClass] new];
 	if ([view isKindOfClass:[UITableView class]]) {
 		UITableView *tableView = (UITableView *)view;
-		tableView.delegate = (id<UITableViewDelegate>)self;
-		tableView.dataSource = (id<UITableViewDataSource>)self;
 		tableView.allowsSelectionDuringEditing = YES;
+		CONFIGURE_TABLEVIEW_INSET(tableView);
 	}
 	self.view = view;
 	[view release];
@@ -27,9 +28,25 @@
 	
 	// set right button
 	if ([self requiresEditBtn]) {
-		UIBarButtonItem *editBtn = [[[UIBarButtonItem alloc] initWithTitle:@"Edit" style:UIBarButtonItemStylePlain target:self action:@selector(toggleEditMode)] autorelease];
-		editBtn.possibleTitles = [NSSet setWithObjects:@"Edit", @"Done", nil];
+		UIBarButtonItem *editBtn = [[[UIBarButtonItem alloc] initWithTitle:PTEXT(@"Edit") style:UIBarButtonItemStylePlain target:self action:@selector(toggleEditMode)] autorelease];
+		editBtn.possibleTitles = [NSSet setWithObjects:PTEXT(@"Edit"), PTEXT(@"Done"), nil];
 		self.navigationItem.rightBarButtonItem = editBtn;
+	}
+	
+	// update delegate
+	UITableView *tableView = (UITableView *)self.view;
+	if ([tableView isKindOfClass:[UITableView class]]) {
+		tableView.delegate = (id<UITableViewDelegate>)self;
+		tableView.dataSource = (id<UITableViewDataSource>)self;
+		[tableView reloadData];
+	}
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+	UITableView *view = (UITableView *)self.view;
+	if ([view isKindOfClass:[UITableView class]]) {
+		view.delegate = nil;
+		view.dataSource = nil;
 	}
 }
 
@@ -37,15 +54,15 @@
 	UITableView *tableView = (UITableView *)self.view;
 	if (tableView.isEditing) {
 		[tableView setEditing:NO animated:YES];
-		self.navigationItem.rightBarButtonItem.title = @"Edit";
+		self.navigationItem.rightBarButtonItem.title = PTEXT(@"Edit");
 	} else {
 		[tableView setEditing:YES animated:YES];
-		self.navigationItem.rightBarButtonItem.title = @"Done";
+		self.navigationItem.rightBarButtonItem.title = PTEXT(@"Done");
 	}
 }
 
 - (void)promptURLInstallation {
-	UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Enter the installation URL" message:nil delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Install", nil];
+	UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:PTEXT(@"EnterURL") message:nil delegate:self cancelButtonTitle:PTEXT(@"Cancel") otherButtonTitles:PTEXT(@"Install"), nil];
 	alertView.alertViewStyle = UIAlertViewStylePlainTextInput;
 	[alertView textFieldAtIndex:0].text = @"http://";
 	[alertView show];
@@ -58,10 +75,10 @@
 	NSString *alertTitle = nil;
 	switch (type) {
 		case PWPrefURLInstallationTypeWidget:
-			alertTitle = @"Unable to install widget";
+			alertTitle = PTEXT(@"UnableInstallWidget");
 			break;
 		case PWPrefURLInstallationTypeTheme:
-			alertTitle = @"Unable to install theme";
+			alertTitle = PTEXT(@"UnableInstallTheme");
 			break;
 		default:
 			return;

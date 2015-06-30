@@ -11,8 +11,9 @@
 #import "interface.h"
 #import "header.h"
 #import "PWController.h"
+#import "PWWidgetController.h"
 
-#define PrefPath @"/var/mobile/Library/Preferences/cc.tweak.prowidgets.nccorners.plist"
+#define PrefPath @"/var/mobile/Library/Preferences/cc.tweak.prowidgets.activationmethod.nccorners.plist"
 
 #define ANIMATION_DURATION 0.1
 #define BTN_TAG 1001
@@ -58,21 +59,12 @@ static inline UIImage *processImage(UIImage *image, BOOL tint) {
 	CGContextConcatCTM(context, transform);
 	
 	CGRect flippedRect = CGRectApplyAffineTransform(rect, transform);
-	
-	if (tint) {
-		CGContextSetBlendMode(context, kCGBlendModeNormal);
-		[[UIColor whiteColor] setFill];
-		CGContextFillRect(context, flippedRect);
-		CGContextSetBlendMode(context, kCGBlendModeDestinationIn);
-		CGContextDrawImage(context, flippedRect, image.CGImage);
-	} else {
-		CGContextDrawImage(context, flippedRect, image.CGImage);
-	}
+	CGContextDrawImage(context, flippedRect, image.CGImage);
 	
 	UIImage *result = UIGraphicsGetImageFromCurrentImageContext();
 	UIGraphicsEndImageContext();
 	
-	return result;
+	return tint ? [result imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] : result;
 }
 
 static inline UIButton *createButton(id target) {
@@ -80,6 +72,7 @@ static inline UIButton *createButton(id target) {
 	button.adjustsImageWhenHighlighted = YES;
 	button.showsTouchWhenHighlighted = NO;
 	button.backgroundColor = [UIColor clearColor];
+	button.imageView.tintColor = [UIColor whiteColor];
 	button.imageView.contentMode = UIViewContentModeScaleAspectFit;
 	//[button addTarget:target action:@selector(PW_touchDown:) forControlEvents:UIControlEventTouchDown];
 	//[button addTarget:target action:@selector(PW_touchUp:) forControlEvents:UIControlEventTouchUpInside];
@@ -149,14 +142,16 @@ static inline void loadPreference() {
 	[rightWidgetName release];
 	
 	NSDictionary *dict = [[NSDictionary alloc] initWithContentsOfFile:PrefPath];
-	enabled = [dict[@"enabled"] boolValue];
-	leftWidgetName = [dict[@"leftWidgetName"] copy];
-	rightWidgetName = [dict[@"rightWidgetName"] copy];
+	leftWidgetName = [dict[@"left"] copy];
+	rightWidgetName = [dict[@"right"] copy];
 	[dict release];
 	
-	enabled = YES;
-	leftWidgetName = [@"Mail" copy];
-	rightWidgetName = [@"Messages" copy];
+	if (leftWidgetName == nil && rightWidgetName == nil) {
+		leftWidgetName = [@"Mail" copy];
+		rightWidgetName = [@"Messages" copy];
+	}
+	
+	enabled = !([leftWidgetName length] == 0 && [rightWidgetName length] == 0);
 	
 	updateButtons();
 }
@@ -226,7 +221,29 @@ static inline void reloadPref(CFNotificationCenterRef center, void *observer, CF
 	
 	if (widgetName != nil) {
 		NSDictionary *userInfo = @{ @"from": @"notificationcentercorner" };
-		[[PWController sharedInstance] presentWidgetNamed:widgetName userInfo:userInfo];
+		// dismiss notification center
+		[[objc_getClass("SBNotificationCenterController") sharedInstance] dismissAnimated:YES completion:^{
+			// present the widget
+			[PWWidgetController presentWidgetNamed:widgetName userInfo:userInfo];
+		}];
+	}
+}
+
+%end
+
+%hook SBNotificationCenterController
+
+// only for iOS 7.1 (tapping the grabber will ignore the buttons and dismiss the NC)
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
+	
+	CGPoint leftButtonLocation = [gestureRecognizer locationInView:leftButton];
+	CGPoint rightButtonLocation = [gestureRecognizer locationInView:rightButton];
+	
+	if ((!leftButton.hidden && CGRectContainsPoint(leftButton.bounds, leftButtonLocation)) ||
+		(!rightButton.hidden && CGRectContainsPoint(rightButton.bounds, rightButtonLocation))) {
+		return NO;
+	} else {
+		return %orig;
 	}
 }
 

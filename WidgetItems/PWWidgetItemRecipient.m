@@ -30,14 +30,35 @@
 - (void)select {
 	
 	if (_recipientController == nil) {
-		_recipientController = [PWWidgetItemRecipientController new];
-		_recipientController.title = _titleWithoutColon;
-		_recipientController.delegate = self;
-		_recipientController.recipients = self.recipients;
+		_recipientController = [[PWWidgetItemRecipientController alloc] initWithTitle:_titleWithoutColon delegate:self recipients:self.recipients type:_recipientType forWidget:self.itemViewController.widget];
 		RELEASE(_titleWithoutColon)
 	}
 	
-	[[PWController activeWidget] pushViewController:_recipientController animated:YES];
+	[self.itemViewController.widget pushViewController:_recipientController animated:YES];
+}
+
+- (void)setExtraAttributes:(NSDictionary *)attributes {
+	
+	NSString *recipientType = attributes[@"recipientType"];
+	
+	_recipientType = PWWidgetItemRecipientTypeMessageContact; // default is message contact
+	
+	if (recipientType != nil) {
+		NSString *typeString = [recipientType lowercaseString];
+		if ([typeString isEqualToString:@"message"]) {
+			_recipientType = PWWidgetItemRecipientTypeMessageContact;
+		} else if ([typeString isEqualToString:@"mail"]) {
+			_recipientType = PWWidgetItemRecipientTypeMailContact;
+		}
+	}
+}
+
+- (void)setRecipientType:(PWWidgetItemRecipientType)recipientType {
+	if (_recipientController != nil) {
+		LOG(@"PWWidgetItemRecipient: recipient type cannot be changed because the picker was created.");
+		return;
+	}
+	_recipientType = recipientType;
 }
 
 - (void)setTitle:(NSString *)title {
@@ -211,15 +232,18 @@
 
 //////////////////////////////////////////////////////////////////////
 
-- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
-	if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier])) {
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier theme:(PWTheme *)theme {
+	if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier theme:theme])) {
+		
 		self.detailTextLabel.textAlignment = NSTextAlignmentLeft;
 	}
 	return self;
 }
 
 - (void)layoutSubviews {
+	
 	[super layoutSubviews];
+	
 	UILabel *title = self.textLabel;
 	UILabel *value = self.detailTextLabel;
 	

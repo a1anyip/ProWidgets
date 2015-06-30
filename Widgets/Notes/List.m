@@ -24,11 +24,11 @@
 	self.tableView.delegate = self;
 	self.tableView.dataSource = self;
 	
-	PWTheme *theme = [PWController activeTheme];
+	PWTheme *theme = self.theme;
 	
 	_noLabel = [UILabel new];
 	_noLabel.text = @"Loading";
-	_noLabel.textColor = [theme sheetForegroundColor];
+	_noLabel.textColor = [PWTheme translucentColor:[theme sheetForegroundColor]];
 	_noLabel.font = [UIFont boldSystemFontOfSize:22.0];
 	_noLabel.textAlignment = NSTextAlignmentCenter;
 	_noLabel.frame = self.view.bounds;
@@ -41,12 +41,11 @@
 }
 
 - (void)loadView {
-	self.view = [[[PWThemableTableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain] autorelease];
+	self.view = [[[PWThemableTableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain theme:self.theme] autorelease];
 }
 
 - (NoteContext *)noteContext {
-	PWWidgetNotes *widget = (PWWidgetNotes *)self.widget;
-	return widget.noteContext;
+	return [PWWidgetNotes widget].noteContext;
 }
 
 - (UITableView *)tableView {
@@ -80,8 +79,7 @@
 }
 
 - (void)titleTapped {
-	PWWidgetNotes *widget = (PWWidgetNotes *)self.widget;
-	[widget switchToAddInterface];
+	[[PWWidgetNotes widget] switchToAddInterface];
 }
 
 /**
@@ -148,7 +146,7 @@
 	PWWidgetNotesTableViewCell *cell = (PWWidgetNotesTableViewCell *)[tableView dequeueReusableCellWithIdentifier:identifier];
 	
 	if (!cell) {
-		cell = [[[PWWidgetNotesTableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:identifier] autorelease];
+		cell = [[[PWWidgetNotesTableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:identifier theme:self.theme] autorelease];
 	}
 	
 	NoteObject *note = _notes[row];

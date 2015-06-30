@@ -11,17 +11,41 @@
 #import "interface.h"
 #import "header.h"
 #import "PWController.h"
+#import "PWWidgetController.h"
+
+#define TV_PREF_PATH @"/var/mobile/Library/Preferences/cc.tweak.prowidgets.activationmethod.todayview.plist"
+#define NOTIFICATION_NAME @"cc.tweak.prowidgets.activationmethod.todayview.preferencechanged"
 
 #define ANIMATION_DURATION 0.1
 #define BTN_TAG 1001
 #define BTN_INITIAL_ALPHA .3
 #define BTN_PRESSED_ALPHA .8
 
+//static SBBulletinViewController *bulletinViewController;
+static BOOL enabled = YES;
 static char PWTodayViewTomorrowSectionKey;
+/*
+%hook SBBulletinViewController
 
+- (id)init {
+	id instance = %orig;
+	bulletinViewController = instance;
+	return instance;
+}
+
+- (void)dealloc {
+	if (bulletinViewController == self) {
+		bulletinViewController = nil;
+	}
+	%orig;
+}
+
+%end
+*/
 %hook SBTodayWidgetAndTomorrowSectionHeaderView
 
 - (id)initWithFrame:(CGRect)frame {
+	
 	self = %orig;
 	
 	// add plus button
@@ -34,11 +58,17 @@ static char PWTodayViewTomorrowSectionKey;
 	[self addSubview:btn];
 	[btn release];
 	
-	//[btn addTarget:self action:@selector(PW_touchDown) forControlEvents:UIControlEventTouchDown | UIControlEventTouchDragInside | UIControlEventTouchDragEnter];
-	//[btn addTarget:self action:@selector(PW_touchUp) forControlEvents:UIControlEventTouchUpInside | UIControlEventTouchUpOutside | UIControlEventTouchDragOutside | UIControlEventTouchDragExit | UIControlEventTouchCancel];
-	[btn addTarget:self action:@selector(PW_pressed) forControlEvents:UIControlEventTouchUpInside];
+	[btn addTarget:self action:@selector(_pw_pressed) forControlEvents:UIControlEventTouchUpInside];
+	
+	[[NSNotificationCenter defaultCenter] removeObserver:self name:NOTIFICATION_NAME object:nil];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_pw_preferenceChanged) name:NOTIFICATION_NAME object:nil];
 	
 	return self;
+}
+
+- (void)dealloc {
+	[[NSNotificationCenter defaultCenter] removeObserver:self name:NOTIFICATION_NAME object:nil];
+	%orig;
 }
 
 - (void)prepareForReuse {
@@ -61,28 +91,16 @@ static char PWTodayViewTomorrowSectionKey;
 		btn.frame = CGRectMake(width - buttonWidth, height - buttonHeight, buttonWidth, buttonHeight);
 	}
 }
-/*
-%new
-- (void)PW_touchDown {
-	UIButton *btn = (UIButton *)[self viewWithTag:BTN_TAG];
-	[UIView animateWithDuration:ANIMATION_DURATION animations:^{
-		btn.alpha = BTN_PRESSED_ALPHA;
-	}];
-}
-
-%new
-- (void)PW_touchUp {
-	UIButton *btn = (UIButton *)[self viewWithTag:BTN_TAG];
-	[UIView animateWithDuration:ANIMATION_DURATION animations:^{
-		btn.alpha = BTN_INITIAL_ALPHA;
-	}];
-}
-*/
 
 %new
 - (void)updateVisibility {
 	
 	UIButton *btn = (UIButton *)[self viewWithTag:BTN_TAG];
+	
+	if (!enabled) {
+		btn.hidden = YES;
+		return;
+	}
 	
 	if (btn != nil) {
 		
@@ -90,12 +108,18 @@ static char PWTodayViewTomorrowSectionKey;
 		BOOL isCalendarWidget = NO;
 		BOOL isTomorrowSection = NO;
 		UITableView *tableView = self.tableView;
-		NSIndexPath *indexPath = [tableView indexPathForRowAtPoint:self.frame.origin];
-		NSInteger section = indexPath.section;
+		NSInteger section = [tableView _sectionForHeaderView:self];
 		
 		// retrieve SBBulletinViewController
 		SBBulletinViewController *controller = (SBBulletinViewController *)tableView.delegate;
-		if (controller != nil) {
+		
+		if (![controller isKindOfClass:objc_getClass("SBBulletinViewController")]) {
+			// fix crash in LockInfo7
+			controller = nil;
+		}
+		
+//		SBBulletinViewController *controller = bulletinViewController;
+		if (controller != nil && section != NSNotFound) {
 			NSArray *sections = *(NSArray **)instanceVar(controller, "_orderedSections");
 			if (sections != NULL) {
 				if ([sections count] > section) {
@@ -111,7 +135,7 @@ static char PWTodayViewTomorrowSectionKey;
 				}
 			}
 		}
-		
+	
 		btn.hidden = !isCalendarWidget;
 		
 		objc_setAssociatedObject(self, &PWTodayViewTomorrowSectionKey, @(isTomorrowSection), OBJC_ASSOCIATION_COPY);
@@ -119,7 +143,7 @@ static char PWTodayViewTomorrowSectionKey;
 }
 
 %new
-- (void)PW_pressed {
+- (void)_pw_pressed {
 	
 	NSNumber *isTomorrowSection = (NSNumber *)objc_getAssociatedObject(self, &PWTodayViewTomorrowSectionKey);
 	BOOL isTomorrow = isTomorrowSection != nil && [isTomorrowSection boolValue];
@@ -133,10 +157,44 @@ static char PWTodayViewTomorrowSectionKey;
 	}
 	
 	// dismiss notification center
-	[[objc_getClass("SBNotificationCenterController") sharedInstance] dismissAnimated:YES];
-	
-	// present Calendar widget
-	[[PWController sharedInstance] presentWidgetNamed:@"Calendar" userInfo:userInfo];
+	[[objc_getClass("SBNotificationCenterController") sharedInstance] dismissAnimated:YES completion:^{
+		// present Calendar widget
+		[PWWidgetController presentWidgetNamed:@"Calendar" userInfo:userInfo];
+	}];
+}
+
+%new
+- (void)_pw_preferenceChanged {
+	[self updateVisibility];
 }
 
 %end
+
+// Loading preference
+static inline void loadPref() {
+	NSDictionary *pref = [[NSDictionary alloc] initWithContentsOfFile:TV_PREF_PATH];
+	NSNumber *_enabled = pref[@"enabled"];
+	enabled = _enabled == nil || ![_enabled isKindOfClass:[NSNumber class]] ? YES : [_enabled boolValue];
+	[pref release];
+}
+
+static inline void reloadPref(CFNotificationCenterRef center,
+							  void *observer,
+							  CFStringRef name,
+							  const void *object,
+							  CFDictionaryRef userInfo) {
+	// then, load preference
+	loadPref();
+	// emit notification
+	[[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_NAME object:nil];
+}
+
+static __attribute__((constructor)) void init() {
+	
+	// load preferences
+	loadPref();
+	
+	// distributed notification center
+	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, &reloadPref, CFSTR("cc.tweak.prowidgets.activationmethod.todayview.preferencechanged"), NULL, 0);
+
+}

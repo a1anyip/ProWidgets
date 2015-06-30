@@ -26,7 +26,7 @@
 
 @end
 
-@interface UINavigationBar (Private)
+@interface UINavigationBar (backgroundView)
 
 - (UIView *)_backgroundView;
 
@@ -34,8 +34,7 @@
 
 @interface PWWidgetThemeDarkBlur : PWTheme {
 	
-	_UIBackdropView *_barBlurView;
-	_UIBackdropView *_contentBlurView;
+	UIView *_barView;
 }
 
 @end
@@ -59,15 +58,15 @@
 }
 
 - (UIColor *)sheetForegroundColor {
-	return [UIColor colorWithWhite:1.0 alpha:.3];
+	return [UIColor colorWithWhite:1.0 alpha:.5];
 }
 
 - (UIColor *)sheetBackgroundColor {
-	return [UIColor colorWithWhite:0.1 alpha:0.8];
+	return [UIColor colorWithWhite:0.15 alpha:0.8];
 }
 
 - (UIColor *)navigationBarBackgroundColor {
-	return [UIColor colorWithWhite:0.0 alpha:0.9];
+	return [UIColor colorWithWhite:0.0 alpha:0.95];
 }
 
 // navigation bar title
@@ -86,19 +85,19 @@
 
 // cell selected background color
 - (UIColor *)cellBackgroundColor {
-	return [UIColor colorWithWhite:0 alpha:.2];
+	return [UIColor colorWithWhite:0 alpha:.1];
 }
 
 - (UIColor *)cellTitleTextColor {
-	return [UIColor colorWithWhite:1.0 alpha:.2];
+	return [UIColor colorWithWhite:1.0 alpha:.25];
 }
 
 - (UIColor *)cellValueTextColor {
-	return [UIColor colorWithWhite:1.0 alpha:.3];
+	return [UIColor colorWithWhite:1.0 alpha:.35];
 }
 
 - (UIColor *)cellButtonTextColor {
-	return [UIColor colorWithWhite:1 alpha:.3];
+	return [UIColor colorWithWhite:1 alpha:.35];
 }
 
 - (UIColor *)cellInputTextColor {
@@ -106,7 +105,7 @@
 }
 
 - (UIColor *)cellInputPlaceholderTextColor {
-	return [UIColor colorWithWhite:1 alpha:.1];
+	return [UIColor colorWithWhite:1 alpha:.2];
 }
 
 - (UIColor *)cellPlainTextColor {
@@ -115,7 +114,7 @@
 
 // cell selected background color
 - (UIColor *)cellSelectedBackgroundColor {
-	return [UIColor colorWithWhite:0 alpha:.3];
+	return [UIColor colorWithWhite:0 alpha:.2];
 }
 
 - (UIColor *)cellSelectedTitleTextColor {
@@ -132,7 +131,7 @@
 
 // header footer view
 - (UIColor *)cellHeaderFooterViewBackgroundColor {
-	return [UIColor colorWithWhite:.05 alpha:1.0];
+	return [UIColor colorWithWhite:.1 alpha:1.0];
 }
 
 - (UIColor *)cellHeaderFooterViewTitleTextColor {
@@ -152,45 +151,54 @@
 	return [UIColor colorWithWhite:1 alpha:.1];
 }
 
+- (void)enterSnapshotMode {
+	if (!self.disabledBlur) {
+		_barView.backgroundColor = [UIColor blackColor];
+	}
+}
+
+- (void)exitSnapshotMode {
+	if (!self.disabledBlur) {
+		_barView.backgroundColor = [UIColor clearColor];
+	}
+}
+
 - (void)setupTheme {
 	
 	UINavigationBar *navigationBar = [self navigationBar];
 	PWContainerView *containerView = [self containerView];
 	
-	//UIColor *barTintColor = [self preferredTintColor];
-	//BOOL shouldTintBar = barTintColor != nil;
-	
-	// make the navigation bar transparent
 	navigationBar.translucent = NO;
 	
 	UIView *backgroundView = [navigationBar _backgroundView];
 	backgroundView.backgroundColor = [UIColor colorWithWhite:0 alpha:.3]; // remove white background
 	
-	// backdrop view settings
-	_UIBackdropViewSettings *barSettings = [[[objc_getClass("_UIBackdropViewSettingsColored") alloc] initWithDefaultValues] autorelease];
-	_UIBackdropViewSettings *contentSettings = [[[objc_getClass("_UIBackdropViewSettingsColored") alloc] initWithDefaultValues] autorelease];
+	if (self.disabledBlur) {
+		
+		CGFloat alpha = .98;
+		
+		_barView = [UIView new];
+		_barView.backgroundColor = [UIColor blackColor];
+		_barView.alpha = alpha;
+		[containerView insertSubview:_barView atIndex:0];
+		
+	} else {
 	
-	barSettings.colorTint = [UIColor blackColor];//barTintColor;
-	barSettings.saturationDeltaFactor = 0.0;
-	
-	contentSettings.colorTint = [UIColor blackColor];//barTintColor;
-	contentSettings.saturationDeltaFactor = 0.0;
-	
-	// add blur view as the background
-	_barBlurView = [[objc_getClass("_UIBackdropView") alloc] initWithSettings:barSettings];
-	[containerView insertSubview:_barBlurView atIndex:0];
-	
-	_contentBlurView = [[objc_getClass("_UIBackdropView") alloc] initWithSettings:contentSettings];
-	[containerView insertSubview:_contentBlurView atIndex:0];
+		// backdrop view settings
+		_UIBackdropViewSettings *barSettings = [[[objc_getClass("_UIBackdropViewSettingsColored") alloc] initWithDefaultValues] autorelease];
+		
+		barSettings.colorTint = [UIColor blackColor];
+		barSettings.saturationDeltaFactor = 0.0;
+		
+		// add blur view as the background
+		_barView = [[objc_getClass("_UIBackdropView") alloc] initWithSettings:barSettings];
+		[containerView insertSubview:_barView atIndex:0];
+	}
 }
 
 - (void)removeTheme {
-	
-	[_barBlurView removeFromSuperview];
-	[_contentBlurView removeFromSuperview];
-	
-	[_barBlurView release], _barBlurView = nil;
-	[_contentBlurView release], _contentBlurView = nil;
+	[_barView removeFromSuperview];
+	[_barView release], _barView = nil;
 }
 
 - (void)adjustLayout {
@@ -198,17 +206,13 @@
 	CGRect superRect = [self containerView].bounds;
 	CGSize superSize = superRect.size;
 	
-	_barBlurView.frame = CGRectMake(0, 0, superSize.width, [self navigationBar].bounds.size.height);
-	_contentBlurView.frame = CGRectMake(0, _barBlurView.frame.size.height, superSize.width, superSize.height - _barBlurView.frame.size.height);
+	_barView.frame = CGRectMake(0, 0, superSize.width, superSize.height);
 }
 
 - (void)dealloc {
 	
-	[_barBlurView removeFromSuperview];
-	[_contentBlurView removeFromSuperview];
-	
-	[_barBlurView release], _barBlurView = nil;
-	[_contentBlurView release], _contentBlurView = nil;
+	[_barView removeFromSuperview];
+	[_barView release], _barView = nil;
 	
 	[super dealloc];
 }

@@ -29,6 +29,7 @@
 
 + (instancetype)sharedInstance;
 - (void)dismissAnimated:(BOOL)animated;
+- (void)dismissAnimated:(BOOL)animated completion:(id)completion;
 
 @end
 

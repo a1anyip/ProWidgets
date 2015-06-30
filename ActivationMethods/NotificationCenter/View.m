@@ -7,6 +7,8 @@
 //
 
 #import "View.h"
+#import "PWController.h"
+#import "PWWidgetController.h"
 
 NSUInteger iconPerPage = 5; // either 4 or 5
 
@@ -170,7 +172,7 @@ static inline UIImage *scaleImage(UIImage *image) {
 		PWNCButton *button = [objc_getClass("PWNCButton") circularButtonWithGlyphImage:image];
 		[button setHighlighted:NO];
 		button.delegate = self;
-		button.sortKey = @(currentIcon);
+		//button.sortKey = @(currentIcon);
 		[currentPage addButton:button];
 		
 		objc_setAssociatedObject(button, &SBControlCenterButtonWidgetBundleKey, bundle, OBJC_ASSOCIATION_RETAIN);
@@ -178,7 +180,7 @@ static inline UIImage *scaleImage(UIImage *image) {
 		if (++currentIcon == iconPerPage) {
 			
 			// reset
-			currentIcon = 1;
+			currentIcon = 0;
 			currentPageIndex++;
 			
 			if (currentPageIndex <= pageCount) {
@@ -209,9 +211,10 @@ static inline UIImage *scaleImage(UIImage *image) {
 		// user info
 		NSDictionary *userInfo = @{ @"from": @"notificationcenter" };
 		// dismiss notification center
-		[[objc_getClass("SBNotificationCenterController") sharedInstance] dismissAnimated:YES];
-		// present the widget
-		[[PWController sharedInstance] presentWidgetFromBundle:bundle userInfo:userInfo];
+		[[objc_getClass("SBNotificationCenterController") sharedInstance] dismissAnimated:YES completion:^{
+			// present the widget
+			[PWWidgetController presentWidgetFromBundle:bundle userInfo:userInfo];
+		}];
 	}
 }
 

@@ -89,7 +89,7 @@
 	PWAlertViewCompletionHandler handler = nil;
 	if ([completion isObject]) {
 		
-		__block PWBase *base = [self.base retain];
+		//__block PWBase *base = [self.base retain];
 		__block PWJSBridge *bridge = [_bridge retain];
 		__block JSContext *context = [_bridge.context retain];
 		__block JSManagedValue *completionValue = [[JSManagedValue managedValueWithValue:completion] retain];
@@ -112,7 +112,7 @@
 				[completionValue release], completionValue = nil;
 			}
 			
-			LOG(@"%@", base);
+			//LOG(@"%@", base);
 			/*[context release], context = nil;
 			[bridge release], bridge = nil;
 			[base release], base = nil;*/

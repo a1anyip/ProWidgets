@@ -14,9 +14,16 @@
 #import "PWWidget.h"
 #import <objcipc/objcipc.h>
 
+typedef enum {
+	TimeBased = 1,
+	CounterBased = 2
+} RecordType;
+
 @implementation PWWidgetGoogleAuthenticatorViewController
 
 - (void)load {
+	
+	_firstTime = YES;
 	
 	self.requiresKeyboard = NO;
 	self.shouldMaximizeContentHeight = NO;
@@ -62,7 +69,7 @@
 	// open Google Authenticator app
 	SpringBoard *app = (SpringBoard *)[UIApplication sharedApplication];
 	[app launchApplicationWithIdentifier:AuthenticatorIdentifier suspended:NO];
-	[[PWController activeWidget] dismiss];
+	[self.widget dismiss];
 }
 
 /**
@@ -115,8 +122,14 @@
 	PWWidgetGoogleAuthenticatorTableViewCell *cell = (PWWidgetGoogleAuthenticatorTableViewCell *)[tableView dequeueReusableCellWithIdentifier:identifier];
 	
 	if (!cell) {
-		cell = [[PWWidgetGoogleAuthenticatorTableViewCell new] autorelease];
+		cell = [[[PWWidgetGoogleAuthenticatorTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier] autorelease];
 	}
+	
+	// type
+	RecordType type = (RecordType)[record[@"type"] unsignedIntegerValue];
+	[cell setReloadBtnHidden:(type != CounterBased)];
+	[cell setReloadBtnTarget:self action:@selector(reloadButtonPressed:)];
+	[cell setReloadBtnRecordIndex:row];
 	
 	// account name and issuer
 	NSString *name = record[@"name"];
@@ -146,6 +159,21 @@
 - (void)invalidateTimer {
 	[_timer invalidate];
 	RELEASE(_timer);
+}
+
+- (void)reloadButtonPressed:(UIButton *)sender {
+	
+	NSUInteger index = sender.tag;
+	if ([_records count] <= index) return;
+	
+	// send a request to Authenticator app to retrieve verification codes
+	NSDictionary *dict = @{ @"action": @"refresh", @"index": @(index) };
+	[OBJCIPC sendMessageToAppWithIdentifier:AuthenticatorIdentifier messageName:@"GoogleAuthenticator" dictionary:dict replyHandler:^(NSDictionary *reply) {
+		BOOL success = [reply[@"success"] boolValue];
+		if (success) {
+			[self retrieveRecords];
+		}
+	}];
 }
 
 - (BOOL)checkRecords:(BOOL)newRecords {
@@ -187,19 +215,17 @@
 - (void)retrieveRecords {
 	
 	// send a request to Authenticator app to retrieve verification codes
-	NSDictionary *dict = @{ @"action": @"retrieve" };
+	NSDictionary *dict = @{ @"action": @"retrieve", @"firstTime": @(_firstTime) };
 	[OBJCIPC sendMessageToAppWithIdentifier:AuthenticatorIdentifier messageName:@"GoogleAuthenticator" dictionary:dict replyHandler:^(NSDictionary *reply) {
+		
+		_firstTime = NO;
 		
 		BOOL dataAvailable = [reply[@"dataAvailable"] boolValue];
 		NSArray *records = reply[@"records"];
 		
-		if (!dataAvailable) {
-			[[PWController activeWidget] showMessage:@"You must unlock your device to retrieve records from the app." title:nil handler:^{
-				[[PWController activeWidget] dismiss];
-			}];
-		} else if (records == nil) {
-			[[PWController activeWidget] showMessage:@"Unable to retrieve verification codes from Google Authenticator app." title:nil handler:^{
-				[[PWController activeWidget] dismiss];
+		if (!dataAvailable || records == nil) {
+			[self.widget showMessage:@"Unable to retrieve verification codes from Google Authenticator app." title:nil handler:^{
+				[self.widget dismiss];
 			}];
 		} else {
 			
@@ -232,7 +258,7 @@
 	}
 	
 	if (code == nil) {
-		[[PWController activeWidget] showMessage:@"Unable to copy the code."];
+		[self.widget showMessage:@"Unable to copy the code."];
 		return;
 	}
 	

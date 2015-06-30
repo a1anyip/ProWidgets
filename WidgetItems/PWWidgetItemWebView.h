@@ -11,25 +11,20 @@
 
 @interface PWWidgetItemWebView : PWWidgetItem {
 	
-	NSDictionary *_pendingContent;
+	UIWebView *_webView;
 }
 
-@property(nonatomic, readonly) NSDictionary *pendingContent;
+@property (nonatomic, readonly) UIWebView *webView;
 
 - (void)loadData:(NSData *)data MIMEType:(NSString *)MIMEType textEncodingName:(NSString *)encodingName baseURL:(NSURL *)baseURL;
 - (void)loadHTMLString:(NSString *)string baseURL:(NSURL *)baseURL;
 - (void)loadRequest:(NSURLRequest *)request;
 
-- (void)_setPendingContent:(NSDictionary *)content;
-- (void)_clearPendingContent;
-
 @end
 
 @interface PWWidgetItemWebViewCell : PWWidgetItemCell {
 	
-	UIWebView *_webView;
+	UIWebView *_itemWebView;
 }
-
-@property(nonatomic, readonly) UIWebView *webView;
 
 @end

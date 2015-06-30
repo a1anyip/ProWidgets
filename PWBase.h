@@ -24,6 +24,7 @@
 }
 
 @property(nonatomic) BOOL requiresProtectedDataAccess;
+@property(nonatomic) BOOL supportResizing;
 
 @property(nonatomic, copy) NSString *name;
 @property(nonatomic, readonly) NSString *displayName;
@@ -48,8 +49,8 @@
 - (NSDate *)dateValueForPreferenceKey:(NSString *)key defaultValue:(NSDate *)defaultValue;
 
 // primitive types
-- (int)intValueForPreferenceKey:(NSString *)key defaultValue:(int)defaultValue;
-- (double)doubleValueForPreferenceKey:(NSString *)key defaultValue:(double)defaultValue;
+- (NSInteger)intValueForPreferenceKey:(NSString *)key defaultValue:(NSInteger)defaultValue;
+- (CGFloat)doubleValueForPreferenceKey:(NSString *)key defaultValue:(CGFloat)defaultValue;
 - (BOOL)boolValueForPreferenceKey:(NSString *)key defaultValue:(BOOL)defaultValue;
 
 // Setter

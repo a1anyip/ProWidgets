@@ -3,15 +3,14 @@
 <plist version="1.0">
 <dict>
 	<key>title</key>
-	<string>Test Widget</string>
+	<string>JSTest</string>
 	<key>layout</key>
-	<!--<string>PWWidgetLayoutDefault</string>-->
-	<string>PWWidgetLayoutCustom</string>
+	<string>PWWidgetLayoutDefault</string>
 	<key>defaultItemViewControllerPlist</key>
-	<string>TestItems.plist</string>
-	<key>desiredTintColor</key>
-	<string>blue</string>
-	<key>desiredBarTextColor</key>
+	<string>TestItems</string>
+	<key>preferredTintColor</key>
+	<string>purple</string>
+	<key>preferredBarTextColor</key>
 	<string>white</string>
 </dict>
 </plist>

@@ -27,6 +27,14 @@
 
 //////////////////////////////////////////////////////////////////////
 
+- (PWWidget *)widget {
+	return self.itemViewController.widget;
+}
+
+-(PWTheme *)theme {
+	return self.itemViewController.theme;
+}
+
 /**
  * Override this to specify which class the cell should be
  **/
@@ -48,8 +56,8 @@
  * Retrieve the table view cell for a widget item
  **/
 
-+ (PWWidgetItemCell *)createCell {
-	PWWidgetItemCell *cell = (PWWidgetItemCell *)[[self cellClass] create];
++ (PWWidgetItemCell *)createCell:(PWTheme *)theme {
+	PWWidgetItemCell *cell = (PWWidgetItemCell *)[[self cellClass] create:theme];
 	return cell;
 }
 
@@ -61,6 +69,32 @@
 
 // shortcut to create item with the given type
 + (PWWidgetItem *)createItemNamed:(NSString *)name forItemViewController:(PWContentItemViewController *)itemViewController {
+	
+	if (name == nil || itemViewController == nil) return nil;
+	
+	static NSDictionary *predefinedTypes = nil;
+	
+	if (predefinedTypes == nil) {
+		predefinedTypes = [@{
+							 @"textarea": @"PWWidgetItemTextArea",
+							 @"textfield": @"PWWidgetItemTextField",
+							 @"value": @"PWWidgetItemValue",
+							 @"listvalue": @"PWWidgetItemListValue",
+							 @"datevalue": @"PWWidgetItemDateValue",
+							 @"tonevalue": @"PWWidgetItemToneValue",
+							 @"switch": @"PWWidgetItemSwitch",
+							 @"text": @"PWWidgetItemText",
+							 @"button": @"PWWidgetItemButton",
+							 @"webview": @"PWWidgetItemWebView",
+							 @"recipient": @"PWWidgetItemRecipient"
+							 } retain];
+	}
+	
+	// convert the given item name to the predefined class name
+	NSString *predefinedClassName = predefinedTypes[[name lowercaseString]];
+	if (predefinedClassName != nil) {
+		name = predefinedClassName;
+	}
 	
 	Class itemClass = NSClassFromString(name);
 	
@@ -75,6 +109,16 @@
 	return [item autorelease];
 }
 
++ (instancetype)createItemForItemViewController:(PWContentItemViewController *)itemViewController {
+	if (itemViewController != nil && [self isSubclassOfClass:[PWWidgetItem class]] && ![self isEqual:[PWWidgetItem class]]) {
+		PWWidgetItem *item = [self new];
+		item.itemViewController = itemViewController;
+		return [item autorelease];
+	} else {
+		return nil;
+	}
+}
+
 //////////////////////////////////////////////////////////////////////
 
 /**
@@ -84,6 +128,7 @@
 - (instancetype)init {
 	if ((self = [super init])) {
 		_cellType = [self isKindOfClass:[PWWidgetItemTextArea class]] ? PWWidgetCellTypeTextArea : PWWidgetCellTypeNormal;
+		[self setValue:[self.class defaultValue]];
 	}
 	return self;
 }
@@ -192,7 +237,7 @@
 - (void)setExtraAttributes:(NSDictionary *)attributes {}
 
 - (CGFloat)cellHeightForOrientation:(PWWidgetOrientation)orientation {
-	return self.overrideHeight == 0.0 ? [[PWController activeTheme] heightOfCellOfType:_cellType forOrientation:orientation] : self.overrideHeight;
+	return self.overrideHeight == 0.0 ? [self.theme heightOfCellOfType:_cellType forOrientation:orientation] : self.overrideHeight;
 }
 
 //////////////////////////////////////////////////////////////////////

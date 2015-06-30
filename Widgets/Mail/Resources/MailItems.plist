@@ -13,6 +13,8 @@
 			<string>To:</string>
 			<key>type</key>
 			<string>recipient</string>
+			<key>recipientType</key>
+			<string>mail</string>
 		</dict>
 		<!--<dict>
 			<key>key</key>
@@ -32,13 +34,21 @@
 		</dict>-->
 		<dict>
 			<key>key</key>
+			<string>subject</string>
+			<key>title</key>
+			<string>Subject</string>
+			<key>type</key>
+			<string>textField</string>
+		</dict>
+		<dict>
+			<key>key</key>
 			<string>content</string>
 			<key>title</key>
 			<string></string>
 			<key>type</key>
 			<string>textArea</string>
-			<key>overrideHeight</key>
-			<real>160.0</real>
+			<key>shouldFillHeight</key>
+			<true/>
 		</dict>
 	</array>
 </dict>

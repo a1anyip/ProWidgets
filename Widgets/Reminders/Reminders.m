@@ -19,8 +19,6 @@
 - (NSString *)parseDate:(NSDate *)date allDay:(BOOL)allDay shortForm:(BOOL)shortForm {
 	
 	NSInteger dayDifference = [self calculateDayDifference:[NSDate date] toDate:date];
-	
-	///// Process date to string /////
 	NSString *result = nil;
 	
 	// parse the date
@@ -91,7 +89,7 @@
 
 - (void)load {
 	
-	PWWidgetRemindersInterface defaultInterface = PWWidgetRemindersInterfaceAdd;
+	PWWidgetRemindersInterface defaultInterface = [self intValueForPreferenceKey:@"defaultInterface" defaultValue:0] == 1 ? PWWidgetRemindersInterfaceOverview : PWWidgetRemindersInterfaceAdd;
 	
 	if (defaultInterface == PWWidgetRemindersInterfaceAdd) {
 		[self switchToAddInterface];
@@ -118,7 +116,7 @@
 	if (_currentInterface == PWWidgetRemindersInterfaceAdd) return;
 	
 	if (_addViewControllers == nil) {
-		PWWidgetRemindersAddViewController *addViewController = [[PWWidgetRemindersAddViewController new] autorelease];
+		PWWidgetRemindersAddViewController *addViewController = [[[PWWidgetRemindersAddViewController alloc] initForWidget:self] autorelease];
 		_addViewControllers = [@[addViewController] copy];
 	}
 	
@@ -131,7 +129,7 @@
 	if (_currentInterface == PWWidgetRemindersInterfaceOverview) return;
 	
 	if (_overviewViewControllers == nil) {
-		PWWidgetRemindersOverviewViewController *overviewViewController = [[PWWidgetRemindersOverviewViewController new] autorelease];
+		PWWidgetRemindersOverviewViewController *overviewViewController = [[[PWWidgetRemindersOverviewViewController alloc] initForWidget:self] autorelease];
 		_overviewViewControllers = [@[overviewViewController] copy];
 	}
 	

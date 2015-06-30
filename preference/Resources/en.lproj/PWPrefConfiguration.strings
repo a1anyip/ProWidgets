@@ -1,0 +1,44 @@
+/* Configuration */
+"Configuration" = "Configuration";
+
+"General" = "General";
+"LockAction" = "Lock Action";
+"MinimizeAllWidgets" = "Minimize all widgets";
+"DismissAllWidgets" = "Dismiss all widgets";
+"MinimizationViewSize" = "Minimization View Size";
+"Small" = "Small";
+"Normal" = "Normal";
+"Big" = "Big";
+"Large" = "Large";
+
+"Effect" = "Effect";
+"PresentationStyle" = "Presentation Style";
+"Zoom" = "Zoom";
+"Fade" = "Fade";
+"SlideUp" = "Slide Up";
+"SlideDown" = "Slide Down";
+"ParallaxEffect" = "Parallax Effect";
+"DisableBlurEffect" = "Disable Blur Effect";
+"BetterBlurQuality" = "Better Blur Quality";
+
+"GlobalPreference" = "Global Preference";
+"GlobalPreferenceFooterText" = "Select your preferred source when creating calendars";
+"PreferredSource" = "Preferred Source";
+"Local" = "Local";
+
+"ExperimentalSettingsFooterText" = "Play with some internal-use or not-tested settings in this section :)";
+"ExperimentalSettings" = "Experimental Settings";
+
+"LivePreview" = "Live Preview";
+"LivePreviewSettingsFooterText" = "Live preview is disabled for all widgets by default. Configure the enabled state here or by tapping on their icons in Widgets page.";
+"EnableAllLivePreviewSettings" = "Enable All";
+"DisableAllLivePreviewSettings" = "Disable All";
+
+"ShowWelcomeScreenFooterText" = "Show the welcome screen that was presented after you installed ProWidgets again.";
+"ShowWelcomeScreen" = "Show Welcome Screen";
+
+"ResetCoreSettingsFooterText" = "Reset the main preference file of ProWidgets, not including any widgets, themes, and activation methods.";
+"ResetCoreSettings" = "Reset Core Settings";
+
+"RespringFooterText" = "Unless specified, respring is not required after changing configurations.";
+"Respring" = "Respring";

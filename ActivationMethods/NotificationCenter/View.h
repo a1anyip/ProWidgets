@@ -8,7 +8,6 @@
 
 #import "interface.h"
 #import "header.h"
-#import "PWController.h"
 
 @interface PWNCView : UIView {
 	

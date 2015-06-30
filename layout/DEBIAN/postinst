@@ -1,0 +1,6 @@
+#!/bin/bash
+
+chmod 777 /Library/ProWidgets/Widgets/
+chmod 777 /Library/ProWidgets/Themes/
+
+exit 0

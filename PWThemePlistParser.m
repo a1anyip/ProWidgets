@@ -110,7 +110,7 @@ static inline void configureCellHeight(PWThemeParsed *theme, NSDictionary *dict,
 	doubleKeys = [@[@"cornerRadius"] copy];
 }
 
-+ (PWTheme *)parse:(NSDictionary *)dict inBundle:(NSBundle *)bundle {
++ (PWTheme *)parse:(NSDictionary *)dict inBundle:(NSBundle *)bundle forWidget:(PWWidget *)widget {
 	
 	LOG(@"PWThemePlistParser: Parsing theme plist");
 	
@@ -119,6 +119,7 @@ static inline void configureCellHeight(PWThemeParsed *theme, NSDictionary *dict,
 	// set basic information
 	theme.name = dict[@"name"];
 	theme.bundle = bundle;
+	theme.widget = widget;
 	
 	// process boolean keys
 	for (NSString *key in boolKeys) {

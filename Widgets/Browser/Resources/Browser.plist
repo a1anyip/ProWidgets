@@ -6,6 +6,8 @@
 	<string>Browser</string>
 	<key>layout</key>
 	<string>PWWidgetLayoutCustom</string>
+	<key>supportResizing</key>
+	<true/>
 	<key>preferredTintColor</key>
 	<string>#3EB3E8</string>
 	<key>preferredBarTextColor</key>

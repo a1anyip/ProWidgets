@@ -1,0 +1,87 @@
+/* General */
+"Unknown" = "Unknown";
+"Info" = "Info";
+"Edit" = "Edit";
+"Done" = "Done";
+"Yes" = "Yes";
+"No" = "No";
+"OK" = "OK";
+"Cancel" = "Cancel";
+"Close" = "Close";
+"Back" = "Back";
+"Install" = "Install";
+"Uninstall" = "Uninstall";
+"Confirmation" = "Confirmation";
+
+/* Widgets */
+"Widgets" = "Widgets";
+"InstalledWidgets" = "Installed widgets";
+"InstalledWidgetsFooterText" = "You could configure widgets in this page, and rearrange them in Activation Methods.\n\nTap on icons to view details.";
+"NoInstalledWidgets" = "No installed widgets";
+"NoInstalledWidgetsFooterText" = "You may find some useful widgets in Cydia, or re-install ProWidgets to restore stock widgets.";
+"InstallWidgetViaURL" = "Install widget via URL";
+"InstallWidgetViaURLFooterText" = "Only widgets installed via URL can be uninstalled in this page.\n\nInstall or Uninstall other widgets in Cydia.";
+
+/* Themes */
+"Themes" = "Themes";
+"InstalledThemes" = "Installed themes";
+"InstalledThemesFooterText" = "You could choose the default theme in this page.\n\nTap on icons to view details.";
+"NoInstalledThemes" = "No installed themes";
+"NoInstalledThemesFooterText" = "You may find some themes in Cydia, or re-install ProWidgets to restore stock themes.";
+"InstallThemeViaURL" = "Install theme via URL";
+"InstallThemeViaURLFooterText" = "Only themes installed via URL can be uninstalled in this page.\n\nInstall or Uninstall other themes in Cydia.";
+
+/* Activation Methods */
+"ActivationMethods" = "Activation Methods";
+"VisibleWidgets" = "Visible widgets";
+"HiddenWidgets" = "Hidden widgets";
+"ActivationMethodsFooterText" = "You could configure activation methods in this section.";
+"NoActivationMethods" = "No installed activation methods";
+"NoActivationMethodsFooterText" = "You may find some activation methods in Cydia, or re-install ProWidgets to restore stock activation methods.";
+"HiddenWidgetsFooterText" = "You could rearrange or set the visibility of widgets in some activation methods (e.g. Control Center) in this section.\n\nSome widgets are hidden according to their settings.";
+
+/* URL Installation */
+"EnterURL" = "Enter the installation URL";
+"URLInstallation" = "URL Installation";
+"UnableInstallWidget" = "Unable to install widget";
+"UnableInstallTheme" = "Unable to install theme";
+"ConnectingToServer" = "Connecting to server...";
+"Downloading" = "Downloading...";
+"ReadyToDownload" = "Ready to Download";
+"EmptyInstallationURL" = "Empty installation URL";
+"UnsupportedURL" = "Unsupported installation URL";
+"Validating" = "Validating...";
+"ValidatingMessage" = "Please wait until the package validation process completes.";
+"UnableExtract" = "Unable to extract the package.\nPlease reinstall ProWidgets in Cydia.";
+"Extracting" = "Extracting...";
+"ExtractingMessage" = "Please wait until the package extraction process completes.";
+"Analyzing" = "Analyzing...";
+"AnalyzingMessage" = "Please wait until the analysis of package contents finishes.";
+"InvalidPackageMoreThanOneBundles" = "Invalid package (more than one bundles)";
+"InvalidPackageBundleNotFound" = "Invalid package (bundle not found)";
+"DuplicatedPackageError" = "You have installed a package with the same name before.";
+"InvalidPackageUnableReadInfo" = "Invalid package (unable to read Info.plist)";
+"InvalidPackageType" = "Invalid package type";
+"NoDescription" = "No description";
+"Installing" = "Installing...";
+"InstallingMessage" = "Please wait until the package installation process completes.";
+"UnableReach" = "Unable to reach the destination path. You may try reinstalling ProWidgets in Cydia.";
+"UnableCopy" = "Unable to copy package contents to destination path.";
+"InstallationComplete" = "Installation Complete";
+"InstallationCompleteMessage" = "The installation was successful. You can uninstall it in the preference page anytime.";
+"UnknownError" = "Unknown error occurs. Please try again.";
+"InvalidPackage" = "Invalid package";
+"FailExtract" = "Fail to extract package, or the package content is empty";
+"UnableCreateTempFolder" = "Unable to create a temporary directory. Please try again.";
+"HTTPStatusCodeMessage" = "Received HTTP status code:";
+"Retry" = "Retry";
+"Failed" = "Failed";
+
+/* Reset Core Settings */
+"ResetCoreSettingsConfirmation" = "Are you sure to reset all core settings of ProWidgets?";
+"ResetCoreSettingsMessage" = "Core preference file is reset.";
+
+/* Other Buttons */
+"WebsiteAndDocumentation" = "Website & Documentation";
+"MoreByAuthor" = "More by Alan Yip";
+"FollowTwitter" = "Follow @tweakcc";

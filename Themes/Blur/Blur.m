@@ -6,12 +6,15 @@
 //  Copyright 2014 Alan Yip. All rights reserved.
 //
 
+#import "PWController.h"
 #import "PWTheme.h"
 #import "PWContainerView.h"
 
 @interface _UIBackdropView : UIView
 
 - (id)initWithSettings:(id)settings;
+- (void)setBlurQuality:(id)arg1;
+- (void)setShouldRasterizeEffectsView:(BOOL)arg1;
 
 @end
 
@@ -23,10 +26,12 @@
 
 + (instancetype)settingsForStyle:(int)style;
 - (instancetype)initWithDefaultValues;
+- (void)setBlurRadius:(float)arg1;
+- (void)setBlurQuality:(id)arg1;
 
 @end
 
-@interface UINavigationBar (Private)
+@interface UINavigationBar (backgroundView)
 
 - (UIView *)_backgroundView;
 
@@ -34,8 +39,8 @@
 
 @interface PWWidgetThemeBlur : PWTheme {
 	
-	_UIBackdropView *_barBlurView;
-	_UIBackdropView *_contentBlurView;
+	UIView *_barBlurView;
+	UIView *_contentBlurView;
 }
 
 @end
@@ -48,6 +53,14 @@
 
 - (CGFloat)cornerRadius {
 	return 7.0;
+}
+
+- (UIColor *)tintColor {
+	return [self preferredTintColor] == nil ? [super tintColor] : [PWTheme darkenColor:[self preferredTintColor]];
+}
+
+- (UIColor *)sheetForegroundColor {
+	return [UIColor colorWithWhite:.2 alpha:1.0];
 }
 
 - (UIColor *)sheetBackgroundColor {
@@ -100,19 +113,23 @@
 }
 
 - (void)enterSnapshotMode {
-	UIColor *barTintColor = [self preferredTintColor];
-	BOOL shouldTintBar = barTintColor != nil;
-	if (shouldTintBar) {
-		_barBlurView.backgroundColor = barTintColor;
-	} else {
-		_barBlurView.backgroundColor = [UIColor whiteColor];
+	if (!self.disabledBlur) {
+		UIColor *barTintColor = [self preferredTintColor];
+		BOOL shouldTintBar = barTintColor != nil;
+		if (shouldTintBar) {
+			_barBlurView.backgroundColor = barTintColor;
+		} else {
+			_barBlurView.backgroundColor = [UIColor whiteColor];
+		}
+		_contentBlurView.backgroundColor = [UIColor whiteColor];
 	}
-	_contentBlurView.backgroundColor = [UIColor whiteColor];
 }
 
 - (void)exitSnapshotMode {
-	_barBlurView.backgroundColor = [UIColor clearColor];
-	_contentBlurView.backgroundColor = [UIColor clearColor];
+	if (!self.disabledBlur) {
+		_barBlurView.backgroundColor = [UIColor clearColor];
+		_contentBlurView.backgroundColor = [UIColor clearColor];
+	}
 }
 
 - (void)setupTheme {
@@ -123,30 +140,46 @@
 	UIColor *barTintColor = [self preferredTintColor];
 	BOOL shouldTintBar = barTintColor != nil;
 	
-	// make the navigation bar transparent
 	navigationBar.translucent = NO;
 	
 	UIView *backgroundView = [navigationBar _backgroundView];
 	backgroundView.backgroundColor = [UIColor clearColor]; // remove white background
 	
-	// backdrop view settings
-	_UIBackdropViewSettings *barSettings = nil;
-	_UIBackdropViewSettings *contentSettings = [[[objc_getClass("_UIBackdropViewSettingsUltraLight") alloc] initWithDefaultValues] autorelease];
-	
-	if (shouldTintBar) {
-		barSettings = [[[objc_getClass("_UIBackdropViewSettingsColored") alloc] initWithDefaultValues] autorelease];
-		barSettings.colorTint = barTintColor;
-		barSettings.saturationDeltaFactor = 0.0;
+	if (self.disabledBlur) {
+		
+		CGFloat alpha = .98;
+		
+		_barBlurView = [UIView new];
+		_barBlurView.backgroundColor = [PWTheme darkenColor:barTintColor];
+		_barBlurView.alpha = alpha;
+		[containerView insertSubview:_barBlurView atIndex:0];
+		
+		_contentBlurView = [UIView new];
+		_contentBlurView.backgroundColor = [UIColor whiteColor];
+		_contentBlurView.alpha = alpha;
+		[containerView insertSubview:_contentBlurView atIndex:0];
+		
 	} else {
-		barSettings = [[[objc_getClass("_UIBackdropViewSettingsUltraLight") alloc] initWithDefaultValues] autorelease];
+		
+		// backdrop view settings
+		_UIBackdropViewSettings *barSettings = nil;
+		_UIBackdropViewSettings *contentSettings = [[[objc_getClass("_UIBackdropViewSettingsUltraLight") alloc] initWithDefaultValues] autorelease];
+		
+		if (shouldTintBar) {
+			barSettings = [[[objc_getClass("_UIBackdropViewSettingsColored") alloc] initWithDefaultValues] autorelease];
+			barSettings.colorTint = barTintColor;
+			barSettings.saturationDeltaFactor = 0.0;
+		} else {
+			barSettings = [[[objc_getClass("_UIBackdropViewSettingsUltraLight") alloc] initWithDefaultValues] autorelease];
+		}
+		
+		// add blur view as the background
+		_barBlurView = [[objc_getClass("_UIBackdropView") alloc] initWithSettings:barSettings];
+		[containerView insertSubview:_barBlurView atIndex:0];
+		
+		_contentBlurView = [[objc_getClass("_UIBackdropView") alloc] initWithSettings:contentSettings];
+		[containerView insertSubview:_contentBlurView atIndex:0];
 	}
-	
-	// add blur view as the background
-	_barBlurView = [[objc_getClass("_UIBackdropView") alloc] initWithSettings:barSettings];
-	[containerView insertSubview:_barBlurView atIndex:0];
-	
-	_contentBlurView = [[objc_getClass("_UIBackdropView") alloc] initWithSettings:contentSettings];
-	[containerView insertSubview:_contentBlurView atIndex:0];
 }
 
 - (void)removeTheme {
@@ -163,7 +196,10 @@
 	CGRect superRect = [self containerView].bounds;
 	CGSize superSize = superRect.size;
 	
-	_barBlurView.frame = CGRectMake(0, 0, superSize.width, [self navigationBar].bounds.size.height);
+	[UIView performWithoutAnimation:^{
+		_barBlurView.frame = CGRectMake(0, 0, superSize.width, [self navigationBar].bounds.size.height);
+		LOG(@"_barBlurView: %@", _barBlurView);
+	}];
 	_contentBlurView.frame = CGRectMake(0, _barBlurView.frame.size.height, superSize.width, superSize.height - _barBlurView.frame.size.height);
 }
 

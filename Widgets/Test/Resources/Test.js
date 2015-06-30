@@ -14,6 +14,8 @@ function testMail() {
 	console.log("All sender account #0: " + ac[0]);
 	console.log("All sender account #1: " + ac[1]);
 	console.log("All sender account #2: " + ac[2]);
+	
+	pw.widget.showMessage("Submitted");
 }
 
 function testAlarm() {
@@ -46,11 +48,11 @@ function testAlarm() {
 		var active = alarm.active;
 		var hour = alarm.hour;
 		var minute = alarm.minute;
-		var repeatDays = alarm.repeatDays;
+		var daySetting = alarm.daySetting;
 		var allowsSnooze = alarm.allowsSnooze;
 		var sound = alarm.sound;
 		var soundType = alarm.soundType;
-		return "<Alarm info: " + id + "; " + (active ? "Active" : "Inactive") + "; " + hour + ":" + minute + "; " + repeatDays + "; allowsSnooze: " + (allowsSnooze ? "Yes" : "NO") + "; Sound: " + sound + " (" + soundType + ")>";
+		return "<Alarm info: " + id + "; " + (active ? "Active" : "Inactive") + "; " + hour + ":" + minute + "; " + daySetting + "; allowsSnooze: " + (allowsSnooze ? "Yes" : "NO") + "; Sound: " + sound + " (" + soundType + ")>";
 	};
 	
 	console.log("All alarm #0: " + infoOfAlarm(allAlarms[0]));
@@ -62,6 +64,7 @@ function testAlarm() {
 	var testAlarm = allAlarms[0];
 	var originalActive = testAlarm.active;
 	var newActive = !originalActive;
+	testAlarm.active = newActive;
 	console.log("Changing the alarm state of the test alarm from " + (originalActive ? "YES" : "NO") + " to " + (newActive ? "YES" : "NO"));
 	console.log("Current state: " + (testAlarm.active ? "YES" : "NO"));
 }
@@ -69,8 +72,6 @@ function testAlarm() {
 pw.widget.willPresent = function() {
 	pw.widget.setActionButtonText("Yo!");
 	pw.widget.setTitle(pw.widget.name);
-	pw.widget.setPreferredTintColor("cyan");
-	pw.widget.setPreferredBarTextColor("white");
 	var firstitem = pw.widget.itemAtIndex(0);
 	firstitem.title = "Changed Title";
 	firsttime.itemValueChangedEventHandler = function(oldValue) {
@@ -93,9 +94,9 @@ pw.widget.itemValueChangedEventHandler = function(item, oldValue) {
 	console.log(oldValue);
 }
 
-pw.widget.actionEventHandler = function(values) {
-	pw.widget.setTitle("action!");
+pw.widget.submitEventHandler = function(values) {
+	pw.widget.setTitle("submitted!");
 	//pw.widget.removeItemAtIndex(0, true);
-	//testMail();
-	//testAlarm();
+	testMail();
+	testAlarm();
 }

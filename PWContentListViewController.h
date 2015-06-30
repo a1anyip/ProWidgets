@@ -18,7 +18,7 @@
 
 @property(nonatomic, readonly) UITableView *tableView;
 
-- (instancetype)initWithTitle:(NSString *)title delegate:(id<PWContentListViewControllerDelegate>)delegate;
+- (instancetype)initWithTitle:(NSString *)title delegate:(id<PWContentListViewControllerDelegate>)delegate forWidget:(PWWidget *)widget;
 
 - (void)reload;
 

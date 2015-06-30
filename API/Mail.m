@@ -8,12 +8,17 @@
 //
 
 #import "Mail.h"
+#import "../PWController.h"
 #import "../JSBridge/PWJSBridgeWrapper.h"
 #import <objcipc/objcipc.h>
 
 #define MailIdentifier @"com.apple.mobilemail"
 
 @implementation PWAPIMailWrapper
+
+- (BOOL)canSendMail {
+	return [PWAPIMail canSendMail];
+}
 
 - (void)send:(JSValue *)htmlContent :(JSValue *)subject :(JSValue *)sender :(JSValue *)to :(JSValue *)cc :(JSValue *)bcc {
 	
@@ -69,15 +74,25 @@
 
 @end
 
+@interface MSAccounts : NSObject
+
++ (BOOL)canSendMail;
+
+@end
+
 @implementation PWAPIMail
 
-+ (void)sendMailWithHTMLContent:(NSString *)htmlContent subject:(NSString *)subject sender:(NSString *)sender to:(NSString *)to {
-	if (to == nil)
-		to = @"";
-	[self sendMailWithHTMLContent:htmlContent subject:subject sender:sender to:@[to] cc:nil bcc:nil];
++ (BOOL)canSendMail {
+	return [MSAccounts canSendMail];
+}
+
++ (void)sendMailWithHTMLContent:(NSString *)htmlContent subject:(NSString *)subject sender:(NSString *)sender to:(NSArray *)to {
+	[self sendMailWithHTMLContent:htmlContent subject:subject sender:sender to:to cc:nil bcc:nil];
 }
 
 + (void)sendMailWithHTMLContent:(NSString *)htmlContent subject:(NSString *)subject sender:(NSString *)sender to:(NSArray *)to cc:(NSArray *)cc bcc:(NSArray *)bcc {
+	
+	CHECK_API();
 	
 	if (htmlContent == nil)
 		htmlContent = @"";
@@ -151,6 +166,8 @@ else if (!validateRecipients(recipients)) return;
 
 + (NSDictionary *)defaultSenderAccount {
 	
+	CHECK_API(nil);
+	
 	MFMailAccountProxyGenerator *generator = [objc_getClass("MFMailAccountProxyGenerator") new];
 	MFMailAccountProxy *accountProxy = [generator defaultMailAccountProxyForDeliveryOriginatingBundleID:nil sourceAccountManagement:0];
 	
@@ -158,6 +175,8 @@ else if (!validateRecipients(recipients)) return;
 }
 
 + (NSArray *)availableSenderAccounts {
+	
+	CHECK_API(nil);
 	
 	NSMutableArray *accounts = [NSMutableArray array];
 	MFMailAccountProxyGenerator *generator = [objc_getClass("MFMailAccountProxyGenerator") new];
@@ -174,6 +193,8 @@ else if (!validateRecipients(recipients)) return;
 }
 
 + (NSString *)fullNameForSenderAddress:(NSString *)address {
+	
+	CHECK_API(nil);
 	
 	MFMailAccountProxyGenerator *generator = [objc_getClass("MFMailAccountProxyGenerator") new];
 	MFMailAccountProxy *accountProxy = [generator accountProxyContainingEmailAddress:address includingInactive:NO];

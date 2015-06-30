@@ -6,6 +6,8 @@
 	<string>Note</string>
 	<key>layout</key>
 	<string>PWWidgetLayoutCustom</string>
+	<key>supportResizing</key>
+	<true/>
 	<key>preferredTintColor</key>
 	<string>#FFD200</string>
 	<key>preferredBarTextColor</key>

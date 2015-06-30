@@ -9,6 +9,13 @@
 
 typedef enum {
 	
+	PWWidgetBrowserDefaultSafari = 0,
+	PWWidgetBrowserDefaultChrome = 1
+	
+} PWWidgetBrowserDefault;
+
+typedef enum {
+	
 	PWWidgetBrowserInterfaceWeb = 1,
 	PWWidgetBrowserInterfaceBookmark = 2
 	

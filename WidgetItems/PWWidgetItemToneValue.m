@@ -8,6 +8,7 @@
 //
 
 #import "PWWidgetItemToneValue.h"
+#import "ToneValue/PWWidgetItemTonePickerController.h"
 #import "../PWController.h"
 #import "../PWWidget.h"
 #import "../PWWidgetItem.h"
@@ -56,11 +57,11 @@
 - (void)select {
 	
 	if (_tonePickerController == nil) {
-		_tonePickerController = [[PWWidgetItemTonePickerController alloc] initWithTonePickerType:_tonePickerType selectedToneIdentifier:_selectedToneIdentifier toneType:_selectedToneType];
+		_tonePickerController = [[PWWidgetItemTonePickerController alloc] initWithTonePickerType:_tonePickerType selectedToneIdentifier:_selectedToneIdentifier toneType:_selectedToneType forWidget:self.itemViewController.widget];
 		_tonePickerController.delegate = self;
 	}
 	
-	[[PWController activeWidget] pushViewController:_tonePickerController animated:YES];
+	[self.itemViewController.widget pushViewController:_tonePickerController animated:YES];
 }
 
 - (void)setExtraAttributes:(NSDictionary *)attributes {
@@ -112,6 +113,12 @@
 	[self.itemViewController itemValueChanged:self oldValue:oldValue];
 }
 
+- (void)dealloc {
+	RELEASE(_tonePickerController)
+	RELEASE(_selectedToneIdentifier)
+	[super dealloc];
+}
+
 @end
 
 @implementation PWWidgetItemToneValueCell
@@ -133,8 +140,8 @@
 	NSString *toneIdentifier = value[@"identifier"];
 	ToneType toneType = [PWWidgetItemTonePickerController toneTypeFromNumber:value[@"type"]];
 	
-	if (toneIdentifier == nil) {
-		self.detailTextLabel.text = @"None";
+	if (toneIdentifier == nil || [toneIdentifier length] == 0) {
+		self.detailTextLabel.text = CT(@"ToneValueNone");
 	} else {
 		self.detailTextLabel.text = [PWWidgetItemTonePickerController nameOfToneWithIdentifier:toneIdentifier andType:toneType];
 	}

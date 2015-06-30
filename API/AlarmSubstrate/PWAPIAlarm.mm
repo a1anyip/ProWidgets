@@ -24,6 +24,20 @@
 
 %end
 
+%hook ClockManager
+
+- (void)scheduleLocalNotification:(id)notification {
+	%orig;
+	[OBJCIPC sendMessageToSpringBoardWithMessageName:@"PWAPIAlarm" dictionary:@{ @"notification": @"LocalNotificationChanged" } replyHandler:nil];
+}
+
+- (void)cancelLocalNotification:(id)notification {
+	%orig;
+	[OBJCIPC sendMessageToSpringBoardWithMessageName:@"PWAPIAlarm" dictionary:@{ @"notification": @"LocalNotificationChanged" } replyHandler:nil];
+}
+
+%end
+
 static inline __attribute__((constructor)) void init() {
 	@autoreleasepool {
 		
@@ -55,6 +69,20 @@ static inline __attribute__((constructor)) void init() {
 				
 				BOOL active = alarm.active;
 				return @{ @"active": @(active) };
+				
+			} else if ([action isEqualToString:@"getActiveStates"]) {
+				
+				NSMutableDictionary *states = [NSMutableDictionary dictionary];
+				NSArray *alarms = [manager alarms];
+				
+				for (Alarm *alarm in alarms) {
+					NSString *alarmId = alarm.alarmId;
+					if (alarmId == nil) continue;
+					BOOL active = alarm.active;
+					[states setObject:@(active) forKey:alarmId];
+				}
+				
+				return states;
 				
 			} else if ([action isEqualToString:@"add"]) {
 				

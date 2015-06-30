@@ -165,8 +165,8 @@ static NSDateFormatter *dateFormatter = nil;
 
 //////////////////////////////////////////////////////////////////////
 
-- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
-	if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier])) {
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier theme:(PWTheme *)theme {
+	if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier theme:theme])) {
 		
 		// create a date formatter
 		if (dateFormatter == nil) {
@@ -176,7 +176,10 @@ static NSDateFormatter *dateFormatter = nil;
 		
 		// create a date picker
 		_datePicker = [UIDatePicker new];
-		_datePicker.autoresizingMask = UIViewAutoresizingFlexibleHeight;
+		
+		// this is not necessary on iPad
+		if (![PWController isIPad])
+			_datePicker.autoresizingMask = UIViewAutoresizingFlexibleHeight;
 		
 		// create a text field
 		_textField = [UITextField new];

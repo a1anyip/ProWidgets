@@ -7,106 +7,105 @@
 //  Copyright 2014 Alan Yip. All rights reserved.
 //
 
-#import "interface.h"
-#import "PWContentItemViewController.h"
-#import "PWWidget.h"
-#import "PWWidgetItem.h"
-#import "WidgetItems/items.h"
-
-@interface PWWidgetDictionaryResultViewController : PWContentItemViewController {
-	
-	NSString *_content;
-}
-
-@property(nonatomic, copy) NSString *content;
-
-@end
-
-@implementation PWWidgetDictionaryResultViewController
-
-- (void)load {
-	self.requiresKeyboard = NO;
-	self.shouldMaximizeContentHeight = YES;
-	[self loadPlist:@"DictionaryResultItems"];
-}
-
-- (void)willBePresentedInNavigationController:(UINavigationController *)navigationController {
-	
-	PWWidgetItemWebView *item = (PWWidgetItemWebView *)[self itemWithKey:@"webView"];
-	NSString *content = nil;
-	
-	// adjust the text and separator color
-	UIColor *textColor = [[PWController activeTheme] cellTitleTextColor];
-	UIColor *separatorColor = [[PWController activeTheme] cellSeparatorColor];
-	NSString *textRGBA = [PWTheme RGBAFromColor:textColor];
-	NSString *separatorRGBA = [PWTheme RGBAFromColor:separatorColor];
-	if (textRGBA != nil && separatorRGBA != nil) {
-		content = [NSString stringWithFormat:@"%@<style>* { color:%@ !important; background:none !important; border-color:%@ !important;  }</style>", _content, textRGBA, separatorRGBA];
-	} else {
-		content = _content;
-	}
-	
-	[item loadHTMLString:content baseURL:nil];
-	[_content release], _content = nil;
-}
-
-- (void)dealloc {
-	RELEASE(_content)
-	[super dealloc];
-}
-
-@end
-
-@interface PWWidgetDictionary : PWWidget {
-	
-	PWWidgetDictionaryResultViewController *_resultViewController;
-}
-
-- (void)lookUp:(NSString *)word;
-- (void)setFirstResponder;
-
-@end
+#import "Dictionary.h"
 
 @implementation PWWidgetDictionary
 
-- (void)submitEventHandler:(NSDictionary *)values {
+- (void)load {
+	self.shouldAutoFocus = YES;
+	_mainViewController = [[PWWidgetDictionaryMainViewController alloc] initForWidget:self];
+	[self pushViewController:_mainViewController];
+}
+
+- (void)userInfoChanged:(NSDictionary *)userInfo {
 	
-	NSString *word = values[@"word"];
-	if (word != nil && [word length] > 0) {
-		// look up the word
-		[self lookUp:word];
-	} else {
-		[self setFirstResponder];
+    BOOL fromApp = [userInfo[@"from"] isEqualToString:@"app"];
+	
+	if (fromApp) {
+		NSString *term = userInfo[@"term"];
+		if (term.length > 0) {
+			[_mainViewController setWord:term];
+			self.pendingTerm = term;
+			self.userInfo = nil;
+		}
 	}
 }
 
-- (void)lookUp:(NSString *)word {
+- (void)didPresent {
+	[self handlePendingTerm];
+}
+
+- (void)didMaximize {
+	[self handlePendingTerm];
+}
+
+- (void)handlePendingTerm {
+	if (self.pendingTerm != nil) {
+		self.shouldAutoFocus = NO;
+		[self lookUp:self.pendingTerm animated:YES];
+		self.pendingTerm = nil;
+	}
+}
+
+- (void)lookUp:(NSString *)word animated:(BOOL)animated {
+	
 	_UIDictionaryManager *manager = [objc_getClass("_UIDictionaryManager") assetManager];
 	NSArray *values = [manager _definitionValuesForTerm:word];
+	
 	if ([values count] > 0) {
-		_UIDefinitionValue* value = values[0];
-		NSString *term = value.term;
-		NSString *result = value.longDefinition;
+		
 		if (_resultViewController == nil) {
-			_resultViewController = [PWWidgetDictionaryResultViewController new];
+			_resultViewController = [[PWWidgetDictionaryResultViewController alloc] initForWidget:self];
 		}
-		_resultViewController.title = term;
-		_resultViewController.content = result;
-		[self pushViewController:_resultViewController animated:YES];
+		
+		_UIDefinitionValue* value = values[0];
+		[_resultViewController updateDefinition:value];
+		
+		if (![_resultViewController isTopViewController]) {
+			[self pushViewController:_resultViewController animated:animated];
+		}
+		
+		self.shouldAutoFocus = YES;
+		
 	} else {
-		[self showMessage:@"No definition found" title:nil handler:^{
-			[self setFirstResponder];
+		
+		// pop to main view controller
+		if ([_resultViewController isTopViewController]) {
+			self.shouldAutoFocus = NO;
+			[self popViewControllerAnimated:YES];
+		}
+		
+		[_mainViewController resignFirstResponder];
+		
+		[[PWWidgetDictionary widget] showMessage:@"No definition found. Please check that you have installed at least one dictionary asset. Manage dictionary assets in the preference page of Dictionary widget." title:nil handler:^{
+			
+			self.shouldAutoFocus = YES;
+			
+			if ([_mainViewController isTopViewController]) {
+				[_mainViewController setFirstResponder];
+			}
 		}];
 	}
 }
 
-- (void)setFirstResponder {
-	PWWidgetItem *word = [self.defaultItemViewController itemWithKey:@"word"];
-	[word becomeFirstResponder];
+- (void)pronounce:(NSString *)word {
+	
+	if (_synthesizer == nil) {
+		_synthesizer = [[AVSpeechSynthesizer alloc] init];
+	}
+	
+	AVSpeechUtterance *utterance = [AVSpeechUtterance speechUtteranceWithString:word];
+	utterance.rate = [self doubleValueForPreferenceKey:@"pronunciationRate" defaultValue:.3];
+	
+	[_synthesizer stopSpeakingAtBoundary:AVSpeechBoundaryImmediate];
+	[_synthesizer speakUtterance:utterance];
 }
 
 - (void)dealloc {
+	RELEASE(_pendingTerm);
+	RELEASE(_mainViewController)
 	RELEASE(_resultViewController)
+	RELEASE(_synthesizer);
 	[super dealloc];
 }
 

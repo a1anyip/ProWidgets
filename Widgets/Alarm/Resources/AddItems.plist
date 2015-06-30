@@ -56,7 +56,7 @@
 		</dict>
 		<dict>
 			<key>key</key>
-			<string>label</string>
+			<string>title</string>
 			<key>title</key>
 			<string>Label</string>
 			<key>type</key>

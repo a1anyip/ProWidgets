@@ -6,6 +6,8 @@
 	<string>Mail</string>
 	<key>layout</key>
 	<string>PWWidgetLayoutDefault</string>
+	<key>supportResizing</key>
+	<true/>
 	<key>preferredTintColor</key>
 	<string>#1b9ff7</string>
 	<key>preferredBarTextColor</key>

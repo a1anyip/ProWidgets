@@ -9,6 +9,100 @@
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>General</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>defaults</key>
+			<string>cc.tweak.prowidgets</string>
+			<key>PostNotification</key>
+			<string>cc.tweak.prowidgets.preferencechanged</string>
+			<key>key</key>
+			<string>lockAction</string>
+			<key>label</key>
+			<string>LockAction</string>
+			<key>default</key>
+			<integer>0</integer>
+			<key>detail</key>
+			<string>PSListItemsController</string>
+			<key>validTitles</key>
+			<array>
+				<string>MinimizeAllWidgets</string>
+				<string>DismissAllWidgets</string>
+			</array>
+			<key>validValues</key>
+			<array>
+				<integer>0</integer>
+				<integer>1</integer>
+			</array>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>defaults</key>
+			<string>cc.tweak.prowidgets</string>
+			<key>PostNotification</key>
+			<string>cc.tweak.prowidgets.preferencechanged</string>
+			<key>key</key>
+			<string>miniViewScale</string>
+			<key>label</key>
+			<string>MinimizationViewSize</string>
+			<key>default</key>
+			<real>0.3</real>
+			<key>detail</key>
+			<string>PSListItemsController</string>
+			<key>validTitles</key>
+			<array>
+				<string>Small</string>
+				<string>Normal</string>
+				<string>Big</string>
+				<string>Large</string>
+			</array>
+			<key>validValues</key>
+			<array>
+				<real>0.2</real>
+				<real>0.3</real>
+				<real>0.4</real>
+				<real>0.5</real>
+			</array>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Effect</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>defaults</key>
+			<string>cc.tweak.prowidgets</string>
+			<key>PostNotification</key>
+			<string>cc.tweak.prowidgets.preferencechanged</string>
+			<key>key</key>
+			<string>presentationStyle</string>
+			<key>label</key>
+			<string>PresentationStyle</string>
+			<key>default</key>
+			<integer>0</integer>
+			<key>detail</key>
+			<string>PSListItemsController</string>
+			<key>validTitles</key>
+			<array>
+				<string>Zoom</string>
+				<string>Fade</string>
+				<string>SlideUp</string>
+				<string>SlideDown</string>
+			</array>
+			<key>validValues</key>
+			<array>
+				<integer>0</integer>
+				<integer>1</integer>
+				<integer>2</integer>
+				<integer>3</integer>
+			</array>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -20,17 +114,71 @@
 			<key>key</key>
 			<string>enabledParallax</string>
 			<key>label</key>
-			<string>Parallax Effect</string>
+			<string>ParallaxEffect</string>
 			<key>default</key>
 			<true/>
 		</dict>
 		<dict>
 			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>defaults</key>
+			<string>cc.tweak.prowidgets</string>
+			<key>PostNotification</key>
+			<string>cc.tweak.prowidgets.preferencechanged</string>
+			<key>key</key>
+			<string>disabledBlur</string>
+			<key>label</key>
+			<string>DisableBlurEffect</string>
+			<key>default</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>defaults</key>
+			<string>cc.tweak.prowidgets</string>
+			<key>PostNotification</key>
+			<string>cc.tweak.prowidgets.preferencechanged</string>
+			<key>key</key>
+			<string>disabledMask</string>
+			<key>label</key>
+			<string>BetterBlurQuality</string>
+			<key>default</key>
+			<false/>
+			<key>negate</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>cell</key>
 			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>LivePreview</string>
 			<key>footerText</key>
-			<string>Select your preferred source when creating calendars
-
-Local source might not work for some users.</string>
+			<string>LivePreviewSettingsFooterText</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSButtonCell</string>
+			<key>label</key>
+			<string>EnableAllLivePreviewSettings</string>
+			<key>action</key>
+			<string>enableAllLivePreviewSettings</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSButtonCell</string>
+			<key>label</key>
+			<string>DisableAllLivePreviewSettings</string>
+			<key>action</key>
+			<string>disableAllLivePreviewSettings</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>GlobalPreference</string>
+			<key>footerText</key>
+			<string>GlobalPreferenceFooterText</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -42,7 +190,7 @@ Local source might not work for some users.</string>
 			<key>key</key>
 			<string>preferredSource</string>
 			<key>label</key>
-			<string>Preferred Source</string>
+			<string>PreferredSource</string>
 			<key>default</key>
 			<integer>0</integer>
 			<key>detail</key>
@@ -62,53 +210,43 @@ Local source might not work for some users.</string>
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>footerText</key>
-			<string>Developers and themers may find some useful configurations and documentations inside.</string>
+			<string>ExperimentalSettingsFooterText</string>
 		</dict>
 		<dict>
 			<key>cell</key>
 			<string>PSLinkListCell</string>
 			<key>label</key>
-			<string>Developer Section</string>
+			<string>ExperimentalSettings</string>
+			<key>action</key>
+			<string>showExperimentalSettings</string>
 			<key>detail</key>
-			<string>PWPrefDeveloperSection</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSLinkListCell</string>
-			<key>label</key>
-			<string>Themer Section</string>
-			<key>detail</key>
-			<string>PWPrefThemerSection</string>
+			<string>PWPrefExperimentalSettings</string>
 		</dict>
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>footerText</key>
-			<string>In Test Mode, an extra bar will be shown for testing widgets or themes while a widget is presented.</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSSwitchCell</string>
-			<key>defaults</key>
-			<string>cc.tweak.prowidgets</string>
-			<key>PostNotification</key>
-			<string>cc.tweak.prowidgets.preferencechanged</string>
-			<key>key</key>
-			<string>testMode</string>
-			<key>label</key>
-			<string>Test Mode</string>
-			<key>default</key>
-			<false/>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSGroupCell</string>
+			<string>ShowWelcomeScreenFooterText</string>
 		</dict>
 		<dict>
 			<key>cell</key>
 			<string>PSButtonCell</string>
 			<key>label</key>
-			<string>Reset Preference</string>
+			<string>ShowWelcomeScreen</string>
+			<key>action</key>
+			<string>showWelcomeScreen</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>footerText</key>
+			<string>ResetCoreSettingsFooterText</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSButtonCell</string>
+			<key>label</key>
+			<string>ResetCoreSettings</string>
 			<key>action</key>
 			<string>resetPreference</string>
 		</dict>
@@ -116,7 +254,7 @@ Local source might not work for some users.</string>
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>footerText</key>
-			<string>Unless specified, respring is not required after changing configurations.</string>
+			<string>RespringFooterText</string>
 		</dict>
 		<dict>
 			<key>cell</key>
